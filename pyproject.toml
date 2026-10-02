@@ -1,7 +1,7 @@
 [project]
 name = "riskshield"
 version = "0.1.0"
-description = "风控盾 Day 1：历史证据、时间快照与资源就绪检查"
+description = "风控盾：历史证据、受限来源采集与证据图检索"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "fastapi>=0.115,<1",

@@ -1,0 +1,57 @@
+{
+  "batch_id": "blackcat-search-candidates-v1-2026-09-30",
+  "source": "黑猫投诉搜索结果中的众安相关详情候选",
+  "discovery_date": "2026-09-30",
+  "discovery_method": "公开搜索结果按平台 complaint ID 去重；未逐条读取的链接不视为核验样本。",
+  "target_subject_scope": "众安保险相关保险服务；候选主体/业务范围待详情页核实。",
+  "candidate_count": 23,
+  "directly_verified_before_or_during_v2": [
+    {
+      "source_id": "17388625059",
+      "url": "https://tousu.sina.com.cn/complaint/view/17388625059",
+      "state": "direct_page_verified_v1",
+      "published_date": "2025-10-12",
+      "event_package": false,
+      "independence_status": "not_audited_in_v2"
+    },
+    {
+      "source_id": "17374386012",
+      "url": "https://tousu.sina.com.cn/complaint/view/17374386012",
+      "state": "event_package_created_v2",
+      "published_date": "2024-07-11",
+      "event_package": true,
+      "independence_status": "one_verified_complaint_case; broader_event_independence_not_assessed"
+    },
+    {
+      "source_id": "17373781762",
+      "url": "https://tousu.sina.com.cn/complaint/view/17373781762",
+      "state": "direct_page_verified_v1",
+      "published_date": "2024-06-14",
+      "event_package": false,
+      "independence_status": "not_audited_in_v2"
+    }
+  ],
+  "unverified_candidates": [
+    {"source_id":"17391801538","url":"https://tousu.sina.com.cn/complaint/view/17391801538","state":"search_candidate_unverified","scope_status":"unknown","independence_status":"unknown"},
+    {"source_id":"17397974563","url":"https://tousu.sina.com.cn/complaint/view/17397974563","state":"search_candidate_unverified","scope_status":"unknown","independence_status":"unknown"},
+    {"source_id":"17375593970","url":"https://tousu.sina.com.cn/complaint/view/17375593970","state":"search_candidate_unverified","scope_status":"unknown","independence_status":"unknown"},
+    {"source_id":"17381404916","url":"https://tousu.sina.com.cn/complaint/view/17381404916","state":"search_candidate_unverified","scope_status":"unknown","independence_status":"unknown"},
+    {"source_id":"17390930333","url":"https://tousu.sina.com.cn/complaint/view/17390930333","state":"search_candidate_unverified","scope_status":"unknown","independence_status":"unknown"},
+    {"source_id":"17376607123","url":"https://tousu.sina.com.cn/complaint/view/17376607123","state":"search_candidate_unverified","scope_status":"unknown","independence_status":"unknown"},
+    {"source_id":"17375522098","url":"https://tousu.sina.com.cn/complaint/view/17375522098","state":"search_candidate_unverified","scope_status":"unknown","independence_status":"unknown"},
+    {"source_id":"17381530886","url":"https://tousu.sina.com.cn/complaint/view/17381530886","state":"search_candidate_unverified","scope_status":"unknown","independence_status":"unknown"},
+    {"source_id":"17382002490","url":"https://tousu.sina.com.cn/complaint/view/17382002490","state":"search_candidate_unverified","scope_status":"unknown","independence_status":"unknown"},
+    {"source_id":"17378060427","url":"https://tousu.sina.com.cn/complaint/view/17378060427","state":"search_candidate_unverified","scope_status":"unknown","independence_status":"unknown"},
+    {"source_id":"17379334612","url":"https://tousu.sina.com.cn/complaint/view/17379334612","state":"search_candidate_unverified","scope_status":"unknown","independence_status":"unknown"},
+    {"source_id":"17399414637","url":"https://tousu.sina.com.cn/complaint/view/17399414637","state":"search_candidate_unverified","scope_status":"unknown","independence_status":"unknown"},
+    {"source_id":"17397998664","url":"https://tousu.sina.com.cn/complaint/view/17397998664","state":"search_candidate_unverified","scope_status":"unknown","independence_status":"unknown"},
+    {"source_id":"17382423234","url":"https://tousu.sina.com.cn/complaint/view/17382423234","state":"search_candidate_unverified","scope_status":"unknown","independence_status":"unknown"},
+    {"source_id":"17391551238","url":"https://tousu.sina.com.cn/complaint/view/17391551238","state":"search_candidate_unverified","scope_status":"unknown","independence_status":"unknown"},
+    {"source_id":"17388688112","url":"https://tousu.sina.com.cn/complaint/view/17388688112","state":"search_candidate_unverified","scope_status":"unknown","independence_status":"unknown"},
+    {"source_id":"17393085475","url":"https://tousu.sina.com.cn/complaint/view/17393085475","state":"search_candidate_unverified","scope_status":"unknown","independence_status":"unknown"},
+    {"source_id":"17387857334","url":"https://tousu.sina.com.cn/complaint/view/17387857334","state":"search_candidate_unverified","scope_status":"unknown","independence_status":"unknown"},
+    {"source_id":"17389771101","url":"https://tousu.sina.com.cn/complaint/view/17389771101","state":"search_candidate_unverified","scope_status":"unknown","independence_status":"unknown"},
+    {"source_id":"17384965602","url":"https://tousu.sina.com.cn/complaint/view/17384965602","state":"search_candidate_unverified","scope_status":"unknown","independence_status":"unknown"}
+  ],
+  "counting_rule": "总清单保留 23 个去重 complaint ID；直接详情核验 3 个，其中 1 个已形成事件包。未核验 ID 只是搜索候选；当前独立事件包数量为 1，独立候选目标 20 尚未达成。不能把同事件转载、相同投诉的不同链接或多个 cutoff 作为独立事件。"
+}

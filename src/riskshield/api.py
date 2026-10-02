@@ -5,6 +5,8 @@ from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
+from riskshield.day2 import (CollectRequest, CollectionError, Day2Pipeline,
+                             GraphQuery, LabelRequest)
 from riskshield.model_gateway import ModelUnavailable, model_status, probe_model
 from riskshield.schemas import AgentDecision, CaseImport, DailyComplaint
 from riskshield.store import ConflictError, Store
@@ -13,33 +15,48 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 def create_app(db_path: str | Path | None = None) -> FastAPI:
-    app = FastAPI(title="风控盾 · Day 1", version="0.1.0",
-                  description="历史资料与输入契约。尚未实现 NLP、动态仿真或投诉预测。")
+    app = FastAPI(title="风控盾 · Day 2 V2", version="0.3.0",
+                  description="公开事件、时间快照、受限来源采集及证据图检索工作台；语义模型、记忆及仿真能力尚未实现。")
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "testserver"])
     store = Store(db_path or os.getenv("RISKSHIELD_DB", str(PROJECT_ROOT / "runtime/riskshield.db")))
+    day2 = Day2Pipeline(store)
 
     @app.get("/health")
     def health():
-        return {"status": "ok", "stage": "day1", "version": "0.1.0"}
+        return {"status": "ok", "stage": "day2_v2", "version": "0.3.0"}
 
     @app.get("/readiness")
     def readiness():
         cases = store.list_cases()
         real = [case for case in cases if case["data_mode"] == "real_historical"]
+        event_packages = list((PROJECT_ROOT / "data/public").glob("*_event_v2.json"))
+        # Project-level Day 1 evidence gate: see docs/records/06-Day1执行与验收记录.md.
+        # This does not imply that this database has imported a case or that later capabilities work.
         return {
-            "stage": "day1", "g1_passed": False, "engineering_scaffold": "available",
-            "historical_cases": len(real),
-            "real_daily_complaints": "missing",
-            "model": model_status(),
+            "stage": "day2_v2", "g1_passed": True, "g1_v2_passed": True,
+            "g2_v2_passed": False,
+            "engineering_scaffold": "available",
+            "historical_cases": len(real), "available_event_packages": len(event_packages),
+            "legacy_daily_complaint_contract": {"available": True, "required_for_v2": False},
+            "historical_probe_evidence": {"status": "passed_once_synthetic", "current_configuration": model_status()},
             "capabilities": {"historical_import": True, "cutoff_snapshot": True,
-                             "nlp": False, "dynamic_simulation": False, "forecast": False},
-            "blockers": ["尚无真实逐日投诉数据及确认口径", "尚未完成获准模型的真实决策试验",
-                         "案例只有回溯获取的公开材料，缺当时快照与完整后续标签", "官方指标口径仍待确认"],
+                             "restricted_source_collection": True, "sentiment_label_submission": True,
+                             "evidence_graph_retrieval": True, "sentiment_analysis": False,
+                             "graph_rag": False, "long_term_memory": False,
+                             "dynamic_simulation": False, "direction_evaluation": False,
+                             "realtime_collection": False, "forecast": False},
+            "blockers": ["尚无五类来源的在线采集、覆盖与延迟证据",
+                         "当前仅有 SEC 与同期帖子存档的受限采集，未建立生产级多平台采集",
+                         "情感三分类模型及独立复核标签尚未完成",
+                         "新版情感/走势正式评测集及观察窗口径尚未冻结",
+                         "GraphRAG、长期记忆、动态仿真和通知尚未实现",
+                         "域内模型、嵌入和图服务资源尚未核实"],
         }
 
     @app.get("/channels/status")
     def channels():
-        return json.loads((PROJECT_ROOT / "data/research/channel_checks.json").read_text(encoding="utf-8"))
+        path = PROJECT_ROOT / "data/research/channel_checks_v2.json"
+        return json.loads(path.read_text(encoding="utf-8"))
 
     @app.get("/contracts")
     def contracts():
@@ -92,5 +109,60 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
             return probe_model()
         except ModelUnavailable as exc:
             raise HTTPException(status_code=503, detail=str(exc)) from None
+
+    @app.post("/cases/{case_id}/observations/collect")
+    def collect_observation(case_id: str, request: CollectRequest):
+        try:
+            return day2.collect(case_id, request)
+        except KeyError:
+            raise HTTPException(status_code=404, detail="案例或来源记录不存在") from None
+        except CollectionError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from None
+
+    @app.get("/cases/{case_id}/observations")
+    def observations(case_id: str):
+        try:
+            return day2.observations(case_id)
+        except KeyError:
+            raise HTTPException(status_code=404, detail="案例不存在") from None
+
+    @app.post("/cases/{case_id}/labels")
+    def add_label(case_id: str, request: LabelRequest):
+        try:
+            return day2.label(case_id, request)
+        except KeyError:
+            raise HTTPException(status_code=404, detail="案例或来源记录不存在") from None
+        except CollectionError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from None
+
+    @app.get("/cases/{case_id}/labels")
+    def labels(case_id: str):
+        try:
+            return day2.labels(case_id)
+        except KeyError:
+            raise HTTPException(status_code=404, detail="案例不存在") from None
+
+    @app.post("/cases/{case_id}/graph")
+    def build_graph(case_id: str):
+        try:
+            return day2.build_graph(case_id)
+        except KeyError:
+            raise HTTPException(status_code=404, detail="案例不存在") from None
+        except CollectionError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from None
+
+    @app.get("/graphs/{graph_id}")
+    def graph(graph_id: str):
+        try:
+            return day2.graph(graph_id)
+        except KeyError:
+            raise HTTPException(status_code=404, detail="图谱不存在") from None
+
+    @app.post("/graphs/{graph_id}/query")
+    def graph_query(graph_id: str, request: GraphQuery):
+        try:
+            return day2.query_graph(graph_id, request.question)
+        except KeyError:
+            raise HTTPException(status_code=404, detail="图谱不存在") from None
 
     return app

@@ -6,7 +6,7 @@ from typing import Annotated, Literal
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, HttpUrl, model_validator
 
 Identifier = Annotated[str, Field(min_length=1, max_length=100, pattern=r"^[a-zA-Z0-9_-]+$")]
-Channel = Literal["weibo", "wechat", "douyin", "blackcat", "regulatory", "news"]
+Channel = Literal["weibo", "douyin", "xiaohongshu", "blackcat", "news", "wechat", "regulatory"]
 
 
 class Contract(BaseModel):

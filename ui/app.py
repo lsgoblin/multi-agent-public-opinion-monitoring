@@ -7,10 +7,10 @@ import streamlit as st
 
 ROOT = Path(__file__).resolve().parents[1]
 API = os.getenv("RISKSHIELD_API_URL", "http://127.0.0.1:8000").rstrip("/")
-st.set_page_config(page_title="风控盾 · Day 1", page_icon="🛡️", layout="wide")
+st.set_page_config(page_title="风控盾 · Day 2", page_icon="🛡️", layout="wide")
 st.title("风控盾")
-st.caption("DAY 1 · 历史证据工作台")
-st.info("当前仅完成工程骨架与数据契约。动态多智能体仿真、投诉预测和预警尚未实现。")
+st.caption("DAY 2 V2 · 公开事件、来源观察与历史证据工作台")
+st.info("Day 1 G1 已通过。Day 2 的受限公开来源采集和证据图检索已初测；G2 尚未签收，五平台在线、语义识别与正式 GraphRAG 仍待验证。")
 
 
 def request(method, path, **kwargs):
@@ -31,7 +31,7 @@ except (httpx.HTTPError, ValueError):
 
 with st.sidebar:
     st.subheader("当前范围")
-    st.write("仅执行 Day 1")
+    st.write("当前执行 Day 2；Day 3—5 未授权")
     st.write("本地 Windows · 历史资料")
     st.caption("导入真实资料不代表已完成实时采集；读取已有证据不代表执行了仿真。")
     if st.button("刷新状态", use_container_width=True):
@@ -40,13 +40,13 @@ with st.sidebar:
 cols = st.columns(4)
 cols[0].metric("后端状态", "可用")
 cols[1].metric("真实历史案例", readiness["historical_cases"])
-cols[2].metric("逐日投诉数据", "待取得")
-cols[3].metric("真实模型调用", "待验证")
+cols[2].metric("事件包文件", readiness["available_event_packages"])
+cols[3].metric("G1-V2", "未通过" if not readiness["g1_v2_passed"] else "通过")
 
 overview, evidence, gaps = st.tabs(["资源与来源", "历史案例", "Day 1 验收"])
 with overview:
-    st.subheader("五渠道核查")
-    st.caption("这是人工访问核查记录，不是自动采集完成记录。其他新闻网站不计入指定五渠道。")
+    st.subheader("五类来源路线")
+    st.caption("此处展示路线/授权核查；只有记录了真实在线获取和覆盖证据，才算平台接入。")
     st.dataframe([
         {"渠道": row["name"], "访问核查": row["status_label"], "案例原帖": row["case_original_records"],
          "下一步": row["next_action"]} for row in channels["channels"]
@@ -57,12 +57,13 @@ with overview:
             for url in row["urls"]:
                 st.markdown(f"[查看来源]({url})")
     st.subheader("模型资源")
-    st.write("尚无已验证服务。建议优先评估百炼通用模型 API，保留其他兼容服务接入。")
-    st.caption("本界面不收集密钥，也不自动发送模型请求。接入及探测说明见 Day 1 模型方案。")
+    st.write("已有一次 DeepSeek 纯合成结构化调用通过；当前进程配置状态：" +
+             readiness["historical_probe_evidence"]["current_configuration"]["status"] + "。")
+    st.caption("历史探测不等于当前凭据可用，也不证明任务决策质量或规模能力。本界面不收集密钥、不自动发送模型请求。")
 
 with evidence:
     st.subheader("公开历史案例")
-    st.write("候选：2024 年 3 月众安保险营销骚扰相关报道。资料为人工摘要，未获取当时页面快照。")
+    st.write("候选：2024 年 3 月众安保险营销骚扰相关报道。资料为人工摘要，历史可见时间未知，截止快照没有合格输入。")
     if st.button("导入随附公开案例", type="primary"):
         payload = json.loads((ROOT / "data/public/za_marketing_2024.json").read_text(encoding="utf-8"))
         try:
@@ -71,8 +72,28 @@ with evidence:
             st.rerun()
         except httpx.HTTPError:
             st.error("导入失败，请查看 API 状态和案例版本；不同内容不会覆盖原版本。")
+    if st.button("导入首个黑猫事件包"):
+        package = json.loads((ROOT / "data/public/blackcat_17374386012_event_v2.json").read_text(encoding="utf-8"))
+        try:
+            result = request("POST", "/cases", json=package["case_import_projection"])
+            st.session_state["blackcat_import_result"] = "已导入" if result["status"] == "imported" else "资料已存在，未重复入库"
+            st.rerun()
+        except httpx.HTTPError:
+            st.error("黑猫事件包导入失败，请查看 API 状态和事件包字段映射。")
+    if st.button("导入 Day 1 时间证据事件"):
+        package = json.loads((ROOT / "data/public/unh_change_20240222_event_v2.json").read_text(encoding="utf-8"))
+        try:
+            result = request("POST", "/cases", json=package["case_import_projection"])
+            st.session_state["g1_import_result"] = "已导入" if result["status"] == "imported" else "资料已存在，未重复入库"
+            st.rerun()
+        except httpx.HTTPError:
+            st.error("Day 1 事件包导入失败，请查看 API 状态和事件包字段映射。")
     if "import_result" in st.session_state:
         st.success(st.session_state["import_result"])
+    if "blackcat_import_result" in st.session_state:
+        st.success(st.session_state["blackcat_import_result"])
+    if "g1_import_result" in st.session_state:
+        st.success(st.session_state["g1_import_result"])
     if cases:
         selected = st.selectbox("选择案例", options=[item["case_id"] for item in cases])
         metadata = next(item for item in cases if item["case_id"] == selected)
@@ -80,7 +101,7 @@ with evidence:
         st.caption(f"截止时间：{metadata['cutoff']} · 数据模式：{metadata['data_mode']} · 版本：{metadata['version']}")
         st.write(metadata["cutoff_basis"])
         snap = request("GET", f"/cases/{selected}/snapshot")
-        st.warning("当前资料只支持近似历史输入与接口验证，不能据此证明传播误差或投诉预测准确率。")
+        st.warning("当前资料支持历史输入与 Day 2 受限证据检索，不能据此证明情感、走势或仿真指标达标。")
         st.subheader("截止前输入")
         if not snap["records"]:
             st.write("没有符合截止时间和可知性要求的输入。")
@@ -103,9 +124,10 @@ with evidence:
         st.write("尚未导入案例。可导入随附资料开始检查时间快照。")
 
 with gaps:
-    st.subheader("G1：尚未完整通过")
+    st.subheader("G1-V2 已通过；G2-V2 尚未签收")
     st.success("已具备：可运行 API、SQLite 持久化、案例导入、时间过滤与结构化契约。")
+    st.caption("以有同期抓取证据的替代真实事件签收；黑猫原投诉仍无合格截止输入。以下为后续阶段缺口，不代表 Day 1 未通过。")
     for blocker in readiness["blockers"]:
         st.warning(blocker)
-    st.write("Day 1 结束后停止。后续 NLP、Agent 引擎、预测和预警属于后续施工范围。")
+    st.write("DailyComplaint 是遗留可选契约，不是新版主链前置；完整仿真与预警仍属于后续工程范围。")
     st.markdown(f"[查看接口文档]({API}/docs)")

@@ -40,6 +40,9 @@ def test_import_is_idempotent_and_persistent(client, payload, tmp_path):
 
 def test_future_and_labels_never_enter_snapshot(client, payload):
     # Even a misclassified future record must be excluded by time, not just its role.
+    # Supply a known time only inside this filter test; the historical fixture has none.
+    payload["records"][0]["available_at"] = "2024-03-14T11:12:02+08:00"
+    payload["records"][1]["available_at"] = "2024-03-15T13:35:59+08:00"
     payload["records"][1]["role"] = "input_candidate"
     assert client.post("/cases", json=payload).status_code == 200
     snapshot = client.get(f"/cases/{payload['case_id']}/snapshot").json()
@@ -52,10 +55,10 @@ def test_future_and_labels_never_enter_snapshot(client, payload):
 
 
 def test_unknown_availability_is_excluded(client, payload):
-    payload["records"][0]["available_at"] = None
     client.post("/cases", json=payload)
     snapshot = client.get(f"/cases/{payload['case_id']}/snapshot").json()
     assert snapshot["records"] == []
+    assert snapshot["excluded_counts"] == {"availability_unknown": 1, "not_input": 2}
     assert snapshot["backtest_integrity"] == "no_eligible_inputs"
 
 
@@ -77,7 +80,7 @@ def test_invalid_import_is_rejected_atomically(client, payload, mutation):
 
 def test_unimplemented_capabilities_and_missing_case(client):
     readiness = client.get("/readiness").json()
-    assert readiness["g1_passed"] is False
+    assert readiness["g1_passed"] is True
     assert readiness["capabilities"]["dynamic_simulation"] is False
     assert readiness["capabilities"]["forecast"] is False
     assert client.get("/cases/missing/snapshot").status_code == 404

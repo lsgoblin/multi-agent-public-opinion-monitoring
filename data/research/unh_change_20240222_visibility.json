@@ -1,0 +1,52 @@
+{
+  "evidence_id": "unh-change-20240222-visibility-v1",
+  "checked_at": "2026-10-02T12:58:26+08:00",
+  "target_observer": "anonymous_public",
+  "use_scope": "Day 1 internal historical time-isolation verification only. Keep SEC filing identifiers and a public post's title/link/time; omit account names, comments, and personal or health data. No model call or public redistribution was performed.",
+  "source_document": {
+    "publisher": "U.S. Securities and Exchange Commission EDGAR",
+    "accession": "0000731766-24-000045",
+    "index_url": "https://www.sec.gov/Archives/edgar/data/731766/0000731766-24-000045-index.htm",
+    "document_url": "https://www.sec.gov/Archives/edgar/data/731766/000073176624000045/unh-20240221.htm",
+    "accepted_at_et": "2024-02-22T16:08:47-05:00",
+    "contemporaneous_content": "The original Form 8-K reports unauthorized access to some Change Healthcare IT systems, isolation of impacted systems, and an unknown disruption duration. It does not report the later restoration plan.",
+    "version_basis": "The SEC accession identifies the original Form 8-K. The later update is a separate Form 8-K/A accession."
+  },
+  "independent_visibility_witness": {
+    "publisher": "Arctic Shift archive of a public Reddit r/cybersecurity post",
+    "api_url": "https://arctic-shift.photon-reddit.com/api/posts/ids?ids=1axi1g0",
+    "api_documentation_url": "https://github.com/ArthurHeitmann/arctic_shift/blob/master/api/README.md",
+    "post_url": "https://www.reddit.com/r/cybersecurity/comments/1axi1g0/united_health_group_hacked_by_nationstate/",
+    "post_id": "1axi1g0",
+    "created_utc_epoch": 1708636703,
+    "retrieved_on_utc_epoch": 1708636719,
+    "retrieved_on_utc": "2024-02-22T21:18:39+00:00",
+    "retrieved_on_et": "2024-02-22T16:18:39-05:00",
+    "archived_title": "United Health Group hacked by nation-state associated cyber security threat actor",
+    "archived_target_url": "https://www.sec.gov/ixviewer/ix.html?doc=/Archives/edgar/data/0000731766/000073176624000045/unh-20240221.htm",
+    "edited": false,
+    "is_robot_indexable": true,
+    "api_response_sha256_at_check": "f7a6a224ded5f4f1b1596c8961b0af22d0c84deced098ebd6053dfc8afbe8efc"
+  },
+  "time_basis": {
+    "timezone": "America/New_York",
+    "offset_on_event_date": "-05:00",
+    "first_verified_visible_at": "2024-02-22T16:18:39-05:00",
+    "cutoff_rule": "first_verified_visible_at + 30 minutes",
+    "cutoff": "2024-02-22T16:48:39-05:00",
+    "caution": "SEC states its acceptance time is not a timestamp of first availability on sec.gov. Therefore the earlier acceptance time is not used as available_at. The independent archived link and title establish visibility by the archive retrieval time, not the exact first moment of publication."
+  },
+  "later_evidence": {
+    "publisher": "U.S. Securities and Exchange Commission EDGAR",
+    "accession": "0000731766-24-000085",
+    "index_url": "https://www.sec.gov/Archives/edgar/data/731766/000073176624000085/0000731766-24-000085-index.html",
+    "document_url": "https://www.sec.gov/Archives/edgar/data/731766/000073176624000085/pressreleasedatedmarch7202.htm",
+    "accepted_at_et": "2024-03-08T17:13:56-05:00",
+    "scope": "evaluation_only; reports partial restoration and plans, not complete incident resolution"
+  },
+  "limitations": [
+    "The independent archive preserves the post title, target accession URL and retrieval time, but not the full SEC document bytes from that moment.",
+    "SEC filings may receive post-acceptance corrections; this check found an original accession and a separate later amendment, not a cryptographic contemporaneous copy of the original HTML.",
+    "This U.S. insurer incident tests Day 1 time isolation only. It does not prove coverage of the five planned Chinese platforms or the target company's brand."
+  ]
+}

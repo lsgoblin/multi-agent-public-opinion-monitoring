@@ -41,8 +41,9 @@ def probe_model():
         parsed.scheme == "http" and parsed.hostname in {"localhost", "127.0.0.1", "::1"}
     ):
         raise ModelUnavailable("远程模型地址必须使用 HTTPS。")
+    model_name = os.environ["RISKSHIELD_MODEL_NAME"]
     payload = {
-        "model": os.environ["RISKSHIELD_MODEL_NAME"],
+        "model": model_name,
         "messages": [
             {"role": "system", "content": "这是纯合成接入试验。仅返回 JSON，遵循此 schema："
              + json.dumps(AgentDecision.model_json_schema(), ensure_ascii=False)},
@@ -51,6 +52,18 @@ def probe_model():
         ],
         "response_format": {"type": "json_object"}, "max_tokens": 512,
     }
+    if parsed.hostname == "api.deepseek.com":
+        thinking = os.getenv("RISKSHIELD_DEEPSEEK_THINKING_MODE", "disabled").strip().lower()
+        if thinking not in {"enabled", "disabled"}:
+            raise ModelUnavailable("DeepSeek 思考模式必须设置为 enabled 或 disabled。")
+        payload["thinking"] = {"type": thinking}
+        effort = os.getenv("RISKSHIELD_DEEPSEEK_REASONING_EFFORT", "").strip().lower()
+        if effort:
+            if effort not in {"low", "high", "max"}:
+                raise ModelUnavailable("DeepSeek 思考强度必须设置为 low、high 或 max。")
+            if thinking != "enabled":
+                raise ModelUnavailable("只有启用 DeepSeek 思考模式时才能设置思考强度。")
+            payload["reasoning_effort"] = effort
     start = time.perf_counter()
     try:
         # Do not forward Authorization across redirects; do not log provider response bodies.
@@ -65,13 +78,32 @@ def probe_model():
         choice = body["choices"][0]
         if choice.get("finish_reason") != "stop":
             raise ModelUnavailable("模型响应未正常结束，不能作为有效决策。")
-        decision = AgentDecision.model_validate_json(choice["message"]["content"])
-        if decision.agent_id != "probe_agent" or set(decision.evidence_ids) != {"sample_1"}:
+        content = choice["message"]["content"]
+        if not isinstance(content, str) or not content.strip():
+            raise ModelUnavailable("模型响应内容为空，不能作为有效决策。")
+        decision = AgentDecision.model_validate_json(content)
+        if decision.agent_id != "probe_agent" or decision.evidence_ids != ["sample_1"]:
             raise ModelUnavailable("模型返回了未知 Agent 或证据引用。")
+        actual_model = body.get("model")
+        if parsed.hostname == "api.deepseek.com" and (
+            not isinstance(actual_model, str) or not actual_model.strip()
+        ):
+            raise ModelUnavailable("模型响应未提供实际模型名称，不能记录为通过。")
+        usage = body.get("usage")
+        token_usage = None
+        if isinstance(usage, dict):
+            fields = ("prompt_tokens", "completion_tokens", "total_tokens")
+            if all(type(usage.get(field)) is int and usage[field] >= 0 for field in fields):
+                token_usage = {field: usage[field] for field in fields}
+                details = usage.get("completion_tokens_details")
+                reasoning_tokens = details.get("reasoning_tokens") if isinstance(details, dict) else None
+                if type(reasoning_tokens) is int and reasoning_tokens >= 0:
+                    token_usage["reasoning_tokens"] = reasoning_tokens
     except httpx.HTTPError:
         raise ModelUnavailable("模型网络请求失败；请检查地址、网络和配额。") from None
-    except (ValueError, KeyError, IndexError, TypeError, ValidationError):
+    except (ValueError, KeyError, IndexError, TypeError, AttributeError, ValidationError):
         raise ModelUnavailable("模型响应不符合结构化决策契约。") from None
     return {"status": "passed", "data_mode": "synthetic", "decision": decision.model_dump(),
             "elapsed_seconds": round(time.perf_counter() - start, 3),
-            "model": payload["model"], "note": "仅通过单次接入试验，不是动态多智能体推演。"}
+            "requested_model": model_name, "model": actual_model, "token_usage": token_usage,
+            "note": "仅通过单次接入试验，不是动态多智能体推演。"}

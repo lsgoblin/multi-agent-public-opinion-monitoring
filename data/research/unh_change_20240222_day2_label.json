@@ -1,0 +1,9 @@
+{
+  "case_id": "unh_change_20240222_v2_archived",
+  "record_id": "unh-sec-20240222-initial",
+  "label": "neutral",
+  "reviewer": "assistant_proposal_not_human",
+  "rationale": "按单条来源对 UnitedHealth Group 的态度标注：原始公司申报以事实陈述方式披露不利网络事件，没有明确支持或谴责立场。",
+  "status": "assistant_proposal_not_human_review",
+  "use_scope": "仅用于标签接口试样和供人工复核的候选意见；不计 G2 人工初标或正式准确率样本。"
+}
