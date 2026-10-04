@@ -1,0 +1,64 @@
+{
+  "run_at": "2026-10-04T06:39:52.129128+00:00",
+  "case_id": "unh_change_20240222_day2_multisource",
+  "cutoff": "2024-02-22T16:48:39-05:00",
+  "requests": [
+    {
+      "record_id": "unh-sec-20240222-initial",
+      "adapter": "sec_filing",
+      "http_status": 200,
+      "observation_id": "2b7dacf1ad248b5ed1c6da38",
+      "content_sha256": "96e8a0b48e5482edc27365c445e0a8417255d5c3c2a9a5f5a34e46822063f25a",
+      "source_observed_at": null
+    },
+    {
+      "record_id": "unh-sec-20240222-initial",
+      "adapter": "arctic_shift_post",
+      "http_status": 200,
+      "observation_id": "6d5b9612fe6739cbb5bded46",
+      "content_sha256": "c6cd9db840ae0702fbbd8f2a25f9f9b16c520813da36bcae1d1cb4d18738b84b",
+      "source_observed_at": "2024-02-22T21:18:39+00:00"
+    },
+    {
+      "record_id": "optum-status-20240221-cyber-update",
+      "adapter": "optum_status_update",
+      "http_status": 200,
+      "observation_id": "067687ca738ccdd1764c8237",
+      "content_sha256": "d4e3ff926f3915afd01813e1ad6a0a52938c1120870e9f81cf152360220abb37",
+      "source_observed_at": "2024-02-21T16:40:49.526-05:00"
+    },
+    {
+      "record_id": "optum-status-20240221-cyber-update",
+      "adapter": "arctic_shift_post",
+      "http_status": 200,
+      "observation_id": "c3747eebaee134946a184884",
+      "content_sha256": "98e0fb90f03d1f7193622f0ac2ccd2a4356a5fbb9107248bb417573fa1c6a0d3",
+      "source_observed_at": "2024-02-22T03:52:21+00:00"
+    }
+  ],
+  "import_status": 200,
+  "snapshot_record_ids": [
+    "optum-status-20240221-cyber-update",
+    "unh-sec-20240222-initial"
+  ],
+  "snapshot_excluded_counts": {
+    "not_input": 1
+  },
+  "graph": {
+    "http_status": 200,
+    "graph_id": "3794d8868f7473aa1dd847d1",
+    "claim_record_ids": [
+      "optum-status-20240221-cyber-update",
+      "unh-sec-20240222-initial"
+    ],
+    "node_count": 11,
+    "edge_count": 10
+  },
+  "query": {
+    "http_status": 200,
+    "hit_record_ids": [
+      "optum-status-20240221-cyber-update",
+      "unh-sec-20240222-initial"
+    ]
+  }
+}

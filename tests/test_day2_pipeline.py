@@ -26,7 +26,10 @@ def test_real_case_collect_deduplicate_label_and_retrieve_without_future(tmp_pat
                 "author": "must not be persisted",
             }]})
         assert "000073176624000045" in url
-        return httpx.Response(200, text="<html>Original SEC accession document</html>")
+        return httpx.Response(200, text=(
+            "<html>Original SEC accession document"
+            f"<script>request_nonce={len(calls)}</script>"
+            f"<noscript><img src='pixel_{len(calls)}'></noscript></html>"))
 
     monkeypatch.setattr(httpx, "get", fetch)
     with TestClient(create_app(tmp_path / "day2.db")) as client:
@@ -50,13 +53,13 @@ def test_real_case_collect_deduplicate_label_and_retrieve_without_future(tmp_pat
         assert "must not be persisted" not in json.dumps(observations)
 
         label = client.post(f"/cases/{case['case_id']}/labels", json={
-            "record_id": source, "label": "neutral", "reviewer": "day2_manual_review",
-            "rationale": "原始公司申报叙述不利事件，但文本语气为事实陈述。",
+            "record_id": source, "label": "neutral", "reviewer": "interface_test_identity_unverified",
+            "rationale": "接口测试样例；非人工复核标签。",
         })
         assert label.status_code == 200
         assert client.get(f"/cases/{case['case_id']}/labels").json()[0]["label"] == "neutral"
         assert client.post(f"/cases/{case['case_id']}/labels", json={
-            "record_id": source, "label": "negative", "reviewer": "day2_manual_review",
+            "record_id": source, "label": "negative", "reviewer": "interface_test_identity_unverified",
             "rationale": "Conflicting revision",
         }).status_code == 422
 
@@ -66,11 +69,16 @@ def test_real_case_collect_deduplicate_label_and_retrieve_without_future(tmp_pat
         assert len(graph["claims"]) == 1
         assert graph["claims"][0]["record_id"] == source
         assert len(graph["claims"][0]["observation_ids"]) == 2
+        assert graph["claims"][0]["evidence_adapters"] == ["arctic_shift_post", "sec_filing"]
         graph_id = graph["graph_id"]
         result = client.post(f"/graphs/{graph_id}/query", json={"question": "Change Healthcare systems"}).json()
         assert [hit["record_id"] for hit in result["hits"]] == [source]
         assert result["hits"][0]["source_url"].startswith("https://www.sec.gov/")
         assert result["edges"]
+        assert {edge["relation"] for edge in result["edges"]} == {
+            "has_claim", "supported_by", "published_by", "observed_in"
+        }
+        assert len([node for node in result["nodes"] if node["type"] == "observation"]) == 2
         assert client.post(f"/graphs/{graph_id}/query", json={"question": "unrelated banana"}).json()["hits"] == []
         assert "资金支持" not in json.dumps(graph, ensure_ascii=False)
         assert "资金支持" not in json.dumps(result, ensure_ascii=False)
@@ -91,3 +99,30 @@ def test_archive_must_link_to_the_same_source(tmp_path, monkeypatch):
             "record_id": "unh-sec-20240222-initial", "adapter": "arctic_shift_post", "post_id": "1axi1g0"})
         assert response.status_code == 422
         assert client.get(f"/cases/{case['case_id']}/observations").json() == []
+
+
+def test_post_cutoff_archive_observation_cannot_change_graph(tmp_path, monkeypatch):
+    case = json.loads(EVENT.read_text(encoding="utf-8"))["case_import_projection"]
+
+    def fetch(url, **_kwargs):
+        post_id = url.rsplit("=", 1)[-1]
+        return httpx.Response(200, json={"data": [{
+            "id": post_id,
+            "retrieved_on": 1708636719 if post_id == "1axi1g0" else 1708640000,
+            "title": "Original filing" if post_id == "1axi1g0" else "Later post",
+            "url": "https://www.sec.gov/ixviewer/ix.html?doc=/Archives/edgar/data/"
+                   "0000731766/000073176624000045/unh-20240221.htm",
+        }]})
+
+    monkeypatch.setattr(httpx, "get", fetch)
+    with TestClient(create_app(tmp_path / "day2.db")) as client:
+        client.post("/cases", json=case)
+        endpoint = f"/cases/{case['case_id']}/observations/collect"
+        source = "unh-sec-20240222-initial"
+        client.post(endpoint, json={"record_id": source, "adapter": "arctic_shift_post", "post_id": "1axi1g0"})
+        before = client.post(f"/cases/{case['case_id']}/graph").json()
+        client.post(endpoint, json={"record_id": source, "adapter": "arctic_shift_post", "post_id": "1future"})
+        after = client.post(f"/cases/{case['case_id']}/graph").json()
+        assert before["graph_id"] == after["graph_id"]
+        assert before["claims"] == after["claims"]
+        assert "Later post" not in json.dumps(after)

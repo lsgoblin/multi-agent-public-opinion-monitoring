@@ -1,0 +1,20 @@
+{
+  "case_id": "unh_change_20240222_day2_multisource",
+  "record_id": "optum-status-20240221-cyber-update",
+  "source_update_id": "9j1b644m46kx",
+  "source_url": "https://status.changehealthcare.com/incidents/hqpjz25fn3n7",
+  "source_version": "unh-day2-multisource-2026-10-04-v1",
+  "label": "neutral",
+  "reviewer": "nike",
+  "rationale_verbatim": "标题和摘要陈述了网络中断、断开受影响系统及预计持续时间，没有表达对 UnitedHealth Group 的赞扬或批评。事件本身有负面影响，但这里判断的是文字对公司的态度。",
+  "reviewed_at": null,
+  "user_reported_time": "2026-10-04T15:00:00+08:00",
+  "user_reported_time_basis": "用户在 2026-10-04 本会话中报告时间 15:00；日期按本轮会话日期记录，未另行核实实际阅读完成时刻。",
+  "api_labeled_at": "2026-10-04T07:06:03.361287+00:00",
+  "read_materials": ["cutoff_title", "cutoff_human_summary"],
+  "read_materials_basis": "用户理由明确指向标题和摘要；是否核对状态页指定原件更新未说明。",
+  "prior_results_seen": "作答前看过 Leo、Li 或模型对另一条 SEC 材料的结果；未看到这条 Optum 更新的标注结果。",
+  "target_record_results_seen": false,
+  "status": "user_submitted_initial_label_prior_same_event_results_seen_not_formal_truth",
+  "scope": "单条 Optum 截止前来源对 UnitedHealth Group 的表达态度；非事件风险或舆情走势标签。"
+}

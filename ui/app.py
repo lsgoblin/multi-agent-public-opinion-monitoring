@@ -64,36 +64,26 @@ with overview:
 with evidence:
     st.subheader("公开历史案例")
     st.write("候选：2024 年 3 月众安保险营销骚扰相关报道。资料为人工摘要，历史可见时间未知，截止快照没有合格输入。")
-    if st.button("导入随附公开案例", type="primary"):
-        payload = json.loads((ROOT / "data/public/za_marketing_2024.json").read_text(encoding="utf-8"))
-        try:
-            result = request("POST", "/cases", json=payload)
-            st.session_state["import_result"] = "已导入" if result["status"] == "imported" else "资料已存在，未重复入库"
-            st.rerun()
-        except httpx.HTTPError:
-            st.error("导入失败，请查看 API 状态和案例版本；不同内容不会覆盖原版本。")
-    if st.button("导入首个黑猫事件包"):
-        package = json.loads((ROOT / "data/public/blackcat_17374386012_event_v2.json").read_text(encoding="utf-8"))
-        try:
-            result = request("POST", "/cases", json=package["case_import_projection"])
-            st.session_state["blackcat_import_result"] = "已导入" if result["status"] == "imported" else "资料已存在，未重复入库"
-            st.rerun()
-        except httpx.HTTPError:
-            st.error("黑猫事件包导入失败，请查看 API 状态和事件包字段映射。")
-    if st.button("导入 Day 1 时间证据事件"):
-        package = json.loads((ROOT / "data/public/unh_change_20240222_event_v2.json").read_text(encoding="utf-8"))
-        try:
-            result = request("POST", "/cases", json=package["case_import_projection"])
-            st.session_state["g1_import_result"] = "已导入" if result["status"] == "imported" else "资料已存在，未重复入库"
-            st.rerun()
-        except httpx.HTTPError:
-            st.error("Day 1 事件包导入失败，请查看 API 状态和事件包字段映射。")
-    if "import_result" in st.session_state:
-        st.success(st.session_state["import_result"])
-    if "blackcat_import_result" in st.session_state:
-        st.success(st.session_state["blackcat_import_result"])
-    if "g1_import_result" in st.session_state:
-        st.success(st.session_state["g1_import_result"])
+    imports = (
+        ("导入随附公开案例", "za_marketing_2024.json", "import_result", None,
+         "导入失败，请查看 API 状态和案例版本；不同内容不会覆盖原版本。"),
+        ("导入首个黑猫事件包", "blackcat_17374386012_event_v2.json", "blackcat_import_result",
+         "case_import_projection", "黑猫事件包导入失败，请查看 API 状态和事件包字段映射。"),
+        ("导入 Day 1 时间证据事件", "unh_change_20240222_event_v2.json", "g1_import_result",
+         "case_import_projection", "Day 1 事件包导入失败，请查看 API 状态和事件包字段映射。"),
+    )
+    for label, filename, result_key, projection, error in imports:
+        if st.button(label, type="primary" if projection is None else "secondary"):
+            package = json.loads((ROOT / "data/public" / filename).read_text(encoding="utf-8"))
+            try:
+                result = request("POST", "/cases", json=package[projection] if projection else package)
+                st.session_state[result_key] = "已导入" if result["status"] == "imported" else "资料已存在，未重复入库"
+                st.rerun()
+            except httpx.HTTPError:
+                st.error(error)
+    for _, _, result_key, _, _ in imports:
+        if result_key in st.session_state:
+            st.success(st.session_state[result_key])
     if cases:
         selected = st.selectbox("选择案例", options=[item["case_id"] for item in cases])
         metadata = next(item for item in cases if item["case_id"] == selected)

@@ -1,0 +1,22 @@
+{
+  "probe_kind": "single_public_page_access_check",
+  "platform": "黑猫投诉",
+  "url": "https://tousu.sina.com.cn/complaint/view/17374386012",
+  "complaint_id": "17374386012",
+  "request_started_at": "2026-10-02T12:31:39.213249Z",
+  "response_finished_at": "2026-10-02T12:31:41.068562Z",
+  "request_duration_ms": 1855,
+  "http_status": 200,
+  "response_bytes": 61085,
+  "response_sha256": "fc7c6a7c5a4e154948af35c8bbfc6e92b3e7e72584d9d7b345313732ac27218b",
+  "content_checks": {
+    "complaint_id_present": true,
+    "complaint_subject_present": true,
+    "complaint_progress_present": true,
+    "notice_page": false
+  },
+  "realtime_latency_seconds": null,
+  "historical_available_at": null,
+  "cutoff_eligible": false,
+  "note": "本次只证实当前单页可访问；页面已有办结内容，未证明原投诉在商家回复前公开可见。请求耗时不能代替平台首发至发现的采集延迟。未保存页面正文。"
+}

@@ -6,7 +6,6 @@ import time
 from urllib.parse import urlparse
 
 import httpx
-from pydantic import ValidationError
 
 from riskshield.schemas import AgentDecision
 
@@ -101,7 +100,7 @@ def probe_model():
                     token_usage["reasoning_tokens"] = reasoning_tokens
     except httpx.HTTPError:
         raise ModelUnavailable("模型网络请求失败；请检查地址、网络和配额。") from None
-    except (ValueError, KeyError, IndexError, TypeError, AttributeError, ValidationError):
+    except (ValueError, KeyError, IndexError, TypeError, AttributeError):
         raise ModelUnavailable("模型响应不符合结构化决策契约。") from None
     return {"status": "passed", "data_mode": "synthetic", "decision": decision.model_dump(),
             "elapsed_seconds": round(time.perf_counter() - start, 3),

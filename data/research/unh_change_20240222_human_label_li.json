@@ -1,0 +1,22 @@
+{
+  "case_id": "unh_change_20240222_v2_archived",
+  "record_id": "unh-sec-20240222-initial",
+  "source_accession": "0000731766-24-000045",
+  "label": "neutral",
+  "reviewer": "Li",
+  "rationale_verbatim": "虽然是负面信息但是语言表述喂中性",
+  "rationale_normalized": "虽然是负面信息，但是语言表述为中性。",
+  "reviewed_at": null,
+  "user_requested_time": "当前时间",
+  "file_first_recorded_at": "2026-10-03T20:41:41+08:00",
+  "read_materials": [
+    "blind_review_form_cutoff_title_and_summary",
+    "linked_original_sec_form_8k_cross_check"
+  ],
+  "read_materials_confirmation_basis": "用户于 2026-10-04 回答材料范围问题，确认 Li 核对了独立复核表所链接的 SEC 原件；按该问题上下文，直接标注输入为表内截止前标题和摘要。属用户代述，未独立核验阅读过程。",
+  "blinding_confirmed": true,
+  "blinding_confirmation_basis": "用户于 2026-10-03 在本会话补充确认，Li 作答前没有看到 Leo 或模型的标签及理由；属用户代述，未独立核验阅读过程。",
+  "submission_basis": "用户在本会话提供复核人代号、标签及理由，并要求时间记为当前时间；随后确认 Li 未看到 Leo 或模型结果，并核对了独立复核表链接的 SEC 原件。阅读完成时刻仍未单独说明。",
+  "status": "user_reported_blind_second_human_same_input_label",
+  "scope": "单条截止前来源对 UnitedHealth Group 的表达态度；非事件风险或舆情走势标签。"
+}
