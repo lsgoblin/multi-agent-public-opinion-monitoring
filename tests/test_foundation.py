@@ -78,10 +78,11 @@ def test_invalid_import_is_rejected_atomically(client, payload, mutation):
     assert client.get("/cases").json() == []
 
 
-def test_unimplemented_capabilities_and_missing_case(client):
+def test_current_capabilities_and_missing_case(client):
     readiness = client.get("/readiness").json()
     assert readiness["g1_passed"] is True
-    assert readiness["capabilities"]["dynamic_simulation"] is False
+    assert readiness["capabilities"]["dynamic_simulation_engine"] is True
+    assert readiness["capabilities"]["real_model_simulation_verified"] is False
     assert readiness["capabilities"]["forecast"] is False
     assert client.get("/cases/missing/snapshot").status_code == 404
     assert client.get("/contracts").json()["daily_complaint"]

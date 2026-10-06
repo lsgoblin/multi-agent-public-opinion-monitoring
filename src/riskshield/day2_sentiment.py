@@ -19,7 +19,7 @@ RECORD_ID = "unh-sec-20240222-initial"
 MODEL = "deepseek-flash"
 PROMPT_VERSION = "day2-sec-sentiment-v1"
 API_URL = "https://api.deepseek.com/chat/completions"
-BUDGET_CNY = 2.38
+BUDGET_CNY = 2.36  # Historical one-off authorization; not the current task ceiling.
 # Conservative ceiling: current official peak Flash prices, all input cache misses.
 INPUT_USD_PER_MILLION = 0.30
 OUTPUT_USD_PER_MILLION = 1.20

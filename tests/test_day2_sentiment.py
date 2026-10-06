@@ -45,7 +45,7 @@ def test_only_approved_cutoff_fields_are_sent_after_synthetic_validation(monkeyp
     assert "unh-sec-20240222-initial" not in json.dumps(outbound[1], ensure_ascii=False)
     assert "sec.gov" not in json.dumps(outbound[1], ensure_ascii=False)
     assert "资金支持" not in json.dumps(outbound[1], ensure_ascii=False)
-    assert result["estimated_total_peak_cny_ceiling"] < 2.38
+    assert result["estimated_total_peak_cny_ceiling"] < 2.36
 
 
 def test_synthetic_invalid_json_stops_before_real_request(monkeypatch):

@@ -1,0 +1,57 @@
+{
+  "date": "2026-10-06",
+  "purpose": "one_agent_one_round_bailian_connectivity_only",
+  "authorization": "user_requested_one_1x1_live_check",
+  "provider": "alibaba-cloud-bailian",
+  "region": "cn-beijing",
+  "data_mode": "synthetic",
+  "requested_model": "qwen-turbo",
+  "configured_agents": 1,
+  "target_rounds": 1,
+  "max_calls": 1,
+  "calls_sent": 1,
+  "run_budget_cny": "0.01",
+  "current_complete_task_cap_cny": "5.00",
+  "price_version": "official-docs-2026-10-06-beijing",
+  "price_source": "https://help.aliyun.com/zh/model-studio/qwen-turbo",
+  "outbound_field_names": [
+    "agent",
+    "round",
+    "local_state",
+    "fictional_evidence",
+    "received_simulated_messages",
+    "own_simulated_memory",
+    "allowed_citation_ids"
+  ],
+  "run_id": "run_9269239fd20348fc82e6",
+  "run_status": "complete",
+  "completed_rounds": 1,
+  "valid_decisions": 1,
+  "actual_participants": 1,
+  "estimated_cost_cny": "0.0001077",
+  "usage": {
+    "prompt_tokens": 233,
+    "cached_input_tokens": 0,
+    "completion_tokens": 63,
+    "unknown_usage_calls": 0,
+    "by_model": {
+      "qwen-turbo": {
+        "calls": 1,
+        "prompt_tokens": 233,
+        "cached_input_tokens": 0,
+        "completion_tokens": 63,
+        "unknown_usage_calls": 0,
+        "reserved_cny": "0.000456",
+        "cost_cny": "0.0001077",
+        "price_version": "official-docs-2026-10-06-beijing",
+        "actual_models": {
+          "qwen-turbo": 1
+        }
+      }
+    }
+  },
+  "action_status": "valid",
+  "action_name": "observe",
+  "actual_model": "qwen-turbo",
+  "action_error": null
+}

@@ -1,0 +1,60 @@
+{
+  "data_mode": "synthetic",
+  "decision_backend": "test_substitute",
+  "purpose": "Offline engineering control for runtime message delivery; not G3 evidence",
+  "design": {
+    "runs": 2,
+    "agents_per_run": 2,
+    "rounds": 2,
+    "same_seed": 31415,
+    "same_recipient_persona_state_and_evidence_at_round_1": true,
+    "only_planned_difference": "agent_0000 shares in treatment and observes in control"
+  },
+  "treatment": {
+    "round_1_sender": {
+      "agent_id": "agent_0000",
+      "action": "share",
+      "reason": "Runtime sender reports the fictional service interruption."
+    },
+    "propagated_message": {
+      "message_id": "msg_1_agent_0000_agent_0001",
+      "sender_id": "agent_0000",
+      "recipient_id": "agent_0001",
+      "action": "share",
+      "evidence_ids": ["fictional-service-notice"],
+      "content": "Runtime sender reports the fictional service interruption."
+    },
+    "round_2_recipient_observation": {
+      "agent_id": "agent_0001",
+      "received_message_ids": ["msg_1_agent_0000_agent_0001"],
+      "message_content_visible": true
+    },
+    "round_2_recipient_decision": {
+      "action": "comment",
+      "evidence_ids": ["msg_1_agent_0000_agent_0001"],
+      "reason": "Received msg_1_agent_0000_agent_0001; comment to ask whether the fictional report is confirmed."
+    }
+  },
+  "control": {
+    "round_1_sender": {
+      "agent_id": "agent_0000",
+      "action": "observe",
+      "reason": "No social message is sent in the control run."
+    },
+    "round_2_recipient_observation": {
+      "agent_id": "agent_0001",
+      "received_message_ids": []
+    },
+    "round_2_recipient_decision": {
+      "action": "seek_clarification",
+      "reason": "Own prior observation alone leads to clarification, not a comment."
+    }
+  },
+  "engineering_result": "The runtime action created a persisted message whose ID and content appeared only in the treatment recipient's next-round frozen observation; the substitute decision changed from seek_clarification to comment and cited the message ID.",
+  "limitations": [
+    "All decisions are from a deterministic test substitute.",
+    "The event, evidence and agents are entirely synthetic and no content was sent externally.",
+    "This result diagnoses the message pipeline only and cannot count as G3 evidence."
+  ],
+  "test": "tests/test_day3_simulation.py::test_runtime_message_treatment_changes_next_round_against_same_seed_control"
+}

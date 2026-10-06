@@ -7,6 +7,7 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 
 from riskshield.day2 import (CollectRequest, CollectionError, Day2Pipeline,
                              GraphQuery, LabelRequest)
+from riskshield.day3 import Day3Simulation, SimulationCreate, SimulationError
 from riskshield.model_gateway import ModelUnavailable, model_status, probe_model
 from riskshield.schemas import AgentDecision, CaseImport, DailyComplaint
 from riskshield.store import ConflictError, Store
@@ -15,15 +16,16 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
 def create_app(db_path: str | Path | None = None) -> FastAPI:
-    app = FastAPI(title="风控盾 · Day 2 V2", version="0.3.0",
-                  description="公开事件、时间快照、受限来源采集及证据图检索工作台；语义模型、记忆及仿真能力尚未实现。")
+    app = FastAPI(title="风控盾 · Day 3 V2", version="0.4.0",
+                  description="公开事件、截止证据图和动态多智能体仿真工程工作台。")
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "testserver"])
     store = Store(db_path or os.getenv("RISKSHIELD_DB", str(PROJECT_ROOT / "runtime/riskshield.db")))
     day2 = Day2Pipeline(store)
+    day3 = Day3Simulation(store)
 
     @app.get("/health")
     def health():
-        return {"status": "ok", "stage": "day2_v2", "version": "0.3.0"}
+        return {"status": "ok", "stage": "day3_v2", "version": "0.4.0"}
 
     @app.get("/readiness")
     def readiness():
@@ -33,8 +35,9 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
         # Project-level Day 1 evidence gate: see docs/records/06-Day1执行与验收记录.md.
         # This does not imply that this database has imported a case or that later capabilities work.
         return {
-            "stage": "day2_v2", "g1_passed": True, "g1_v2_passed": True,
-            "g2_v2_passed": False,
+            "stage": "day3_v2", "g1_passed": True, "g1_v2_passed": True,
+            "g2_v2_passed": True, "g2_v2_status": "internal_restricted_passed",
+            "g3_v2_passed": False,
             "engineering_scaffold": "available",
             "historical_cases": len(real), "available_event_packages": len(event_packages),
             "legacy_daily_complaint_contract": {"available": True, "required_for_v2": False},
@@ -42,14 +45,16 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
             "capabilities": {"historical_import": True, "cutoff_snapshot": True,
                              "restricted_source_collection": True, "sentiment_label_submission": True,
                              "evidence_graph_retrieval": True, "sentiment_analysis": False,
-                             "graph_rag": False, "long_term_memory": False,
-                             "dynamic_simulation": False, "direction_evaluation": False,
+                             "graph_rag": False, "long_term_memory": True,
+                             "dynamic_simulation_engine": True,
+                             "real_model_simulation_verified": False,
+                             "direction_evaluation": False,
                              "realtime_collection": False, "forecast": False},
             "blockers": ["尚无五类来源的在线采集、覆盖与延迟证据",
                          "当前仅有 SEC 与同期帖子存档的受限采集，未建立生产级多平台采集",
                          "情感三分类模型及独立复核标签尚未完成",
                          "新版情感/走势正式评测集及观察窗口径尚未冻结",
-                         "GraphRAG、长期记忆、动态仿真和通知尚未实现",
+                         "完整 GraphRAG、真实模型规模仿真和通知尚未验证",
                          "域内模型、嵌入和图服务资源尚未核实"],
         }
 
@@ -62,7 +67,8 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
     def contracts():
         return {"case_import": CaseImport.model_json_schema(),
                 "daily_complaint": DailyComplaint.model_json_schema(),
-                "agent_decision": AgentDecision.model_json_schema()}
+                "agent_decision": AgentDecision.model_json_schema(),
+                "simulation_create": SimulationCreate.model_json_schema()}
 
     @app.post("/cases")
     def import_case(case: CaseImport):
@@ -164,5 +170,33 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
             return day2.query_graph(graph_id, request.question)
         except KeyError:
             raise HTTPException(status_code=404, detail="图谱不存在") from None
+
+    @app.post("/simulations", status_code=201)
+    def create_simulation(request: SimulationCreate):
+        try:
+            run_id = day3.create_run(
+                request.case_id, request.graph_id, agent_count=request.agent_count,
+                rounds=request.rounds, seed=request.seed, concurrency=request.concurrency,
+                budget_cny=request.budget_cny, role_offset=request.role_offset,
+            )
+            return day3.summary(run_id)
+        except KeyError:
+            raise HTTPException(status_code=404, detail="案例或证据图不存在") from None
+        except SimulationError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from None
+
+    @app.get("/simulations/{run_id}")
+    def simulation(run_id: str):
+        try:
+            return day3.summary(run_id)
+        except KeyError:
+            raise HTTPException(status_code=404, detail="仿真运行不存在") from None
+
+    @app.get("/simulations/{run_id}/trajectory")
+    def simulation_trajectory(run_id: str):
+        try:
+            return {"run_id": run_id, "actions": day3.trajectory(run_id)}
+        except KeyError:
+            raise HTTPException(status_code=404, detail="仿真运行不存在") from None
 
     return app

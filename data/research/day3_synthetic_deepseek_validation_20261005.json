@@ -1,0 +1,71 @@
+{
+  "authorization": "synthetic_only_10_agents_3_rounds_30_calls",
+  "executed_at_local_date": "2026-10-05",
+  "prompt_version": "day3-synthetic-agent-decision-v1",
+  "requested_model": "deepseek-flash",
+  "response_model": "deepseek-flash",
+  "data_mode": "synthetic",
+  "run_id": "run_a6a7857208734665a777",
+  "configuration": {
+    "agent_count": 10,
+    "rounds": 3,
+    "concurrency": 3,
+    "seed": 20261005,
+    "max_calls": 30,
+    "max_input_tokens_per_call": 1200,
+    "max_output_tokens_per_call": 160,
+    "authorized_budget_cny": 0.13248,
+    "thinking": "disabled",
+    "retry_count": 0
+  },
+  "outbound_fields": [
+    "anonymous agent role and parameters",
+    "local state",
+    "fictional evidence",
+    "received simulated messages",
+    "own simulated memory",
+    "round",
+    "action JSON constraint"
+  ],
+  "excluded_fields": [
+    "real sources",
+    "UnitedHealth Group",
+    "SEC",
+    "Optum",
+    "URLs",
+    "accounts",
+    "run_id",
+    "cutoff",
+    "neighbor table",
+    "other agents private memory",
+    "credentials"
+  ],
+  "result": {
+    "status": "complete",
+    "completed_rounds": 3,
+    "actual_participants": 10,
+    "calls_attempted": 30,
+    "valid_decisions": 30,
+    "failed_decisions": 0,
+    "provider_usage": {
+      "prompt_tokens": 8817,
+      "completion_tokens": 1647,
+      "total_tokens": 10464
+    },
+    "estimated_peak_cny": 0.036972,
+    "pricing_basis": "DeepSeek Flash peak cache-miss input USD 0.30/M, output USD 1.20/M, converted at CNY 8/USD; estimate, not invoice",
+    "round_elapsed_seconds": [8.93, 9.428, 8.93],
+    "round_active_decisions": [1, 1, 1],
+    "round_messages": [0, 0, 0]
+  },
+  "trajectory_audit": {
+    "round_1_actions": {"observe": 9, "seek_clarification": 1},
+    "round_2_actions": {"observe": 9, "seek_clarification": 1},
+    "round_3_actions": {"observe": 9, "seek_clarification": 1},
+    "agents_with_memory_in_observation": [0, 10, 10],
+    "decisions_citing_memory_id": [0, 9, 10],
+    "agents_with_action_change": 0,
+    "conclusion": "Memory was retrieved and cited after restart-safe persistence, but this run did not show an action change or message propagation. It is a successful bounded real-model protocol run, not proof of the G3 behavior criterion."
+  },
+  "g3_status": "not_passed"
+}

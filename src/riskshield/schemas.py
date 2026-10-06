@@ -87,7 +87,7 @@ class DailyComplaint(Contract):
 
 
 class AgentDecision(Contract):
-    """Future Agent action contract; validating it is not a multi-agent simulation."""
+    """Validated action emitted independently for one Agent in one simulation round."""
 
     agent_id: Identifier
     action: Literal["observe", "share", "comment", "seek_clarification", "express_complaint_intent"]
