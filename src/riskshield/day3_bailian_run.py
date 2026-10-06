@@ -14,7 +14,7 @@ from pathlib import Path
 
 from riskshield.day3 import MAX_TASK_BUDGET_CNY, ROLES, Day3Simulation, SimulationError
 from riskshield.day3_bailian import BailianBackend, BailianConfig, ROLE_MODELS
-from riskshield.day3_deepseek import CASE_ID, GRAPH_ID, prepare_synthetic_case
+from riskshield.day3_synthetic_case import CASE_ID, GRAPH_ID, prepare_synthetic_case
 from riskshield.store import Store
 
 
@@ -31,7 +31,7 @@ def _budget(value) -> Decimal:
     except InvalidOperation:
         raise SimulationError("invalid run budget") from None
     if not Decimal("0") < result <= MAX_TASK_BUDGET_CNY:
-        raise SimulationError("run budget must be within ¥5.00")
+        raise SimulationError("run budget must be within ¥30.00")
     return result
 
 

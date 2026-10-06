@@ -32,7 +32,8 @@ ROLE_QUERIES = {
 }
 SIGNALS = {"observe": 0.0, "share": -0.06, "comment": -0.04,
            "seek_clarification": 0.03, "express_complaint_intent": -0.12}
-MAX_TASK_BUDGET_CNY = Decimal("5.00")
+MAX_TASK_BUDGET_CNY = Decimal("30.00")
+DEFAULT_TASK_BUDGET_CNY = Decimal("5.00")
 
 
 class SimulationError(ValueError):
@@ -48,7 +49,7 @@ class SimulationCreate(BaseModel):
     seed: int = 1
     role_offset: int = Field(default=0, ge=0, lt=len(ROLES))
     concurrency: int = Field(default=8, ge=1, le=128)
-    budget_cny: Decimal = Field(default=MAX_TASK_BUDGET_CNY, gt=0,
+    budget_cny: Decimal = Field(default=DEFAULT_TASK_BUDGET_CNY, gt=0,
                                 le=MAX_TASK_BUDGET_CNY)
 
 
@@ -140,7 +141,7 @@ class Day3Simulation:
 
     def create_run(self, case_id: str, graph_id: str, *, agent_count: int,
                    rounds: int, seed: int = 1, concurrency: int = 8,
-                   budget_cny: Decimal = MAX_TASK_BUDGET_CNY,
+                   budget_cny: Decimal = DEFAULT_TASK_BUDGET_CNY,
                    role_offset: int = 0) -> str:
         if not (1 <= agent_count <= 500 and 1 <= rounds <= 30 and
                 1 <= concurrency <= 128 and 0 <= role_offset < len(ROLES)):
@@ -148,7 +149,7 @@ class Day3Simulation:
                 "agent_count, rounds, concurrency or role_offset outside Day 3 limits")
         budget_cny = Decimal(str(budget_cny))
         if not Decimal("0") < budget_cny <= MAX_TASK_BUDGET_CNY:
-            raise SimulationError("single-run budget must be within ¥5.00")
+            raise SimulationError("single-run budget must be within ¥30.00")
         snapshot = self.store.snapshot(case_id)
         graph = self.day2.graph(graph_id)
         if (graph["case_id"] != case_id or graph["cutoff"] != snapshot["cutoff"]

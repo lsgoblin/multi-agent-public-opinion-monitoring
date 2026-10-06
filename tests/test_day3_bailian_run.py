@@ -62,6 +62,12 @@ class OfflineRunnerBackend:
         )
 
 
+def test_runner_budget_cap_is_30_cny():
+    assert runner._budget("30.00") == Decimal("30.00")
+    with pytest.raises(SimulationError, match="¥30.00"):
+        runner._budget("30.01")
+
+
 def test_runner_requires_explicit_live_flag_and_exact_call_limit(tmp_path):
     common = dict(
         db_path=tmp_path / "run.db", output_path=tmp_path / "run.json",

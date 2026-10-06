@@ -8,8 +8,8 @@ from riskshield.day3 import (Day3Simulation, DecisionPricing, DecisionResult,
 from riskshield.day3_bailian import (BEIJING_BASE_URL, BailianBackend,
                                      BailianConfig, BailianRequestError,
                                      BailianRoute, ROLE_MODELS)
-from riskshield.day3_deepseek import (CASE_ID, GRAPH_ID, RECORD_ID,
-                                      prepare_synthetic_case)
+from riskshield.day3_synthetic_case import (CASE_ID, GRAPH_ID, RECORD_ID,
+                                            prepare_synthetic_case)
 from riskshield.schemas import AgentDecision
 from riskshield.store import Store
 

@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 
 from riskshield.api import create_app
 from riskshield.day3 import Day3Simulation, DecisionResult, SimulationError
-from riskshield.day3_deepseek import CASE_ID, GRAPH_ID, RECORD_ID, prepare_synthetic_case
+from riskshield.day3_synthetic_case import CASE_ID, GRAPH_ID, RECORD_ID, prepare_synthetic_case
 from riskshield.schemas import AgentDecision, CaseImport
 from riskshield.store import Store
 
@@ -290,20 +290,26 @@ def test_api_creates_and_reads_a_validated_run(tmp_path):
     with TestClient(create_app(store.path)) as client:
         created = client.post("/simulations", json={
             "case_id": case_id, "graph_id": graph_id, "agent_count": 5,
-            "rounds": 3, "seed": 7, "concurrency": 2, "budget_cny": "5.00",
+            "rounds": 3, "seed": 7, "concurrency": 2, "budget_cny": "30.00",
         })
         assert created.status_code == 201, created.text
         run = created.json()
         assert run["status"] == "created"
         assert run["config"]["agent_count"] == 5
-        assert run["config"]["budget_cny"] == "5.00"
+        assert run["config"]["budget_cny"] == "30.00"
         assert client.get(f"/simulations/{run['run_id']}").json()["completed_rounds"] == 0
         assert client.get(f"/simulations/{run['run_id']}/trajectory").json()["actions"] == []
         rejected = client.post("/simulations", json={
             "case_id": case_id, "graph_id": graph_id, "agent_count": 5,
-            "rounds": 3, "budget_cny": "5.01",
+            "rounds": 3, "budget_cny": "30.01",
         })
         assert rejected.status_code == 422
+        defaulted = client.post("/simulations", json={
+            "case_id": case_id, "graph_id": graph_id, "agent_count": 1,
+            "rounds": 1,
+        })
+        assert defaulted.status_code == 201
+        assert defaulted.json()["config"]["budget_cny"] == "5.00"
 
 
 @pytest.mark.parametrize(("agent_count", "rounds", "concurrency"), [
