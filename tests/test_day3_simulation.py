@@ -6,8 +6,9 @@ import pytest
 from fastapi.testclient import TestClient
 
 from riskshield.api import create_app
-from riskshield.day3 import Day3Simulation, DecisionResult, SimulationError
-from riskshield.day3_synthetic_case import CASE_ID, GRAPH_ID, RECORD_ID, prepare_synthetic_case
+from riskshield.day3 import (Day3Simulation, DecisionResult, SafeDecisionError,
+                             SimulationError)
+from tests.fixtures.day3_synthetic_case import CASE_ID, GRAPH_ID, RECORD_ID, prepare_synthetic_case
 from riskshield.schemas import AgentDecision, CaseImport
 from riskshield.store import Store
 
@@ -266,6 +267,28 @@ def test_invalid_private_or_unknown_citation_is_a_visible_failure(tmp_path):
     assert result["rounds"][0]["failed_decisions"] == 2
     assert result["actual_participants"] == 0
     assert {a["error"] for a in engine.trajectory(run_id)} == {"SimulationError"}
+
+
+@pytest.mark.parametrize(("error", "expected"), [
+    (RuntimeError("private response and key must stay out"), "RuntimeError"),
+    (SafeDecisionError("private payload", category="untrusted_secret"),
+     "SafeDecisionError"),
+    (SafeDecisionError("private payload", category="http_status", http_status=700),
+     "SafeDecisionError:http_status"),
+])
+def test_arbitrary_failure_details_are_not_persisted(tmp_path, error, expected):
+    _, engine, case_id, graph_id, _ = prepared(tmp_path)
+
+    class FailingBackend(ReactiveScaleBackend):
+        def decide(self, observation):
+            raise error
+
+    run_id = engine.create_run(case_id, graph_id, agent_count=1, rounds=1)
+    result = engine.advance(run_id, FailingBackend())
+    action = engine.trajectory(run_id)[0]
+    assert action["error"] == expected
+    assert "private" not in json.dumps(action)
+    assert result["rounds"][0]["failed_decisions"] == 1
 
 
 def test_budget_gate_stops_before_dispatch_and_marks_partial(tmp_path):

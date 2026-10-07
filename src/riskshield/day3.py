@@ -40,6 +40,95 @@ class SimulationError(ValueError):
     pass
 
 
+class SafeDecisionError(RuntimeError):
+    """A backend error with a bounded diagnostic category, never response text."""
+
+    def __init__(self, message: str, *, category: str, http_status: int | None = None):
+        super().__init__(message)
+        self.safe_category = category
+        self.safe_http_status = http_status
+
+
+SAFE_DECISION_ERROR_CATEGORIES = frozenset({
+    "synthetic_only", "prompt_bound", "live_disabled", "call_limit",
+    "http_status", "transport", "finish_reason", "response_contract",
+    "usage_invalid", "usage_inconsistent", "model_missing",
+})
+
+
+def _persisted_error(exc: Exception) -> str:
+    """Persist only whitelisted backend diagnostics; all other messages are discarded."""
+    error_type = type(exc).__name__
+    if isinstance(exc, SafeDecisionError):
+        category = exc.safe_category
+        if type(category) is str and category in SAFE_DECISION_ERROR_CATEGORIES:
+            code = f"{error_type}:{category}"
+            status = exc.safe_http_status
+            if category == "http_status" and type(status) is int and 100 <= status <= 599:
+                code += f":{status}"
+            return code
+    return error_type
+
+
+_AUDIT_HASH_FIELDS = (
+    "prepared_payload_canonical_json_sha256", "prompt_sha256",
+    "frozen_local_state_sha256", "frozen_fictional_evidence_sha256",
+    "frozen_received_simulated_messages_sha256",
+    "frozen_own_simulated_memory_sha256", "frozen_allowed_citation_ids_sha256",
+)
+_SCHEMA_FIELDS = frozenset({"agent_id", "action", "evidence_ids", "reason", "other"})
+_SCHEMA_TYPES = frozenset({"missing", "literal_error", "string_type", "list_type",
+                           "too_short", "too_long", "string_too_short",
+                           "string_too_long", "string_pattern_mismatch",
+                           "value_error", "other"})
+
+
+def _safe_request_audit(value):
+    """Accept only fixed metadata and digests, never backend supplied text."""
+    if not isinstance(value, dict):
+        return None
+    if (value.get("stage") != "prepared_for_dispatch" or
+            value.get("hash_basis") !=
+            "canonical_json_sorted_keys_utf8_of_prepared_payload_object" or
+            value.get("adapter_version") != "day3-bailian-synthetic-v2"):
+        return None
+    if any(type(value.get(name)) is not str or
+           re.fullmatch(r"[0-9a-f]{64}", value[name]) is None
+           for name in _AUDIT_HASH_FIELDS):
+        return None
+    return {"stage": "prepared_for_dispatch",
+            "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+            "adapter_version": "day3-bailian-synthetic-v2",
+            **{name: value[name] for name in _AUDIT_HASH_FIELDS}}
+
+
+def _safe_schema_diagnostics(exc):
+    if (not isinstance(exc, SafeDecisionError) or
+            type(exc).__name__ != "BailianDecisionSchemaError" or
+            exc.safe_category != "response_contract"):
+        return None
+    value = getattr(exc, "safe_schema_diagnostics", None)
+    if not isinstance(value, dict):
+        return None
+    count, groups = value.get("error_count"), value.get("groups")
+    if (type(count) is not int or not 0 <= count <= 1000 or
+            not isinstance(groups, list) or len(groups) > 100):
+        return None
+    safe_groups = []
+    for item in groups:
+        if not isinstance(item, dict):
+            return None
+        field, kind, n = item.get("field"), item.get("type"), item.get("count")
+        if (type(field) is not str or field not in _SCHEMA_FIELDS or
+                type(kind) is not str or kind not in _SCHEMA_TYPES or
+                type(n) is not int or not 1 <= n <= 1000):
+            return None
+        safe_groups.append({"field": field, "type": kind, "count": n})
+    if sum(item["count"] for item in safe_groups) != count:
+        return None
+    return {"error_count": count, "groups": safe_groups}
+
+
 class SimulationCreate(BaseModel):
     model_config = ConfigDict(extra="forbid")
     case_id: str = Field(pattern=r"^[a-zA-Z0-9_-]+$", max_length=100)
@@ -119,6 +208,7 @@ class Day3Simulation:
                     status TEXT NOT NULL, observation_refs TEXT NOT NULL, decision TEXT,
                     usage TEXT, requested_model TEXT, model TEXT, price_version TEXT,
                     reserved_cny TEXT NOT NULL DEFAULT '0', cost_cny TEXT NOT NULL, error TEXT,
+                    request_audit TEXT, schema_diagnostics TEXT,
                     PRIMARY KEY (run_id, round_number, agent_id)
                 );
                 CREATE TABLE IF NOT EXISTS simulation_rounds (
@@ -135,6 +225,7 @@ class Day3Simulation:
             for name, declaration in (
                 ("requested_model", "TEXT"), ("price_version", "TEXT"),
                 ("reserved_cny", "TEXT NOT NULL DEFAULT '0'"),
+                ("request_audit", "TEXT"), ("schema_diagnostics", "TEXT"),
             ):
                 if name not in action_columns:
                     db.execute(f"ALTER TABLE simulation_actions ADD COLUMN {name} {declaration}")
@@ -368,8 +459,24 @@ class Day3Simulation:
             # map preserves agent order; all observations were frozen before entering the pool.
             def call(item):
                 obs, quote = item
+                request_audit = None
+
+                def record_audit(value):
+                    nonlocal request_audit
+                    safe = _safe_request_audit(value)
+                    if safe is None:
+                        raise SimulationError("invalid request audit")
+                    request_audit = safe
+
                 try:
-                    result = backend.decide(obs)
+                    decide_with_audit = getattr(backend, "decide_with_audit", None)
+                    if callable(decide_with_audit):
+                        request_audit = {"stage": "before_dispatch"}
+                        result = decide_with_audit(obs, record_audit)
+                        if request_audit["stage"] != "prepared_for_dispatch":
+                            raise SimulationError("decision lacks prepared request audit")
+                    else:
+                        result = backend.decide(obs)
                     decision = AgentDecision.model_validate(result.decision)
                     allowed = {e["evidence_id"] for e in obs["evidence"]}
                     allowed.update(m["message_id"] for m in obs["messages"])
@@ -383,20 +490,26 @@ class Day3Simulation:
                                 "cost": cost, "reserved": quote.reservation_cny,
                                 "requested_model": quote.requested_model,
                                 "price_version": quote.price_version, "model": actual_model,
-                                "error": "ReservationExceeded"}
+                                "error": "ReservationExceeded",
+                                "request_audit": request_audit,
+                                "schema_diagnostics": None}
                     return {"status": "valid", "decision": decision.model_dump(),
                             "usage": usage, "cost": cost,
                             "reserved": quote.reservation_cny,
                             "requested_model": quote.requested_model,
                             "price_version": quote.price_version,
-                            "model": actual_model, "error": None}
+                            "model": actual_model, "error": None,
+                            "request_audit": request_audit,
+                            "schema_diagnostics": None}
                 except Exception as exc:
-                    # Record a category, never provider response bodies or private payloads.
+                    # Record only bounded categories, never exception messages or payloads.
                     return {"status": "failed", "decision": None, "usage": None,
                             "cost": quote.reservation_cny, "reserved": quote.reservation_cny,
                             "requested_model": quote.requested_model,
                             "price_version": quote.price_version,
-                            "model": None, "error": type(exc).__name__}
+                            "model": None, "error": _persisted_error(exc),
+                            "request_audit": request_audit,
+                            "schema_diagnostics": _safe_schema_diagnostics(exc)}
             with ThreadPoolExecutor(max_workers=config["concurrency"]) as pool:
                 outcomes = list(pool.map(call, zip(observations, quotes)))
             round_cost = sum((o["cost"] for o in outcomes), Decimal("0"))
@@ -445,7 +558,10 @@ class Day3Simulation:
                                 _json(outcome["usage"]) if outcome["usage"] else None,
                                 outcome["requested_model"], outcome["model"],
                                 outcome["price_version"], str(outcome["reserved"]),
-                                str(outcome["cost"]), outcome["error"]))
+                                str(outcome["cost"]), outcome["error"],
+                                _json(outcome["request_audit"]) if outcome["request_audit"] else None,
+                                _json(outcome["schema_diagnostics"])
+                                if outcome["schema_diagnostics"] else None))
                 for msg in obs["messages"]:
                     memory_rows.append((run_id, aid,
                                         f"memmsg_{round_number}_{aid}_{msg['message_id']}",
@@ -499,7 +615,8 @@ class Day3Simulation:
                 db.executemany(
                     "INSERT INTO simulation_actions (run_id, round_number, agent_id, status, "
                     "observation_refs, decision, usage, requested_model, model, price_version, "
-                    "reserved_cny, cost_cny, error) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    "reserved_cny, cost_cny, error, request_audit, schema_diagnostics) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     actions)
                 db.executemany(
                     "INSERT INTO simulation_messages "
@@ -536,4 +653,8 @@ class Day3Simulation:
                               "ORDER BY round_number, agent_id", (run_id,)).fetchall()
         return [{**dict(r), "decision": json.loads(r["decision"]) if r["decision"] else None,
                  "usage": json.loads(r["usage"]) if r["usage"] else None,
+                 "request_audit": json.loads(r["request_audit"])
+                 if r["request_audit"] else None,
+                 "schema_diagnostics": json.loads(r["schema_diagnostics"])
+                 if r["schema_diagnostics"] else None,
                  "observation_refs": json.loads(r["observation_refs"])} for r in rows]

@@ -17,7 +17,7 @@
 ## 代码边界
 
 - [Day 3 引擎](../../src/riskshield/day3.py)的 `MAX_TASK_BUDGET_CNY` 和 API 可配置上限改为 ¥30.00；未显式指定预算的小规模运行仍默认 ¥5.00。完整规模要显式传入预算。
-- [百炼运行入口](../../src/riskshield/day3_bailian_run.py)复用同一上限；它仍要求显式 `enable_live`、精确 `max_calls`、独立密钥与价格配置。
+- [百炼运行入口](../../experiments/day3_bailian_synthetic_run.py)复用同一上限；它仍要求显式 `enable_live`、精确 `max_calls`、独立密钥与价格配置。
 - 本次提高的是**任务级上限**，不构成 500×30 云端调用授权，也不改变纯合成字段边界、角色路由或截止规则。
 
 ## DeepSeek 历史额度归档

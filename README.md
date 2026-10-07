@@ -2,7 +2,7 @@
 
 [当前赛题](docs/sources/2026-09-30-新版命题-多智能体仿真舆情监测.md)要求公开多源监测、情感识别、GraphRAG、独立人设与长期记忆、动态社会仿真、五模块报告和四级预警。[文档索引](docs/README.md)给出设计、计划和证据入口。
 
-用户已授权 Day 3，尚未授权 Day 4—5。Day 1/G1 与 Day 2/G2 已内部受限通过；当前实现包括案例导入与 cutoff 过滤、受限来源采集、证据图检索，以及 Day 3 的独立人设、局部状态、按 run/agent 隔离的持久记忆和同步动态仿真引擎。测试替身已完成 500 Agent × 30 轮工程验证；百炼 `qwen-turbo` 已完成 1 Agent × 1 轮受限运行，跨轮输入上界、费用预留和可重复运行入口已完成离线修复。Day 3 DeepSeek 代码现已移出当前工程，其历史 10 Agent × 3 轮证据仍保留；未追加云端请求。真实模型完整规模和行为因果仍未验证，G3 未通过。当前状态见[Day 3 工程决策](docs/planning/24-Day3工程决策.md)。
+用户已授权 Day 3，尚未授权 Day 4—5。Day 1/G1 与 Day 2/G2 已内部受限通过；当前实现包括案例导入与 cutoff 过滤、受限来源采集、证据图检索，以及 Day 3 的独立人设、局部状态、按 run/agent 隔离的持久记忆和同步动态仿真引擎。纯合成北京百炼[500 Agent × 30 轮真实规模尝试](docs/records/41-Day3百炼500x30真实规模尝试.md)已执行，15,000 次请求中 14,994 次有效、6 次失败；严格消息动作因果仍未证实，**G3 未通过**。当前决策见[Day 3 工程决策](docs/planning/24-Day3工程决策.md)。
 
 ## 本地开发
 
@@ -16,4 +16,4 @@ uv run uvicorn riskshield.api:create_app --factory --host 127.0.0.1 --port 8000
 
 工作台另开终端：uv run streamlit run ui/app.py --server.address 127.0.0.1 --server.port 8501 --server.headless true。停止时在各终端按 Ctrl+C。默认 SQLite 数据库位于被 Git 忽略的 runtime/riskshield.db。模型探测需要显式配置环境与预算，不作为例行启动步骤。
 
-工程文件：src/riskshield/ 为 API、契约、存储、受限采集/证据图与模型网关；ui/ 为工作台；data/public/ 为脱敏事件材料，data/research/ 为来源核查；tests/ 为校验。历史案例导入不等于五平台在线接入或正式指标达标。
+工程文件：src/riskshield/ 为 API、仿真核心、契约、存储、受限采集/证据图与模型网关；ui/ 为工作台；tests/ 含校验与纯合成案例样例；experiments/ 放置未进入正式安装包的百炼合成实验及消息配对审计入口；data/public/ 为脱敏事件材料，data/research/ 为来源核查。历史案例导入不等于五平台在线接入或正式指标达标。
