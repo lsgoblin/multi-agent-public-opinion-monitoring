@@ -4,10 +4,15 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from pydantic import BaseModel, ConfigDict, Field
+from typing import Literal
 
 from riskshield.day2 import (CollectRequest, CollectionError, Day2Pipeline,
                              GraphQuery, LabelRequest)
 from riskshield.day3 import Day3Simulation, SimulationCreate, SimulationError
+from riskshield.day4_alerts import Day4Alerts
+from riskshield.day4_report import Day4Reports
+from riskshield.day4_tasks import Day4Tasks, TaskError
 from riskshield.model_gateway import ModelUnavailable, model_status, probe_model
 from riskshield.schemas import AgentDecision, CaseImport, DailyComplaint
 from riskshield.store import ConflictError, Store
@@ -15,17 +20,37 @@ from riskshield.store import ConflictError, Store
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 
+class RunReference(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    run_id: str = Field(pattern=r"^run_[a-f0-9]{20}$")
+
+
+class DeliveryPreviewRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    channel: Literal["wecom", "email"]
+
+
+class DemoRunRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    agent_count: int = Field(default=10, ge=1, le=100)
+    rounds: int = Field(default=3, ge=1, le=10)
+    concurrency: int = Field(default=4, ge=1, le=32)
+
+
 def create_app(db_path: str | Path | None = None) -> FastAPI:
-    app = FastAPI(title="风控盾 · Day 3 V2", version="0.4.0",
-                  description="公开事件、截止证据图和动态多智能体仿真工程工作台。")
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "testserver"])
+    app = FastAPI(title="风控盾 · Day 4 V2", version="0.5.0",
+                  description="公开事件、截止证据图、仿真和离线报告预警工程工作台。")
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "testserver", "api"])
     store = Store(db_path or os.getenv("RISKSHIELD_DB", str(PROJECT_ROOT / "runtime/riskshield.db")))
     day2 = Day2Pipeline(store)
     day3 = Day3Simulation(store)
+    reports = Day4Reports(store)
+    alerts = Day4Alerts(store)
+    tasks = Day4Tasks(store)
 
     @app.get("/health")
     def health():
-        return {"status": "ok", "stage": "day3_v2", "version": "0.4.0"}
+        return {"status": "ok", "stage": "day4_v2", "version": "0.5.0"}
 
     @app.get("/readiness")
     def readiness():
@@ -35,9 +60,9 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
         # Project-level Day 1 evidence gate: see docs/records/06-Day1执行与验收记录.md.
         # This does not imply that this database has imported a case or that later capabilities work.
         return {
-            "stage": "day3_v2", "g1_passed": True, "g1_v2_passed": True,
+            "stage": "day4_v2", "g1_passed": True, "g1_v2_passed": True,
             "g2_v2_passed": True, "g2_v2_status": "internal_restricted_passed",
-            "g3_v2_passed": False,
+            "g3_v2_passed": False, "g4_v2_passed": False,
             "engineering_scaffold": "available",
             "historical_cases": len(real), "available_event_packages": len(event_packages),
             "legacy_daily_complaint_contract": {"available": True, "required_for_v2": False},
@@ -48,13 +73,19 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
                              "graph_rag": False, "long_term_memory": True,
                              "dynamic_simulation_engine": True,
                              "real_model_simulation_verified": False,
+                             "synthetic_500x30_real_model_attempt_recorded": True,
+                             "offline_five_module_report": True,
+                             "provisional_four_level_alert": True,
+                             "offline_notification_preview": True,
+                             "offline_dynamic_task_execution": True,
                              "direction_evaluation": False,
                              "realtime_collection": False, "forecast": False},
             "blockers": ["尚无五类来源的在线采集、覆盖与延迟证据",
                          "当前仅有 SEC 与同期帖子存档的受限采集，未建立生产级多平台采集",
                          "情感三分类模型及独立复核标签尚未完成",
                          "新版情感/走势正式评测集及观察窗口径尚未冻结",
-                         "完整 GraphRAG、真实模型规模仿真和通知尚未验证",
+                         "真实来源与完整规模仿真尚未在同一案例贯通；消息动作因果尚未证实",
+                         "真实通知发送、送达与红警时效尚未验证",
                          "域内模型、嵌入和图服务资源尚未核实"],
         }
 
@@ -185,6 +216,13 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
         except SimulationError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from None
 
+    @app.get("/simulations")
+    def simulations():
+        with store.connect() as db:
+            run_ids = [row["run_id"] for row in db.execute(
+                "SELECT run_id FROM simulation_runs ORDER BY created_at DESC")]
+        return {"runs": [day3.summary(run_id) for run_id in run_ids]}
+
     @app.get("/simulations/{run_id}")
     def simulation(run_id: str):
         try:
@@ -198,5 +236,77 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
             return {"run_id": run_id, "actions": day3.trajectory(run_id)}
         except KeyError:
             raise HTTPException(status_code=404, detail="仿真运行不存在") from None
+
+    @app.post("/demos/day4/run", status_code=201)
+    def prepare_day4_demo(request: DemoRunRequest):
+        try:
+            return tasks.prepare_demo_run(
+                agent_count=request.agent_count, rounds=request.rounds,
+                concurrency=request.concurrency,
+            )
+        except (TaskError, SimulationError) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from None
+
+    @app.post("/jobs", status_code=202)
+    def start_job(request: RunReference):
+        try:
+            return tasks.start(request.run_id)
+        except KeyError:
+            raise HTTPException(status_code=404, detail="仿真运行不存在") from None
+        except TaskError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from None
+
+    @app.get("/jobs")
+    def jobs():
+        return {"jobs": tasks.list()}
+
+    @app.get("/jobs/{job_id}")
+    def job(job_id: str):
+        try:
+            return tasks.get(job_id)
+        except KeyError:
+            raise HTTPException(status_code=404, detail="本机任务不存在") from None
+
+    @app.post("/reports", status_code=201)
+    def build_report(request: RunReference):
+        try:
+            assessment = alerts.assess(request.run_id)
+            return reports.build(request.run_id, risk_assessment=assessment)
+        except KeyError:
+            raise HTTPException(status_code=404, detail="仿真运行不存在") from None
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from None
+
+    @app.get("/reports/{report_id}")
+    def report(report_id: str):
+        try:
+            return reports.get(report_id)
+        except KeyError:
+            raise HTTPException(status_code=404, detail="报告不存在") from None
+
+    @app.post("/alerts/assess", status_code=201)
+    def assess_alert(request: RunReference):
+        try:
+            return alerts.assess(request.run_id)
+        except KeyError:
+            raise HTTPException(status_code=404, detail="仿真运行不存在") from None
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from None
+
+    @app.get("/alerts/{alert_id}")
+    def alert(alert_id: str):
+        try:
+            return alerts.get(alert_id)
+        except KeyError:
+            raise HTTPException(status_code=404, detail="预警不存在") from None
+
+    @app.post("/alerts/{alert_id}/previews", status_code=201)
+    def preview_delivery(alert_id: str, request: DeliveryPreviewRequest):
+        try:
+            return alerts.preview_delivery(alert_id, request.channel)
+        except KeyError:
+            raise HTTPException(status_code=404, detail="预警不存在") from None
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from None
 
     return app

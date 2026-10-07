@@ -1,0 +1,37 @@
+name: riskshield
+
+services:
+  api:
+    build: .
+    image: riskshield:day4-local
+    command: ["uvicorn", "riskshield.api:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000"]
+    environment:
+      RISKSHIELD_DB: /app/runtime/riskshield.db
+    volumes:
+      - riskshield_runtime:/app/runtime
+    ports:
+      - "127.0.0.1:8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  web:
+    image: riskshield:day4-local
+    command: ["streamlit", "run", "ui/app.py", "--server.address", "0.0.0.0", "--server.port", "8501", "--server.headless", "true"]
+    environment:
+      RISKSHIELD_API_URL: http://api:8000
+      STREAMLIT_BROWSER_GATHER_USAGE_STATS: "false"
+    ports:
+      - "127.0.0.1:8501:8501"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  riskshield_runtime:
+
+networks:
+  default:
+    internal: true

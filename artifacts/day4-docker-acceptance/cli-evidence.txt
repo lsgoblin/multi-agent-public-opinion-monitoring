@@ -1,0 +1,93 @@
+验收编号: D4-DOCKER-LOCAL-20261007-200641+0800
+时区: Asia/Shanghai
+检查窗口: 2026-10-07 20:06:41 至 20:14:09
+
+COMMAND: docker version (首次，Docker Desktop 启动前)
+OUTPUT:
+Client:
+ Version:           29.5.3
+ API version:       1.54
+ Go version:        go1.26.4
+ Git commit:        d1c06ef
+ Built:             Wed Jun  3 18:03:06 2026
+ OS/Arch:           windows/amd64
+ Context:           desktop-linux
+failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.
+
+ACTION: 2026-10-07 20:06:53 启动 C:\Program Files\Docker\Docker\Docker Desktop.exe；进程启动但服务端未返回 Docker 版本。
+
+COMMAND: docker build --progress=plain -t riskshield:day4-local .
+OUTPUT: 约 45 秒无输出；因 Docker CLI 持续无响应而发送 Ctrl+C，退出码 1。未取得镜像 ID。
+
+COMMAND: docker compose config --quiet
+OUTPUT: compose_config_exit=0
+
+COMMAND: docker compose config (展开结果关键项)
+OUTPUT:
+services.api.ports: 127.0.0.1:8000 -> 8000/tcp
+services.api.healthcheck: GET http://127.0.0.1:8000/health
+services.api.volumes: riskshield_runtime -> /app/runtime
+services.web.ports: 127.0.0.1:8501 -> 8501/tcp
+services.web.depends_on: api, service_healthy
+services.web.environment.RISKSHIELD_API_URL: http://api:8000
+networks.default.internal: true
+
+COMMAND: uv run pytest -q tests/test_day4_api.py tests/test_day4_tasks.py tests/test_day4_report.py tests/test_day4_alerts.py tests/test_ui.py
+OUTPUT:
+............................                                             [100%]
+28 passed, 1 warning
+
+Docker containers created: 0
+Docker image built: no
+Container health/page/inter-service checks: not run
+Container application run_id/job_id/report_id/alert_id: not generated
+Container restart/persistence check: not run
+Container packet capture/public egress test: not run
+
+FOLLOW-UP BATCH: D4-DOCKER-RECOVERY-20261007-2043+0800
+FOLLOW-UP CHECK TIME: 2026-10-07 20:43 (Asia/Shanghai)
+
+COMMAND: docker version
+OUTPUT:
+Client:
+ Version:           29.5.3
+ API version:       1.54
+ OS/Arch:           windows/amd64
+ Context:           desktop-linux
+Server: Docker Desktop 4.79.0 (230596)
+ Engine:
+  Version:          29.5.3
+  API version:      1.54 (minimum version 1.40)
+  OS/Arch:          linux/amd64
+
+COMMAND: docker info --format 'Server={{.ServerVersion}} OS={{.OperatingSystem}}'
+OUTPUT: Server=29.5.3 OS=Docker Desktop (exit 0)
+
+COMMAND: docker ps -a --format 'table {{.Names}}\t{{.Status}}'
+OUTPUT: NAMES=rcore-tutorial; STATUS=Exited (255); existing container left untouched.
+
+COMMAND: docker compose up -d --build
+OUTPUT:
+Image riskshield:day4-local Pulling
+Image riskshield:day4-local Error pull access denied for riskshield, repository does not exist or may require 'docker login'
+Image riskshield:day4-local Building
+#3 ERROR: failed to authorize: failed to fetch anonymous token: Get "https://auth.docker.io/token?scope=repository%3Alibrary%2Fpython%3Apull&service=registry.docker.io": dial tcp 59.188.250.54:443: connectex: A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.
+failed to solve: failed to fetch anonymous token from auth.docker.io for docker.io/library/python:3.12-slim; connection timed out.
+EXIT: 1
+
+COMMAND: docker compose ps -a
+OUTPUT: No project service rows (no containers created), exit 0.
+
+COMMAND: docker image inspect riskshield:day4-local --format '{{.Id}}'
+OUTPUT: Error response from daemon: No such image: riskshield:day4-local (exit 1)
+
+COMMAND: docker info --format 'Server={{.ServerVersion}} OS={{.OperatingSystem}}'
+OUTPUT: Server=29.5.3 OS=Docker Desktop (exit 0)
+
+Docker daemon recovery: confirmed
+Day 4 Docker runtime acceptance: incomplete; base image pull blocked
+Application run_id/job_id/report_id/alert_id: not generated
+
+HOST NETWORK DIAGNOSTIC (around 2026-10-07 20:54 Asia/Shanghai)
+COMMAND: Test-NetConnection auth.docker.io and registry-1.docker.io TCP 443
+OUTPUT: No result within approximately 50 seconds; interrupted with Ctrl+C (exit 1). Inconclusive; no proxy/DNS/firewall settings changed.

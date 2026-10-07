@@ -1,0 +1,13 @@
+.git
+.venv
+__pycache__
+*.pyc
+runtime
+experiments
+tests
+docs
+data/research/*
+!data/research/channel_checks_v2.json
+*.db
+*.sqlite
+*.sqlite3

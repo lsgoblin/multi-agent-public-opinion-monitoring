@@ -7,7 +7,7 @@
 | 1 | [项目现状与待确认](planning/00-规划总览与待确认事项.md) | 已确认决定、G1 状态和未决口径 |
 | 2 | [需求规格](design/01-需求规格说明书.md)、[架构设计](design/02-系统架构设计.md) | 目标行为、模块和接口 |
 | 3 | [五日计划](planning/03-五日施工计划.md)、[MVP 范围](design/04-MVP范围说明.md)、[指标映射](design/05-赛题指标映射表.md) | 交付边界与验收证据 |
-| 4 | [G1 验收记录](records/06-Day1执行与验收记录.md)、[Day 2 一页状态](records/23-Day2受限G2关口复核.md)、[Day 3 工程验证](records/25-Day3动态仿真工程验证.md)、[500×30 真实规模尝试](records/41-Day3百炼500x30真实规模尝试.md)、[Day 3 代码归位](records/42-Day3仿真代码归位与配对脚本命名.md) | 实际运行、关口状态与当前代码位置 |
+| 4 | [G1 验收记录](records/06-Day1执行与验收记录.md)、[Day 2 一页状态](records/23-Day2受限G2关口复核.md)、[Day 3 工程验证](records/25-Day3动态仿真工程验证.md)、[500×30 真实规模尝试](records/41-Day3百炼500x30真实规模尝试.md)、[Day 3 代码归位](records/42-Day3仿真代码归位与配对脚本命名.md)、[Day 4 本机工程](records/43-Day4本机工程与离线验证.md)、[Day 4 Web 离线闭环](records/44-Day4Web前端本机闭环实测.md)、[Day 4 Docker 本机验收](records/45-Day4Docker本机运行验收.md) | 实际运行、关口状态与当前代码位置 |
 
 专项资料：[数据方案](planning/09-公开投诉自采方案与口径变更.md)、[来源与事件审计](records/11-Day1初始数据采集与审计.md)、[模型预算和域内路线](planning/08-Day1模型接入方案.md)、[模型探测记录](records/12-Day1DeepSeek接入与探测记录.md)、[标签与 cutoff 口径](records/13-Day1案例口径与评测准备.md)、[Day 3 工程决策](planning/24-Day3工程决策.md)。[需求基线决定](planning/14-V2基线替代与迁移决定.md)记录新版完整替代旧版。
 
