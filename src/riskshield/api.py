@@ -37,6 +37,14 @@ class DemoRunRequest(BaseModel):
     concurrency: int = Field(default=4, ge=1, le=32)
 
 
+class HistoricalTaskRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    case_id: str = Field(min_length=1, max_length=100, pattern=r"^[a-zA-Z0-9_-]+$")
+    agent_count: int = Field(default=10, ge=1, le=100)
+    rounds: int = Field(default=3, ge=1, le=10)
+    concurrency: int = Field(default=4, ge=1, le=32)
+
+
 def create_app(db_path: str | Path | None = None) -> FastAPI:
     app = FastAPI(title="风控盾 · Day 4 V2", version="0.5.0",
                   description="公开事件、截止证据图、仿真和离线报告预警工程工作台。")
@@ -245,6 +253,18 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
                 concurrency=request.concurrency,
             )
         except (TaskError, SimulationError) as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from None
+
+    @app.post("/day4/historical/jobs", status_code=202)
+    def start_historical_job(request: HistoricalTaskRequest):
+        try:
+            return tasks.start_historical_case(
+                request.case_id, agent_count=request.agent_count,
+                rounds=request.rounds, concurrency=request.concurrency,
+            )
+        except KeyError:
+            raise HTTPException(status_code=404, detail="历史案例不存在") from None
+        except (TaskError, SimulationError, CollectionError) as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from None
 
     @app.post("/jobs", status_code=202)

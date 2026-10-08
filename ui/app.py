@@ -14,7 +14,15 @@ st.markdown("""
 :root { --paper:#f2f1eb; --surface:#fffefa; --ink:#20262b; --muted:#6d767a; --line:#deded6; --blue:#2d56cf; --blue-wash:#edf1ff; --green:#39724e; --orange:#bd6128; }
 [data-testid="stAppViewContainer"] { background:var(--paper); color:var(--ink); }
 [data-testid="stHeader"] { background:transparent; }
-[data-testid="stSidebar"] { background:#e9e8e1; border-right:1px solid #d9d8cf; }
+[data-testid="stSidebar"] { background:#e9e8e1; border-right:1px solid #d9d8cf; width:248px !important; min-width:248px !important; }
+[data-testid="stSidebar"] > div { width:248px !important; }
+[data-testid="stSidebar"] [data-testid="stRadio"] [data-testid="stRadioOption"] { background:transparent; border:1px solid transparent; border-radius:5px; padding:.48rem .65rem; transition:background .16s ease,border-color .16s ease; }
+[data-testid="stSidebar"] [data-testid="stRadio"] [data-testid="stRadioOption"][data-selected="true"] { background:var(--blue-wash); border-color:#c4cff3; color:var(--blue); }
+[data-testid="stSidebar"] [data-testid="stRadio"] [data-testid="stRadioOption"]:hover { background:#f5f4ee; border-color:#d9d8cf; }
+[data-testid="stSidebar"] [data-testid="stRadio"] input[type="radio"] { accent-color:var(--blue); }
+.sidebar-brand { display:flex; align-items:center; gap:.65rem; margin:.15rem 0 .25rem; color:var(--ink); font-size:1.12rem; font-weight:650; letter-spacing:-.03em; }
+.brand-mark { display:inline-flex; width:30px; height:30px; align-items:center; justify-content:center; border-radius:7px; background:var(--blue); color:white; font-size:.9rem; }
+.sidebar-section-label { margin:.85rem 0 .4rem; color:var(--muted); font-size:.7rem; font-weight:700; letter-spacing:.09em; }
 h1 { font-size:1.75rem !important; font-weight:600 !important; letter-spacing:-.035em; }
 h2, h3 { color:var(--ink); letter-spacing:-.02em; }
 [data-testid="stMainBlockContainer"] { padding-top:2.5rem; padding-bottom:2rem; max-width:1480px; }
@@ -38,11 +46,6 @@ button[kind="primary"] { background:var(--blue); border-color:var(--blue); }
 @media (prefers-reduced-motion: reduce) { *,*::before,*::after { transition-duration:.01ms !important; animation-duration:.01ms !important; } }
 </style>
 """, unsafe_allow_html=True)
-st.title("风控盾")
-st.caption("DAY 4 V2 · 证据、仿真、离线报告与预警工作台")
-st.caption("Day 4 本机工作台 · G1/G2 内部受限通过 · G3 尚未通过 · G4 待运行证据核验")
-
-
 def request(method, path, **kwargs):
     response = httpx.request(method, API + path, timeout=10, **kwargs)
     response.raise_for_status()
@@ -92,17 +95,34 @@ except (httpx.HTTPError, ValueError):
     st.stop()
 
 with st.sidebar:
-    st.subheader("当前范围")
-    st.write("Day 4 本机工程；Day 5 未授权")
-    st.write("G1/G2 内部受限通过 · G3/G4 待核验")
-    st.caption("真实历史来源与纯合成仿真分开展示；本界面不收集模型密钥，也不发送真实通知。")
+    st.markdown("<div class='sidebar-brand'><span class='brand-mark'>盾</span><span>风控盾</span></div>", unsafe_allow_html=True)
+    st.caption("DAY 4 · 本机风险工作台")
+    st.markdown("<div class='sidebar-section-label'>工作区</div>", unsafe_allow_html=True)
+    active_page = st.radio(
+        "页面导航",
+        ["处置队列", "今日概览", "事件证据", "五模块报告", "预警中心", "关口状态"],
+        index=0,
+        label_visibility="collapsed",
+        key="main_navigation",
+    )
+    st.divider()
+    st.markdown("<div class='sidebar-section-label'>运行边界</div>", unsafe_allow_html=True)
+    st.markdown("<span class='status-pill'>LOCAL · OFFLINE</span>", unsafe_allow_html=True)
+    st.caption("仅限本机离线工作流；不发送真实通知。Day 5 未授权。")
+    st.markdown("<div class='sidebar-section-label'>验收关口</div>", unsafe_allow_html=True)
+    st.markdown("**G1 / G2**　内部受限通过")
+    st.markdown("**G3**　尚未通过")
+    st.caption("G4 待实际运行证据核验。")
+
+header_title, header_action = st.columns([5, 1], vertical_alignment="center")
+with header_title:
+    st.title("风控盾")
+    st.caption(f"DAY 4 V2 · {active_page} · 证据、仿真、离线报告与预警工作台")
+with header_action:
     if st.button("刷新状态", use_container_width=True):
         st.rerun()
 
-simulation, overview, evidence, reports_tab, alerts_tab, gaps = st.tabs(
-    ["处置队列", "今日概览", "事件证据", "五模块报告", "预警中心", "关口状态"]
-)
-with overview:
+if active_page == "今日概览":
     cols = st.columns(4)
     cols[0].metric("后端状态", "可用")
     cols[1].metric("真实历史案例", readiness["historical_cases"])
@@ -124,7 +144,7 @@ with overview:
              readiness["historical_probe_evidence"]["current_configuration"]["status"] + "。")
     st.caption("历史探测不等于当前凭据可用，也不证明任务决策质量或规模能力。本界面不收集密钥、不自动发送模型请求。")
 
-with evidence:
+if active_page == "事件证据":
     st.subheader("公开历史案例")
     st.write("候选：2024 年 3 月众安保险营销骚扰相关报道。资料为人工摘要，历史可见时间未知，截止快照没有合格输入。")
     imports = (
@@ -193,7 +213,7 @@ except (httpx.HTTPError, ValueError) as exc:
 else:
     job_list_error = None
 
-with simulation:
+if active_page == "处置队列":
     st.subheader("处置队列")
     st.caption("按状态查看本机任务；选择一项后，在右侧核对轮次、执行状态与关联产物。")
 
@@ -273,43 +293,65 @@ with simulation:
                 st.divider()
                 st.markdown("**手工配置**")
                 case_id = st.selectbox("任务案例", [item["case_id"] for item in cases], key="task_case")
-                if st.button("为所选案例构建截止证据图", key="build_task_graph"):
-                    try:
-                        graph = request("POST", f"/cases/{case_id}/graph")
-                        st.session_state["task_graph_id"] = graph["graph_id"]
-                        st.session_state["task_graph_id_input"] = graph["graph_id"]
-                        st.success("证据图已构建。请核对图谱及任务参数。")
-                    except (httpx.HTTPError, ValueError, KeyError) as exc:
-                        show_api_error(exc)
-                graph_id = st.text_input(
-                    "证据图 ID", key="task_graph_id_input",
-                    help="可填写已有证据图 ID，或先点击上方按钮构建。",
-                )
-                with st.form("create_task"):
-                    config_cols = st.columns(3)
-                    agent_count = config_cols[0].number_input("Agent 数量", min_value=1, max_value=500, value=10)
-                    rounds = config_cols[1].number_input("轮数", min_value=1, max_value=30, value=3)
-                    concurrency = config_cols[2].number_input("并发配置", min_value=1, max_value=128, value=4)
-                    budget = st.number_input(
-                        "任务费用上限（元）", min_value=0.01, max_value=30.0, value=5.0,
-                        step=0.01, format="%.2f",
-                    )
-                    submitted = st.form_submit_button("创建本地任务配置", use_container_width=True)
-                if submitted:
-                    if not graph_id.strip():
-                        st.warning("请先填写与案例匹配的证据图 ID。")
-                    else:
+                selected_case = next(item for item in cases if item["case_id"] == case_id)
+                if selected_case["data_mode"] == "real_historical":
+                    st.caption("真实历史输入仅限本机已有、可核验可见时间的归档来源；执行为 offline_dynamic_substitute，不调用真实模型。")
+                    with st.form("create_historical_task"):
+                        config_cols = st.columns(3)
+                        agent_count = config_cols[0].number_input("Agent 数量", min_value=1, max_value=100, value=10)
+                        rounds = config_cols[1].number_input("轮数", min_value=1, max_value=10, value=3)
+                        concurrency = config_cols[2].number_input("并发配置", min_value=1, max_value=32, value=4)
+                        submitted = st.form_submit_button("启动真实历史事件离线任务", type="primary", use_container_width=True)
+                    if submitted:
                         try:
-                            created = request("POST", "/simulations", json={
-                                "case_id": case_id, "graph_id": graph_id.strip(),
-                                "agent_count": int(agent_count), "rounds": int(rounds),
-                                "concurrency": int(concurrency), "budget_cny": str(budget),
+                            job = request("POST", "/day4/historical/jobs", json={
+                                "case_id": case_id, "agent_count": int(agent_count),
+                                "rounds": int(rounds), "concurrency": int(concurrency),
                             })
-                            st.session_state["selected_run_id"] = created["run_id"]
+                            st.session_state["selected_run_id"] = job["run_id"]
+                            st.session_state["selected_job_id"] = job["job_id"]
                             st.session_state["reset_queue_filter"] = True
                             st.rerun()
                         except (httpx.HTTPError, ValueError, KeyError) as exc:
                             show_api_error(exc)
+                else:
+                    if st.button("为所选案例构建截止证据图", key="build_task_graph"):
+                        try:
+                            graph = request("POST", f"/cases/{case_id}/graph")
+                            st.session_state["task_graph_id"] = graph["graph_id"]
+                            st.session_state["task_graph_id_input"] = graph["graph_id"]
+                            st.success("证据图已构建。请核对图谱及任务参数。")
+                        except (httpx.HTTPError, ValueError, KeyError) as exc:
+                            show_api_error(exc)
+                    graph_id = st.text_input(
+                        "证据图 ID", key="task_graph_id_input",
+                        help="可填写已有证据图 ID，或先点击上方按钮构建。",
+                    )
+                    with st.form("create_task"):
+                        config_cols = st.columns(3)
+                        agent_count = config_cols[0].number_input("Agent 数量", min_value=1, max_value=500, value=10)
+                        rounds = config_cols[1].number_input("轮数", min_value=1, max_value=30, value=3)
+                        concurrency = config_cols[2].number_input("并发配置", min_value=1, max_value=128, value=4)
+                        budget = st.number_input(
+                            "任务费用上限（元）", min_value=0.01, max_value=30.0, value=5.0,
+                            step=0.01, format="%.2f",
+                        )
+                        submitted = st.form_submit_button("创建本地任务配置", use_container_width=True)
+                    if submitted:
+                        if not graph_id.strip():
+                            st.warning("请先填写与案例匹配的证据图 ID。")
+                        else:
+                            try:
+                                created = request("POST", "/simulations", json={
+                                    "case_id": case_id, "graph_id": graph_id.strip(),
+                                    "agent_count": int(agent_count), "rounds": int(rounds),
+                                    "concurrency": int(concurrency), "budget_cny": str(budget),
+                                })
+                                st.session_state["selected_run_id"] = created["run_id"]
+                                st.session_state["reset_queue_filter"] = True
+                                st.rerun()
+                            except (httpx.HTTPError, ValueError, KeyError) as exc:
+                                show_api_error(exc)
             else:
                 st.caption("导入一个案例后，才能手工创建关联证据图的任务。")
 
@@ -393,7 +435,16 @@ with simulation:
                     job_cols[0].metric("执行模式", selected_job.get("mode") or "未记录")
                     job_cols[1].metric("云模型调用", selected_job.get("model_calls", 0))
                     job_cols[2].metric("外部网络请求", selected_job.get("network_requests", 0))
-                    st.caption("离线动态测试替身；任务中的 Agent 保持独立状态、记忆和运行时消息交互。页面不会自动轮询。")
+                    st.caption(
+                        f"数据：{selected_job.get('data_mode') or '未记录'} · "
+                        "离线动态替身；Agent 使用独立状态、记忆和运行时消息。页面不会自动轮询。"
+                    )
+                    if selected_job.get("input_received_at") and selected_job.get("report_generated_at"):
+                        st.caption(
+                            f"任务输入：{selected_job['input_received_at']} · "
+                            f"报告生成：{selected_job['report_generated_at']} · "
+                            f"输入至报告：{selected_job.get('elapsed_seconds')} 秒"
+                        )
                     if selected_job.get("status") == "failed":
                         st.error("任务执行失败：" + str(selected_job.get("error") or "未记录错误详情"))
                     report_result = selected_job.get("report_id")
@@ -415,7 +466,7 @@ with simulation:
                 show_api_error(job_list_error)
             st.info("从左侧选择一项任务，查看运行配置、轮次进度及其报告和预警。")
 
-with reports_tab:
+if active_page == "五模块报告":
     st.subheader("五模块离线报告")
     st.caption("报告只关联一个运行及其案例/图谱。纯合成运行不得作为真实历史案例的端到端报告。")
     if run_rows:
@@ -499,7 +550,7 @@ with reports_tab:
         except (httpx.HTTPError, ValueError) as exc:
             show_api_error(exc)
 
-with alerts_tab:
+if active_page == "预警中心":
     st.subheader("四级预警与离线通知预览")
     st.caption("红、橙、黄、蓝为工程规则结果；预览不发送企业微信或邮件。发现到推送时效及真实送达尚未验证。")
     if run_rows:
@@ -525,6 +576,7 @@ with alerts_tab:
                 st.warning(limitation)
             st.caption("发现时间：" + str(alert.get("discovered_at") or "未记录") +
                        " · 发送时间：" + str(alert.get("sent_at") or "未发送"))
+            st.caption("发现时间表示本机规则评估时刻，不是历史事件首次公开或实际送达时间。")
             channel = st.selectbox("离线预览渠道", ["wecom", "email"],
                                    format_func=lambda item: "企业微信" if item == "wecom" else "邮件")
             if st.button("生成通知预览"):
@@ -537,7 +589,7 @@ with alerts_tab:
         except (httpx.HTTPError, ValueError) as exc:
             show_api_error(exc)
 
-with gaps:
+if active_page == "关口状态":
     st.subheader("内部关口状态")
     st.success("G1-V2 与 G2-V2 已内部受限通过；可运行 API、持久化、截止快照、受限证据图检索。")
     st.warning("G3 尚未通过：纯合成百炼 500 Agent × 30 轮已实测，14,994 次有效决策、6 次无效决策；消息改变动作的受控因果证据仍缺。")

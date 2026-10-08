@@ -1,0 +1,12 @@
+{
+  "started_at": "2026-10-08T01:10:56+08:00",
+  "completed_at": "2026-10-08T01:10:57+08:00",
+  "run_id": "run_8c733e97eeb3481db2dd",
+  "job_id": "job_332e9354faed42a7b73e",
+  "report_id": "report_7deafef9a642f201f8cf3bde",
+  "alert_id": "alert_6f76529ca8d3e9bac7aaba45d1676757",
+  "status": "complete",
+  "completed_rounds": 3,
+  "model_calls": 0,
+  "network_requests": 0
+}

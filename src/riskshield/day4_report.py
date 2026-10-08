@@ -306,32 +306,50 @@ class Day4Reports:
             suggestions.append({"text": "Inspect simulated message paths; message volume alone does not prove influence.",
                                 "source_record_ids": [], "action_ids": [],
                                 "message_ids": [m["message_id"] for m in messages[:10]]})
+        execution_mode = (config.get("backend") or {}).get(
+            "type", config.get("backend_mode", "not_recorded"))
+        binding = {"run_id": run_id, "case_id": run["case_id"],
+                   "graph_id": run["graph_id"]}
+        modules = {
+            "propagation": {"kind": "simulated_runtime_messages", "edges": propagation,
+                            "total_messages": len(messages),
+                            "source_record_ids": source_ids},
+            "emotion_evolution": _emotion_module(config, agents, actions, messages,
+                                                   rounds, distributions),
+            "key_nodes": {"metric": "outgoing_runtime_message_count",
+                          "interpretation": "Simulated activity, not causal influence.",
+                          "nodes": key_nodes},
+            "risk": risk_assessment if risk_assessment is not None else
+                    {"status": "unassessed", "level": None,
+                     "note": "No four-level risk assessment was supplied."},
+            "recommendations": {"items": suggestions},
+        }
+        for module in modules.values():
+            module.update(binding)
         report = {
             "run_id": run_id, "case_id": run["case_id"], "graph_id": run["graph_id"],
             "cutoff": case["cutoff"], "source_version": case["version"],
-            "data_mode": case["data_mode"], "run_status": run["status"],
+            "data_mode": case["data_mode"], "execution_mode": execution_mode,
+            "graph_build_mode": graph.get("build_mode", "day2_cutoff_evidence_graph"),
+            "run_status": run["status"],
             "completed_rounds": run["completed_rounds"], "configured_rounds": config["rounds"],
-            "modules": {
-                "propagation": {"kind": "simulated_runtime_messages", "edges": propagation,
-                                "total_messages": len(messages),
-                                "source_record_ids": source_ids},
-                "emotion_evolution": _emotion_module(config, agents, actions, messages,
-                                                      rounds, distributions),
-                "key_nodes": {"metric": "outgoing_runtime_message_count",
-                              "interpretation": "Simulated activity, not causal influence.",
-                              "nodes": key_nodes},
-                "risk": risk_assessment if risk_assessment is not None else
-                        {"status": "unassessed", "level": None,
-                         "note": "No four-level risk assessment was supplied."},
-                "recommendations": {"items": suggestions},
-            },
+            "binding": binding,
+            "modules": modules,
             "evidence": {"source_record_ids": source_ids,
                          "decision_cited_source_record_ids": sorted(cited_source_ids),
-                         "failed_action_ids": failed_ids},
+                         "failed_action_ids": failed_ids,
+                         "graph_build_mode": graph.get(
+                             "build_mode", "day2_cutoff_evidence_graph")},
             "limitations": ["Simulated messages are not observed platform propagation.",
                             "Message counts and references do not prove message-to-action causality.",
                             "This report does not determine G3 or G4 gate status."],
         }
+        if case["data_mode"] == "real_historical" and execution_mode == "offline_dynamic_substitute":
+            report["limitations"].append(
+                "Real historical source material was processed by offline_dynamic_substitute; this does not prove real-model simulation quality.")
+        if graph.get("build_mode") == "offline_archived_record_projection":
+            report["limitations"].append(
+                "The evidence graph is a local projection of archived cutoff records; no new source collection or online GraphRAG retrieval occurred.")
         digest = hashlib.sha256(_json(report).encode()).hexdigest()[:24]
         report["report_id"] = "report_" + digest
         with self.store.connect() as db:

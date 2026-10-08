@@ -1,18 +1,18 @@
 """Persisted Day 4 offline task execution.
 
-The task runner deliberately accepts synthetic simulation runs only.  Its
-decision backend is a local dynamic substitute: decisions depend on each
-agent's current observation, own memory, and runtime messages.  It performs
-no model calls, network requests, notification delivery, or deployment.
+The local dynamic substitute accepts synthetic runs and strictly cutoff-checked
+real historical cases. It performs no model calls, network requests,
+notification delivery, or deployment.
 """
 
+import hashlib
 import json
 import threading
 import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
 
-from riskshield.day2 import Day2Pipeline
+from riskshield.day2 import CollectionError, Day2Pipeline
 from riskshield.day3 import Day3Simulation, DecisionResult, SimulationError
 from riskshield.day4_alerts import AlertError, Day4Alerts
 from riskshield.day4_report import Day4Reports, ReportError
@@ -48,7 +48,17 @@ def _dump(value) -> str:
     return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
 
 
+def _seconds_between(start: str, end: str) -> float:
+    start_at, end_at = datetime.fromisoformat(start), datetime.fromisoformat(end)
+    if (start_at.tzinfo is None or start_at.utcoffset() is None
+            or end_at.tzinfo is None or end_at.utcoffset() is None):
+        raise TaskError("task timestamps must include a timezone")
+    return round((end_at - start_at).total_seconds(), 6)
+
+
 def _failure_category(exc: Exception) -> str:
+    if isinstance(exc, TaskError):
+        return "data_integrity_error"
     if isinstance(exc, SimulationError):
         return "simulation_error"
     if isinstance(exc, AlertError):
@@ -61,7 +71,7 @@ def _failure_category(exc: Exception) -> str:
 
 
 class OfflineDynamicSubstitute:
-    """Local observation-driven backend used only for synthetic demonstrations."""
+    """Local observation-driven backend used for offline engineering evidence."""
 
     mode = "test_substitute"
     reservation_cny = Decimal("0")
@@ -153,6 +163,13 @@ class Day4Tasks:
                 CREATE INDEX IF NOT EXISTS day4_tasks_status
                     ON day4_tasks(status, queued_at);
             """)
+            columns = {row["name"] for row in db.execute("PRAGMA table_info(day4_tasks)")}
+            for name, declaration in (
+                    ("input_received_at", "TEXT"),
+                    ("report_generated_at", "TEXT"),
+                    ("elapsed_seconds", "REAL")):
+                if name not in columns:
+                    db.execute(f"ALTER TABLE day4_tasks ADD COLUMN {name} {declaration}")
             timestamp = _now()
             db.execute(
                 "UPDATE day4_tasks SET status='failed', completed_at=?, updated_at=?, "
@@ -180,6 +197,10 @@ class Day4Tasks:
                     if completed_rounds is not None and target_rounds else 0.0)
         return {
             **row,
+            "case_id": summary["case_id"] if summary else None,
+            "graph_id": summary["graph_id"] if summary else None,
+            "data_mode": summary["config"].get("data_mode") if summary else None,
+            "execution_mode": TASK_MODE,
             "completed_rounds": completed_rounds,
             "target_rounds": target_rounds,
             "simulation_status": simulation_status,
@@ -197,7 +218,60 @@ class Day4Tasks:
             )]
         return [self._present(row) for row in rows]
 
-    def _queue(self, run_id: str) -> tuple[dict, bool]:
+    def _validate_run_evidence(self, run: dict, metadata: dict | None = None) -> dict:
+        """Validate every graph claim before any observation reaches an Agent."""
+        try:
+            metadata = metadata or self.store.get_case(run["case_id"])
+            snapshot = self.store.snapshot(run["case_id"])
+            graph = self.day2.graph(run["graph_id"])
+            config = json.loads(run["config"])
+            cutoff = datetime.fromisoformat(snapshot["cutoff"])
+        except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+            raise TaskError("case, graph, or run evidence is unavailable") from None
+        if (metadata.get("data_mode") not in {"synthetic", "real_historical"}
+                or config.get("data_mode") != snapshot["data_mode"]
+                or graph.get("case_id") != run["case_id"]
+                or graph.get("cutoff") != snapshot["cutoff"]
+                or graph.get("source_version") != snapshot["version"]
+                or config.get("cutoff") != snapshot["cutoff"]
+                or config.get("source_version") != snapshot["version"]):
+            raise TaskError("run, graph, case, cutoff, or source version do not match")
+        eligible = {record["record_id"]: record for record in snapshot["records"]}
+        claims = graph.get("claims")
+        if not isinstance(claims, list) or not claims:
+            raise TaskError("graph contains no cutoff-eligible source claims")
+        seen = set()
+        for claim in claims:
+            if not isinstance(claim, dict):
+                raise TaskError("graph claim is malformed")
+            record_id = claim.get("record_id")
+            record = eligible.get(record_id)
+            if (record is None or record_id in seen
+                    or record.get("role") != "input_candidate"
+                    or record.get("available_at") is None
+                    or record.get("data_mode") != snapshot["data_mode"]
+                    or (snapshot["data_mode"] == "real_historical"
+                        and record.get("historical_integrity") != "archived")):
+                raise TaskError("graph contains unknown, unverified, or non-input evidence")
+            try:
+                available_at = datetime.fromisoformat(record["available_at"])
+                published_at = datetime.fromisoformat(record["published_at"])
+                claim_available_at = datetime.fromisoformat(claim["available_at"])
+            except (KeyError, TypeError, ValueError):
+                raise TaskError("graph source time is missing or malformed") from None
+            if (available_at.tzinfo is None or available_at.utcoffset() is None
+                    or published_at.tzinfo is None or published_at.utcoffset() is None
+                    or claim_available_at.tzinfo is None or claim_available_at.utcoffset() is None
+                    or available_at > cutoff or published_at > cutoff
+                    or claim_available_at != available_at
+                    or claim.get("text") != record.get("summary")
+                    or claim.get("title") != record.get("title")
+                    or claim.get("source_url") != record.get("source_url")):
+                raise TaskError("graph contains future, altered, or cutoff-ineligible evidence")
+            seen.add(record_id)
+        return {"snapshot": snapshot, "graph": graph, "config": config}
+
+    def _queue(self, run_id: str, *, input_received_at: str | None = None) -> tuple[dict, bool]:
         timestamp = _now()
         with self.store.connect() as db:
             db.execute("BEGIN IMMEDIATE")
@@ -218,21 +292,21 @@ class Day4Tasks:
             metadata = json.loads(run["case_metadata"])
             if run["status"] != "created":
                 raise TaskError("Day 4 task requires a newly created simulation run")
-            if config.get("data_mode") != "synthetic" or metadata.get("data_mode") != "synthetic":
-                raise TaskError("Day 4 offline task accepts synthetic runs only")
+            if config.get("data_mode") != metadata.get("data_mode"):
+                raise TaskError("simulation and case data modes do not match")
+            received = input_received_at or run["created_at"] or timestamp
             job_id = "job_" + uuid.uuid4().hex[:20]
             db.execute(
                 "INSERT INTO day4_tasks "
                 "(job_id, run_id, status, mode, queued_at, updated_at, model_calls, "
-                "network_requests) VALUES (?, ?, 'queued', ?, ?, ?, 0, 0)",
-                (job_id, run_id, TASK_MODE, timestamp, timestamp),
+                "network_requests, input_received_at) "
+                "VALUES (?, ?, 'queued', ?, ?, ?, 0, 0, ?)",
+                (job_id, run_id, TASK_MODE, timestamp, timestamp, received),
             )
             row = db.execute("SELECT * FROM day4_tasks WHERE job_id=?", (job_id,)).fetchone()
         return dict(row), True
 
-    def start(self, run_id: str) -> dict:
-        """Idempotently queue ``run_id`` and start one daemon worker."""
-        row, created = self._queue(run_id)
+    def _launch(self, row: dict, created: bool) -> dict:
         if not created:
             return self._present(row)
         job_id = row["job_id"]
@@ -256,9 +330,97 @@ class Day4Tasks:
                 self._threads.pop(job_id, None)
         return self.get(job_id)
 
-    def run_sync(self, run_id: str) -> dict:
+    def start(self, run_id: str, *, input_received_at: str | None = None) -> dict:
+        """Idempotently queue ``run_id`` and start one daemon worker."""
+        row, created = self._queue(run_id, input_received_at=input_received_at)
+        return self._launch(row, created)
+
+    def _build_archived_projection(self, case_id: str) -> dict:
+        """Build a labeled local evidence projection when no archived observation rows exist."""
+        snapshot = self.store.snapshot(case_id)
+        metadata = self.store.get_case(case_id)
+        if snapshot["data_mode"] != "real_historical":
+            raise TaskError("archived source projection is only for real historical cases")
+        records = [record for record in snapshot["records"]
+                   if record["historical_integrity"] == "archived"
+                   and record["available_at"] is not None]
+        if not records:
+            raise TaskError("case has no archived input with a known cutoff visibility time")
+        event_id = "event:" + case_id
+        nodes = [{"id": event_id, "type": "event", "label": metadata["title"]}]
+        edges, claims = [], []
+        for record in records:
+            source_id = "source:" + record["record_id"]
+            claim_id = "claim:" + record["record_id"]
+            publisher_id = "publisher:" + hashlib.sha256(
+                record["publisher"].encode("utf-8")).hexdigest()[:12]
+            nodes.extend([
+                {"id": source_id, "type": "source", "label": record["title"]},
+                {"id": claim_id, "type": "claim", "label": record["summary"]},
+                {"id": publisher_id, "type": "publisher", "label": record["publisher"]},
+            ])
+            edges.extend([
+                {"from": event_id, "to": claim_id, "relation": "has_claim"},
+                {"from": claim_id, "to": source_id, "relation": "supported_by"},
+                {"from": source_id, "to": publisher_id, "relation": "published_by"},
+            ])
+            claims.append({
+                "claim_id": claim_id, "record_id": record["record_id"],
+                "text": record["summary"], "title": record["title"],
+                "source_url": record["source_url"], "available_at": record["available_at"],
+                "source_node_id": source_id, "publisher_node_id": publisher_id,
+                "observation_ids": [], "observation_node_ids": [],
+                "evidence_adapters": ["local_archived_record_projection"],
+                "availability_basis": record["availability_basis"],
+                "historical_integrity": record["historical_integrity"],
+                "acquisition_method": record["acquisition_method"],
+                "published_at": record["published_at"],
+                "collected_at": record["collected_at"],
+            })
+        body = {
+            "case_id": case_id, "cutoff": snapshot["cutoff"],
+            "source_version": snapshot["version"], "data_mode": snapshot["data_mode"],
+            "build_mode": "offline_archived_record_projection",
+            "nodes": nodes, "edges": edges, "claims": claims,
+            "excluded_counts": snapshot["excluded_counts"],
+        }
+        graph_id = hashlib.sha256(_dump(body).encode("utf-8")).hexdigest()[:24]
+        with self.store.connect() as db:
+            db.execute("INSERT OR IGNORE INTO graphs VALUES (?, ?, ?, ?, ?, ?)", (
+                graph_id, case_id, snapshot["cutoff"], snapshot["version"], _now(), _dump(body)))
+            saved = db.execute("SELECT body, case_id, cutoff, version FROM graphs "
+                               "WHERE graph_id=?", (graph_id,)).fetchone()
+        if (saved is None or saved["case_id"] != case_id
+                or saved["cutoff"] != snapshot["cutoff"]
+                or saved["version"] != snapshot["version"]
+                or json.loads(saved["body"]) != body):
+            raise TaskError("archived projection graph conflicts with existing content")
+        return {"graph_id": graph_id, **body}
+
+    def start_historical_case(self, case_id: str, *, agent_count: int = 10,
+                              rounds: int = 3, concurrency: int = 4,
+                              budget_cny: Decimal = Decimal("5.00")) -> dict:
+        """Accept one local historical case, build its cutoff graph, then run the substitute."""
+        input_received_at = _now()
+        try:
+            metadata = self.store.get_case(case_id)
+        except KeyError:
+            raise
+        if metadata.get("data_mode") != "real_historical":
+            raise TaskError("historical Day 4 task requires a real_historical case")
+        try:
+            graph = self.day2.build_graph(case_id)
+        except CollectionError:
+            graph = self._build_archived_projection(case_id)
+        run_id = self.simulation.create_run(
+            case_id, graph["graph_id"], agent_count=agent_count, rounds=rounds,
+            concurrency=concurrency, budget_cny=budget_cny,
+        )
+        return self.start(run_id, input_received_at=input_received_at)
+
+    def run_sync(self, run_id: str, *, input_received_at: str | None = None) -> dict:
         """Deterministic synchronous entry point for local validation and tests."""
-        row, created = self._queue(run_id)
+        row, created = self._queue(run_id, input_received_at=input_received_at)
         if created or row["status"] == "queued":
             self._execute(row["job_id"])
         return self.get(row["job_id"])
@@ -279,23 +441,35 @@ class Day4Tasks:
                 "WHERE job_id=? AND status='queued'",
                 (timestamp, timestamp, job_id),
             ).rowcount
-            row = db.execute("SELECT run_id FROM day4_tasks WHERE job_id=?", (job_id,)).fetchone()
+            row = db.execute("SELECT run_id, input_received_at FROM day4_tasks "
+                             "WHERE job_id=?", (job_id,)).fetchone()
         if not changed or row is None:
             return
         run_id = row["run_id"]
         try:
+            with self.store.connect() as db:
+                run = db.execute("SELECT * FROM simulation_runs WHERE run_id=?", (run_id,)).fetchone()
+                case_row = db.execute("SELECT metadata FROM cases WHERE case_id=?",
+                                      (run["case_id"],)).fetchone() if run else None
+            if run is None or case_row is None:
+                raise TaskError("case or simulation run disappeared before execution")
+            self._validate_run_evidence(dict(run), json.loads(case_row["metadata"]))
             result = self.simulation.advance(run_id, OfflineDynamicSubstitute())
             if result["status"] != "complete":
                 raise SimulationError("offline synthetic run did not complete")
             alert = self.alerts.assess(run_id)
             report = self.reports.build(run_id, alert)
+            report_generated_at = _now()
             timestamp = _now()
             with self.store.connect() as db:
                 db.execute(
                     "UPDATE day4_tasks SET status='complete', completed_at=?, updated_at=?, "
-                    "alert_id=?, report_id=?, failure_category=NULL "
+                    "alert_id=?, report_id=?, report_generated_at=?, elapsed_seconds=?, "
+                    "failure_category=NULL "
                     "WHERE job_id=? AND status='running'",
-                    (timestamp, timestamp, alert["alert_id"], report["report_id"], job_id),
+                    (timestamp, timestamp, alert["alert_id"], report["report_id"],
+                     report_generated_at,
+                     _seconds_between(row["input_received_at"], report_generated_at), job_id),
                 )
         except Exception as exc:
             category = _failure_category(exc)

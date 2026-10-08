@@ -1,0 +1,172 @@
+{
+  "alert_id": "alert_6f76529ca8d3e9bac7aaba45d1676757",
+  "run_id": "run_8c733e97eeb3481db2dd",
+  "case_id": "day4_demo_fictional_synthetic_v1",
+  "graph_id": "day4_demo_fictional_synthetic_graph_v1",
+  "level": "blue",
+  "rule_version": "day4-simulated-complaint-share-v1-provisional",
+  "assessment_fingerprint_sha256": "6f76529ca8d3e9bac7aaba45d1676757775f53880ee7f2f716d94d941c71f270",
+  "data_mode": "synthetic",
+  "execution_mode": "offline_dynamic_substitute",
+  "status": "provisional_offline_assessment",
+  "assessed_at": "2026-10-08T01:10:53.914685+08:00",
+  "discovered_at": "2026-10-08T01:10:53.914685+08:00",
+  "discovery_time_semantics": "local simulated-rule assessment time; not historical event discovery",
+  "sent_at": null,
+  "metrics": {
+    "round": 3,
+    "run_status": "complete",
+    "latest_round_valid_decisions": 10,
+    "latest_round_failed_decisions": 0,
+    "run_failed_decisions": 0,
+    "simulated_complaint_intent_decisions": 0,
+    "simulated_complaint_intent_share": 0.0,
+    "latest_round_simulated_messages": 30,
+    "thresholds": {
+      "red": 0.4,
+      "orange": 0.2,
+      "yellow": 0.05
+    }
+  },
+  "evidence_refs": {
+    "case_id": "day4_demo_fictional_synthetic_v1",
+    "graph_id": "day4_demo_fictional_synthetic_graph_v1",
+    "cutoff": "2026-10-07T09:30:00+08:00",
+    "source_version": "day4-demo-synthetic-v1",
+    "source_record_ids": [
+      "day4_demo_fictional_notice_v1"
+    ],
+    "action_refs": [
+      {
+        "run_id": "run_8c733e97eeb3481db2dd",
+        "round": 3,
+        "agent_id": "agent_0000",
+        "evidence_ids": [
+          "day4_demo_fictional_notice_v1"
+        ],
+        "message_ids": [
+          "msg_2_agent_0005_agent_0000"
+        ]
+      },
+      {
+        "run_id": "run_8c733e97eeb3481db2dd",
+        "round": 3,
+        "agent_id": "agent_0001",
+        "evidence_ids": [
+          "day4_demo_fictional_notice_v1"
+        ],
+        "message_ids": [
+          "msg_2_agent_0000_agent_0001",
+          "msg_2_agent_0006_agent_0001"
+        ]
+      },
+      {
+        "run_id": "run_8c733e97eeb3481db2dd",
+        "round": 3,
+        "agent_id": "agent_0002",
+        "evidence_ids": [
+          "day4_demo_fictional_notice_v1"
+        ],
+        "message_ids": [
+          "msg_2_agent_0000_agent_0002",
+          "msg_2_agent_0001_agent_0002",
+          "msg_2_agent_0007_agent_0002"
+        ]
+      },
+      {
+        "run_id": "run_8c733e97eeb3481db2dd",
+        "round": 3,
+        "agent_id": "agent_0003",
+        "evidence_ids": [
+          "day4_demo_fictional_notice_v1"
+        ],
+        "message_ids": [
+          "msg_2_agent_0001_agent_0003",
+          "msg_2_agent_0002_agent_0003"
+        ]
+      },
+      {
+        "run_id": "run_8c733e97eeb3481db2dd",
+        "round": 3,
+        "agent_id": "agent_0004",
+        "evidence_ids": [
+          "day4_demo_fictional_notice_v1"
+        ],
+        "message_ids": [
+          "msg_2_agent_0002_agent_0004",
+          "msg_2_agent_0003_agent_0004"
+        ]
+      },
+      {
+        "run_id": "run_8c733e97eeb3481db2dd",
+        "round": 3,
+        "agent_id": "agent_0005",
+        "evidence_ids": [
+          "day4_demo_fictional_notice_v1"
+        ],
+        "message_ids": [
+          "msg_2_agent_0000_agent_0005",
+          "msg_2_agent_0003_agent_0005"
+        ]
+      },
+      {
+        "run_id": "run_8c733e97eeb3481db2dd",
+        "round": 3,
+        "agent_id": "agent_0006",
+        "evidence_ids": [
+          "day4_demo_fictional_notice_v1"
+        ],
+        "message_ids": [
+          "msg_2_agent_0001_agent_0006",
+          "msg_2_agent_0005_agent_0006"
+        ]
+      },
+      {
+        "run_id": "run_8c733e97eeb3481db2dd",
+        "round": 3,
+        "agent_id": "agent_0007",
+        "evidence_ids": [
+          "day4_demo_fictional_notice_v1"
+        ],
+        "message_ids": [
+          "msg_2_agent_0002_agent_0007",
+          "msg_2_agent_0005_agent_0007",
+          "msg_2_agent_0006_agent_0007"
+        ]
+      },
+      {
+        "run_id": "run_8c733e97eeb3481db2dd",
+        "round": 3,
+        "agent_id": "agent_0008",
+        "evidence_ids": [
+          "day4_demo_fictional_notice_v1"
+        ],
+        "message_ids": [
+          "msg_2_agent_0003_agent_0008",
+          "msg_2_agent_0006_agent_0008",
+          "msg_2_agent_0007_agent_0008"
+        ]
+      },
+      {
+        "run_id": "run_8c733e97eeb3481db2dd",
+        "round": 3,
+        "agent_id": "agent_0009",
+        "evidence_ids": [
+          "day4_demo_fictional_notice_v1"
+        ],
+        "message_ids": [
+          "msg_2_agent_0007_agent_0009"
+        ]
+      }
+    ],
+    "action_ref_total": 10,
+    "action_refs_truncated": false
+  },
+  "limitations": [
+    "Provisional thresholds on simulated complaint-intent decisions; not calibrated to real incidents.",
+    "Simulation actions and messages are not real platform activity or actual complaint volume.",
+    "Historical-source discovery and actual delivery timestamps are unavailable; the 30-minute red alert SLA is unverified.",
+    "Offline preview only; no WeCom or email notification has been sent.",
+    "Synthetic run must never trigger an external notification."
+  ]
+}

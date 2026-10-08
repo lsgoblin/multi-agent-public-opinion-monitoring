@@ -59,9 +59,28 @@ def test_provisional_four_levels_and_traceability(tmp_path, complaints, expected
     assert alert["evidence_refs"]["source_record_ids"] == [RECORD_ID]
     assert alert["evidence_refs"]["action_refs"]
     assert {ref["run_id"] for ref in alert["evidence_refs"]["action_refs"]} == {run_id}
-    assert alert["discovered_at"] is None and alert["sent_at"] is None
+    assert alert["discovered_at"] == alert["assessed_at"]
+    assert alert["sent_at"] is None
     assert alerts.get(alert["alert_id"]) == alert
     assert alerts.assess(run_id) == alert
+
+    for channel in ("wecom", "email"):
+        preview = alerts.preview_delivery(alert["alert_id"], channel)
+        assert preview["delivery_status"] == "dry_run"
+        assert preview["network_requests"] == 0
+        assert preview["sent_at"] is None and preview["recipient"] is None
+        assert preview["discovered_at"] == alert["discovered_at"]
+        assert preview["discovery_to_preview_ms"] >= 0
+        assert preview["latency_basis"] == "local_rule_assessment_to_preview_generation"
+        if channel == "wecom":
+            assert preview["payload"]["msgtype"] == "text"
+            assert expected.upper() in preview["payload"]["text"]["content"]
+            assert "OFFLINE PREVIEW ONLY" in preview["payload"]["text"]["content"]
+        else:
+            assert preview["payload"]["subject"].startswith(
+                f"[OFFLINE PREVIEW] {expected.upper()}")
+            assert preview["payload"]["to_alias"] is None
+            assert "OFFLINE PREVIEW ONLY" in preview["payload"]["body_text"]
 
 
 def test_changed_ledger_creates_new_alert_without_rewriting_old_assessment(tmp_path):
@@ -99,6 +118,8 @@ def test_previews_persist_without_any_send_or_recipient(tmp_path, monkeypatch):
         assert preview["delivery_status"] == "dry_run"
         assert preview["network_requests"] == 0
         assert preview["recipient"] is None and preview["sent_at"] is None
+        assert preview["discovered_at"] == alert["discovered_at"]
+        assert preview["discovery_to_preview_ms"] >= 0
         if channel == "wecom":
             assert set(preview["payload"]) == {"msgtype", "text"}
             assert preview["payload"]["msgtype"] == "text"

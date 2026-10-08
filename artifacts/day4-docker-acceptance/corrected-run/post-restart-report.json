@@ -1,0 +1,876 @@
+{
+  "binding": {
+    "case_id": "day4_demo_fictional_synthetic_v1",
+    "graph_id": "day4_demo_fictional_synthetic_graph_v1",
+    "run_id": "run_f7df9bc466904c0c8461"
+  },
+  "case_id": "day4_demo_fictional_synthetic_v1",
+  "completed_rounds": 3,
+  "configured_rounds": 3,
+  "cutoff": "2026-10-07T09:30:00+08:00",
+  "data_mode": "synthetic",
+  "evidence": {
+    "decision_cited_source_record_ids": [
+      "day4_demo_fictional_notice_v1"
+    ],
+    "failed_action_ids": [],
+    "graph_build_mode": "day2_cutoff_evidence_graph",
+    "source_record_ids": [
+      "day4_demo_fictional_notice_v1"
+    ]
+  },
+  "execution_mode": "offline_dynamic_substitute",
+  "graph_build_mode": "day2_cutoff_evidence_graph",
+  "graph_id": "day4_demo_fictional_synthetic_graph_v1",
+  "limitations": [
+    "Simulated messages are not observed platform propagation.",
+    "Message counts and references do not prove message-to-action causality.",
+    "This report does not determine G3 or G4 gate status."
+  ],
+  "modules": {
+    "emotion_evolution": {
+      "case_id": "day4_demo_fictional_synthetic_v1",
+      "emotion_state_available": true,
+      "graph_id": "day4_demo_fictional_synthetic_graph_v1",
+      "kind": "reconstructed_simulated_emotion_v1",
+      "note": "Derived simulation state under the stated rule; not persisted round snapshots or observed public sentiment.",
+      "reconstruction_status": "validated_against_final_agent_state",
+      "rounds": [
+        {
+          "action_counts": {
+            "comment": 1,
+            "observe": 7,
+            "share": 2
+          },
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:1:agent_0000",
+            "action:run_f7df9bc466904c0c8461:1:agent_0001",
+            "action:run_f7df9bc466904c0c8461:1:agent_0002",
+            "action:run_f7df9bc466904c0c8461:1:agent_0003",
+            "action:run_f7df9bc466904c0c8461:1:agent_0004",
+            "action:run_f7df9bc466904c0c8461:1:agent_0005",
+            "action:run_f7df9bc466904c0c8461:1:agent_0006",
+            "action:run_f7df9bc466904c0c8461:1:agent_0007",
+            "action:run_f7df9bc466904c0c8461:1:agent_0008",
+            "action:run_f7df9bc466904c0c8461:1:agent_0009"
+          ],
+          "decision_count": 10,
+          "round": 1
+        },
+        {
+          "action_counts": {
+            "comment": 7,
+            "seek_clarification": 3
+          },
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:2:agent_0000",
+            "action:run_f7df9bc466904c0c8461:2:agent_0001",
+            "action:run_f7df9bc466904c0c8461:2:agent_0002",
+            "action:run_f7df9bc466904c0c8461:2:agent_0003",
+            "action:run_f7df9bc466904c0c8461:2:agent_0004",
+            "action:run_f7df9bc466904c0c8461:2:agent_0005",
+            "action:run_f7df9bc466904c0c8461:2:agent_0006",
+            "action:run_f7df9bc466904c0c8461:2:agent_0007",
+            "action:run_f7df9bc466904c0c8461:2:agent_0008",
+            "action:run_f7df9bc466904c0c8461:2:agent_0009"
+          ],
+          "decision_count": 10,
+          "round": 2
+        },
+        {
+          "action_counts": {
+            "comment": 10
+          },
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:3:agent_0000",
+            "action:run_f7df9bc466904c0c8461:3:agent_0001",
+            "action:run_f7df9bc466904c0c8461:3:agent_0002",
+            "action:run_f7df9bc466904c0c8461:3:agent_0003",
+            "action:run_f7df9bc466904c0c8461:3:agent_0004",
+            "action:run_f7df9bc466904c0c8461:3:agent_0005",
+            "action:run_f7df9bc466904c0c8461:3:agent_0006",
+            "action:run_f7df9bc466904c0c8461:3:agent_0007",
+            "action:run_f7df9bc466904c0c8461:3:agent_0008",
+            "action:run_f7df9bc466904c0c8461:3:agent_0009"
+          ],
+          "decision_count": 10,
+          "round": 3
+        }
+      ],
+      "rule_version": "day3_state_transition_v1",
+      "run_id": "run_f7df9bc466904c0c8461",
+      "series": [
+        {
+          "agent_count": 10,
+          "max_emotion": 0.182,
+          "mean_emotion": 0.00447,
+          "min_emotion": -0.2079,
+          "round": 1
+        },
+        {
+          "agent_count": 10,
+          "max_emotion": 0.1788,
+          "mean_emotion": -0.02424,
+          "min_emotion": -0.2506,
+          "round": 2
+        },
+        {
+          "agent_count": 10,
+          "max_emotion": 0.1131,
+          "mean_emotion": -0.07514,
+          "min_emotion": -0.3089,
+          "round": 3
+        }
+      ]
+    },
+    "key_nodes": {
+      "case_id": "day4_demo_fictional_synthetic_v1",
+      "graph_id": "day4_demo_fictional_synthetic_graph_v1",
+      "interpretation": "Simulated activity, not causal influence.",
+      "metric": "outgoing_runtime_message_count",
+      "nodes": [
+        {
+          "agent_id": "agent_0000",
+          "incoming_message_count": 5,
+          "message_ids": [
+            "msg_1_agent_0000_agent_0001",
+            "msg_1_agent_0000_agent_0002",
+            "msg_1_agent_0000_agent_0005",
+            "msg_2_agent_0000_agent_0001",
+            "msg_2_agent_0000_agent_0002",
+            "msg_2_agent_0000_agent_0005",
+            "msg_3_agent_0000_agent_0001",
+            "msg_3_agent_0000_agent_0002",
+            "msg_3_agent_0000_agent_0005"
+          ],
+          "outgoing_message_count": 9
+        },
+        {
+          "agent_id": "agent_0001",
+          "incoming_message_count": 6,
+          "message_ids": [
+            "msg_1_agent_0001_agent_0002",
+            "msg_1_agent_0001_agent_0003",
+            "msg_1_agent_0001_agent_0006",
+            "msg_2_agent_0001_agent_0002",
+            "msg_2_agent_0001_agent_0003",
+            "msg_2_agent_0001_agent_0006",
+            "msg_3_agent_0001_agent_0002",
+            "msg_3_agent_0001_agent_0003",
+            "msg_3_agent_0001_agent_0006"
+          ],
+          "outgoing_message_count": 9
+        },
+        {
+          "agent_id": "agent_0005",
+          "incoming_message_count": 6,
+          "message_ids": [
+            "msg_1_agent_0005_agent_0000",
+            "msg_1_agent_0005_agent_0006",
+            "msg_1_agent_0005_agent_0007",
+            "msg_2_agent_0005_agent_0000",
+            "msg_2_agent_0005_agent_0006",
+            "msg_2_agent_0005_agent_0007",
+            "msg_3_agent_0005_agent_0000",
+            "msg_3_agent_0005_agent_0006",
+            "msg_3_agent_0005_agent_0007"
+          ],
+          "outgoing_message_count": 9
+        },
+        {
+          "agent_id": "agent_0002",
+          "incoming_message_count": 8,
+          "message_ids": [
+            "msg_2_agent_0002_agent_0003",
+            "msg_2_agent_0002_agent_0004",
+            "msg_2_agent_0002_agent_0007",
+            "msg_3_agent_0002_agent_0003",
+            "msg_3_agent_0002_agent_0004",
+            "msg_3_agent_0002_agent_0007"
+          ],
+          "outgoing_message_count": 6
+        },
+        {
+          "agent_id": "agent_0003",
+          "incoming_message_count": 6,
+          "message_ids": [
+            "msg_2_agent_0003_agent_0004",
+            "msg_2_agent_0003_agent_0005",
+            "msg_2_agent_0003_agent_0008",
+            "msg_3_agent_0003_agent_0004",
+            "msg_3_agent_0003_agent_0005",
+            "msg_3_agent_0003_agent_0008"
+          ],
+          "outgoing_message_count": 6
+        },
+        {
+          "agent_id": "agent_0006",
+          "incoming_message_count": 7,
+          "message_ids": [
+            "msg_2_agent_0006_agent_0001",
+            "msg_2_agent_0006_agent_0007",
+            "msg_2_agent_0006_agent_0008",
+            "msg_3_agent_0006_agent_0001",
+            "msg_3_agent_0006_agent_0007",
+            "msg_3_agent_0006_agent_0008"
+          ],
+          "outgoing_message_count": 6
+        },
+        {
+          "agent_id": "agent_0007",
+          "incoming_message_count": 7,
+          "message_ids": [
+            "msg_2_agent_0007_agent_0002",
+            "msg_2_agent_0007_agent_0008",
+            "msg_2_agent_0007_agent_0009",
+            "msg_3_agent_0007_agent_0002",
+            "msg_3_agent_0007_agent_0008",
+            "msg_3_agent_0007_agent_0009"
+          ],
+          "outgoing_message_count": 6
+        },
+        {
+          "agent_id": "agent_0004",
+          "incoming_message_count": 5,
+          "message_ids": [
+            "msg_3_agent_0004_agent_0005",
+            "msg_3_agent_0004_agent_0006",
+            "msg_3_agent_0004_agent_0009"
+          ],
+          "outgoing_message_count": 3
+        },
+        {
+          "agent_id": "agent_0008",
+          "incoming_message_count": 6,
+          "message_ids": [
+            "msg_3_agent_0008_agent_0000",
+            "msg_3_agent_0008_agent_0003",
+            "msg_3_agent_0008_agent_0009"
+          ],
+          "outgoing_message_count": 3
+        },
+        {
+          "agent_id": "agent_0009",
+          "incoming_message_count": 4,
+          "message_ids": [
+            "msg_3_agent_0009_agent_0000",
+            "msg_3_agent_0009_agent_0001",
+            "msg_3_agent_0009_agent_0004"
+          ],
+          "outgoing_message_count": 3
+        }
+      ],
+      "run_id": "run_f7df9bc466904c0c8461"
+    },
+    "propagation": {
+      "case_id": "day4_demo_fictional_synthetic_v1",
+      "edges": [
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:1:agent_0000",
+            "action:run_f7df9bc466904c0c8461:2:agent_0000",
+            "action:run_f7df9bc466904c0c8461:3:agent_0000"
+          ],
+          "message_count": 3,
+          "message_ids": [
+            "msg_1_agent_0000_agent_0001",
+            "msg_2_agent_0000_agent_0001",
+            "msg_3_agent_0000_agent_0001"
+          ],
+          "recipient_id": "agent_0001",
+          "sender_id": "agent_0000"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:1:agent_0000",
+            "action:run_f7df9bc466904c0c8461:2:agent_0000",
+            "action:run_f7df9bc466904c0c8461:3:agent_0000"
+          ],
+          "message_count": 3,
+          "message_ids": [
+            "msg_1_agent_0000_agent_0002",
+            "msg_2_agent_0000_agent_0002",
+            "msg_3_agent_0000_agent_0002"
+          ],
+          "recipient_id": "agent_0002",
+          "sender_id": "agent_0000"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:1:agent_0000",
+            "action:run_f7df9bc466904c0c8461:2:agent_0000",
+            "action:run_f7df9bc466904c0c8461:3:agent_0000"
+          ],
+          "message_count": 3,
+          "message_ids": [
+            "msg_1_agent_0000_agent_0005",
+            "msg_2_agent_0000_agent_0005",
+            "msg_3_agent_0000_agent_0005"
+          ],
+          "recipient_id": "agent_0005",
+          "sender_id": "agent_0000"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:1:agent_0001",
+            "action:run_f7df9bc466904c0c8461:2:agent_0001",
+            "action:run_f7df9bc466904c0c8461:3:agent_0001"
+          ],
+          "message_count": 3,
+          "message_ids": [
+            "msg_1_agent_0001_agent_0002",
+            "msg_2_agent_0001_agent_0002",
+            "msg_3_agent_0001_agent_0002"
+          ],
+          "recipient_id": "agent_0002",
+          "sender_id": "agent_0001"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:1:agent_0001",
+            "action:run_f7df9bc466904c0c8461:2:agent_0001",
+            "action:run_f7df9bc466904c0c8461:3:agent_0001"
+          ],
+          "message_count": 3,
+          "message_ids": [
+            "msg_1_agent_0001_agent_0003",
+            "msg_2_agent_0001_agent_0003",
+            "msg_3_agent_0001_agent_0003"
+          ],
+          "recipient_id": "agent_0003",
+          "sender_id": "agent_0001"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:1:agent_0001",
+            "action:run_f7df9bc466904c0c8461:2:agent_0001",
+            "action:run_f7df9bc466904c0c8461:3:agent_0001"
+          ],
+          "message_count": 3,
+          "message_ids": [
+            "msg_1_agent_0001_agent_0006",
+            "msg_2_agent_0001_agent_0006",
+            "msg_3_agent_0001_agent_0006"
+          ],
+          "recipient_id": "agent_0006",
+          "sender_id": "agent_0001"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:2:agent_0002",
+            "action:run_f7df9bc466904c0c8461:3:agent_0002"
+          ],
+          "message_count": 2,
+          "message_ids": [
+            "msg_2_agent_0002_agent_0003",
+            "msg_3_agent_0002_agent_0003"
+          ],
+          "recipient_id": "agent_0003",
+          "sender_id": "agent_0002"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:2:agent_0002",
+            "action:run_f7df9bc466904c0c8461:3:agent_0002"
+          ],
+          "message_count": 2,
+          "message_ids": [
+            "msg_2_agent_0002_agent_0004",
+            "msg_3_agent_0002_agent_0004"
+          ],
+          "recipient_id": "agent_0004",
+          "sender_id": "agent_0002"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:2:agent_0002",
+            "action:run_f7df9bc466904c0c8461:3:agent_0002"
+          ],
+          "message_count": 2,
+          "message_ids": [
+            "msg_2_agent_0002_agent_0007",
+            "msg_3_agent_0002_agent_0007"
+          ],
+          "recipient_id": "agent_0007",
+          "sender_id": "agent_0002"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:2:agent_0003",
+            "action:run_f7df9bc466904c0c8461:3:agent_0003"
+          ],
+          "message_count": 2,
+          "message_ids": [
+            "msg_2_agent_0003_agent_0004",
+            "msg_3_agent_0003_agent_0004"
+          ],
+          "recipient_id": "agent_0004",
+          "sender_id": "agent_0003"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:2:agent_0003",
+            "action:run_f7df9bc466904c0c8461:3:agent_0003"
+          ],
+          "message_count": 2,
+          "message_ids": [
+            "msg_2_agent_0003_agent_0005",
+            "msg_3_agent_0003_agent_0005"
+          ],
+          "recipient_id": "agent_0005",
+          "sender_id": "agent_0003"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:2:agent_0003",
+            "action:run_f7df9bc466904c0c8461:3:agent_0003"
+          ],
+          "message_count": 2,
+          "message_ids": [
+            "msg_2_agent_0003_agent_0008",
+            "msg_3_agent_0003_agent_0008"
+          ],
+          "recipient_id": "agent_0008",
+          "sender_id": "agent_0003"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:3:agent_0004"
+          ],
+          "message_count": 1,
+          "message_ids": [
+            "msg_3_agent_0004_agent_0005"
+          ],
+          "recipient_id": "agent_0005",
+          "sender_id": "agent_0004"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:3:agent_0004"
+          ],
+          "message_count": 1,
+          "message_ids": [
+            "msg_3_agent_0004_agent_0006"
+          ],
+          "recipient_id": "agent_0006",
+          "sender_id": "agent_0004"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:3:agent_0004"
+          ],
+          "message_count": 1,
+          "message_ids": [
+            "msg_3_agent_0004_agent_0009"
+          ],
+          "recipient_id": "agent_0009",
+          "sender_id": "agent_0004"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:1:agent_0005",
+            "action:run_f7df9bc466904c0c8461:2:agent_0005",
+            "action:run_f7df9bc466904c0c8461:3:agent_0005"
+          ],
+          "message_count": 3,
+          "message_ids": [
+            "msg_1_agent_0005_agent_0000",
+            "msg_2_agent_0005_agent_0000",
+            "msg_3_agent_0005_agent_0000"
+          ],
+          "recipient_id": "agent_0000",
+          "sender_id": "agent_0005"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:1:agent_0005",
+            "action:run_f7df9bc466904c0c8461:2:agent_0005",
+            "action:run_f7df9bc466904c0c8461:3:agent_0005"
+          ],
+          "message_count": 3,
+          "message_ids": [
+            "msg_1_agent_0005_agent_0006",
+            "msg_2_agent_0005_agent_0006",
+            "msg_3_agent_0005_agent_0006"
+          ],
+          "recipient_id": "agent_0006",
+          "sender_id": "agent_0005"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:1:agent_0005",
+            "action:run_f7df9bc466904c0c8461:2:agent_0005",
+            "action:run_f7df9bc466904c0c8461:3:agent_0005"
+          ],
+          "message_count": 3,
+          "message_ids": [
+            "msg_1_agent_0005_agent_0007",
+            "msg_2_agent_0005_agent_0007",
+            "msg_3_agent_0005_agent_0007"
+          ],
+          "recipient_id": "agent_0007",
+          "sender_id": "agent_0005"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:2:agent_0006",
+            "action:run_f7df9bc466904c0c8461:3:agent_0006"
+          ],
+          "message_count": 2,
+          "message_ids": [
+            "msg_2_agent_0006_agent_0001",
+            "msg_3_agent_0006_agent_0001"
+          ],
+          "recipient_id": "agent_0001",
+          "sender_id": "agent_0006"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:2:agent_0006",
+            "action:run_f7df9bc466904c0c8461:3:agent_0006"
+          ],
+          "message_count": 2,
+          "message_ids": [
+            "msg_2_agent_0006_agent_0007",
+            "msg_3_agent_0006_agent_0007"
+          ],
+          "recipient_id": "agent_0007",
+          "sender_id": "agent_0006"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:2:agent_0006",
+            "action:run_f7df9bc466904c0c8461:3:agent_0006"
+          ],
+          "message_count": 2,
+          "message_ids": [
+            "msg_2_agent_0006_agent_0008",
+            "msg_3_agent_0006_agent_0008"
+          ],
+          "recipient_id": "agent_0008",
+          "sender_id": "agent_0006"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:2:agent_0007",
+            "action:run_f7df9bc466904c0c8461:3:agent_0007"
+          ],
+          "message_count": 2,
+          "message_ids": [
+            "msg_2_agent_0007_agent_0002",
+            "msg_3_agent_0007_agent_0002"
+          ],
+          "recipient_id": "agent_0002",
+          "sender_id": "agent_0007"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:2:agent_0007",
+            "action:run_f7df9bc466904c0c8461:3:agent_0007"
+          ],
+          "message_count": 2,
+          "message_ids": [
+            "msg_2_agent_0007_agent_0008",
+            "msg_3_agent_0007_agent_0008"
+          ],
+          "recipient_id": "agent_0008",
+          "sender_id": "agent_0007"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:2:agent_0007",
+            "action:run_f7df9bc466904c0c8461:3:agent_0007"
+          ],
+          "message_count": 2,
+          "message_ids": [
+            "msg_2_agent_0007_agent_0009",
+            "msg_3_agent_0007_agent_0009"
+          ],
+          "recipient_id": "agent_0009",
+          "sender_id": "agent_0007"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:3:agent_0008"
+          ],
+          "message_count": 1,
+          "message_ids": [
+            "msg_3_agent_0008_agent_0000"
+          ],
+          "recipient_id": "agent_0000",
+          "sender_id": "agent_0008"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:3:agent_0008"
+          ],
+          "message_count": 1,
+          "message_ids": [
+            "msg_3_agent_0008_agent_0003"
+          ],
+          "recipient_id": "agent_0003",
+          "sender_id": "agent_0008"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:3:agent_0008"
+          ],
+          "message_count": 1,
+          "message_ids": [
+            "msg_3_agent_0008_agent_0009"
+          ],
+          "recipient_id": "agent_0009",
+          "sender_id": "agent_0008"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:3:agent_0009"
+          ],
+          "message_count": 1,
+          "message_ids": [
+            "msg_3_agent_0009_agent_0000"
+          ],
+          "recipient_id": "agent_0000",
+          "sender_id": "agent_0009"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:3:agent_0009"
+          ],
+          "message_count": 1,
+          "message_ids": [
+            "msg_3_agent_0009_agent_0001"
+          ],
+          "recipient_id": "agent_0001",
+          "sender_id": "agent_0009"
+        },
+        {
+          "action_ids": [
+            "action:run_f7df9bc466904c0c8461:3:agent_0009"
+          ],
+          "message_count": 1,
+          "message_ids": [
+            "msg_3_agent_0009_agent_0004"
+          ],
+          "recipient_id": "agent_0004",
+          "sender_id": "agent_0009"
+        }
+      ],
+      "graph_id": "day4_demo_fictional_synthetic_graph_v1",
+      "kind": "simulated_runtime_messages",
+      "run_id": "run_f7df9bc466904c0c8461",
+      "source_record_ids": [
+        "day4_demo_fictional_notice_v1"
+      ],
+      "total_messages": 60
+    },
+    "recommendations": {
+      "case_id": "day4_demo_fictional_synthetic_v1",
+      "graph_id": "day4_demo_fictional_synthetic_graph_v1",
+      "items": [
+        {
+          "action_ids": [],
+          "message_ids": [],
+          "source_record_ids": [
+            "day4_demo_fictional_notice_v1"
+          ],
+          "text": "Review cutoff-eligible source material before acting on this simulation."
+        },
+        {
+          "action_ids": [],
+          "message_ids": [
+            "msg_1_agent_0000_agent_0001",
+            "msg_1_agent_0000_agent_0002",
+            "msg_1_agent_0000_agent_0005",
+            "msg_1_agent_0001_agent_0002",
+            "msg_1_agent_0001_agent_0003",
+            "msg_1_agent_0001_agent_0006",
+            "msg_1_agent_0005_agent_0000",
+            "msg_1_agent_0005_agent_0006",
+            "msg_1_agent_0005_agent_0007",
+            "msg_2_agent_0000_agent_0001"
+          ],
+          "source_record_ids": [],
+          "text": "Inspect simulated message paths; message volume alone does not prove influence."
+        }
+      ],
+      "run_id": "run_f7df9bc466904c0c8461"
+    },
+    "risk": {
+      "alert_id": "alert_804cfcc0cf0a0d84da29e5adb1c876d5",
+      "assessed_at": "2026-10-08T01:17:12.555165+08:00",
+      "assessment_fingerprint_sha256": "804cfcc0cf0a0d84da29e5adb1c876d5694c31b17bf658610872b42e789872a4",
+      "case_id": "day4_demo_fictional_synthetic_v1",
+      "data_mode": "synthetic",
+      "discovered_at": "2026-10-08T01:17:12.555165+08:00",
+      "discovery_time_semantics": "local simulated-rule assessment time; not historical event discovery",
+      "evidence_refs": {
+        "action_ref_total": 10,
+        "action_refs": [
+          {
+            "agent_id": "agent_0000",
+            "evidence_ids": [
+              "day4_demo_fictional_notice_v1"
+            ],
+            "message_ids": [
+              "msg_2_agent_0005_agent_0000"
+            ],
+            "round": 3,
+            "run_id": "run_f7df9bc466904c0c8461"
+          },
+          {
+            "agent_id": "agent_0001",
+            "evidence_ids": [
+              "day4_demo_fictional_notice_v1"
+            ],
+            "message_ids": [
+              "msg_2_agent_0000_agent_0001",
+              "msg_2_agent_0006_agent_0001"
+            ],
+            "round": 3,
+            "run_id": "run_f7df9bc466904c0c8461"
+          },
+          {
+            "agent_id": "agent_0002",
+            "evidence_ids": [
+              "day4_demo_fictional_notice_v1"
+            ],
+            "message_ids": [
+              "msg_2_agent_0000_agent_0002",
+              "msg_2_agent_0001_agent_0002",
+              "msg_2_agent_0007_agent_0002"
+            ],
+            "round": 3,
+            "run_id": "run_f7df9bc466904c0c8461"
+          },
+          {
+            "agent_id": "agent_0003",
+            "evidence_ids": [
+              "day4_demo_fictional_notice_v1"
+            ],
+            "message_ids": [
+              "msg_2_agent_0001_agent_0003",
+              "msg_2_agent_0002_agent_0003"
+            ],
+            "round": 3,
+            "run_id": "run_f7df9bc466904c0c8461"
+          },
+          {
+            "agent_id": "agent_0004",
+            "evidence_ids": [
+              "day4_demo_fictional_notice_v1"
+            ],
+            "message_ids": [
+              "msg_2_agent_0002_agent_0004",
+              "msg_2_agent_0003_agent_0004"
+            ],
+            "round": 3,
+            "run_id": "run_f7df9bc466904c0c8461"
+          },
+          {
+            "agent_id": "agent_0005",
+            "evidence_ids": [
+              "day4_demo_fictional_notice_v1"
+            ],
+            "message_ids": [
+              "msg_2_agent_0000_agent_0005",
+              "msg_2_agent_0003_agent_0005"
+            ],
+            "round": 3,
+            "run_id": "run_f7df9bc466904c0c8461"
+          },
+          {
+            "agent_id": "agent_0006",
+            "evidence_ids": [
+              "day4_demo_fictional_notice_v1"
+            ],
+            "message_ids": [
+              "msg_2_agent_0001_agent_0006",
+              "msg_2_agent_0005_agent_0006"
+            ],
+            "round": 3,
+            "run_id": "run_f7df9bc466904c0c8461"
+          },
+          {
+            "agent_id": "agent_0007",
+            "evidence_ids": [
+              "day4_demo_fictional_notice_v1"
+            ],
+            "message_ids": [
+              "msg_2_agent_0002_agent_0007",
+              "msg_2_agent_0005_agent_0007",
+              "msg_2_agent_0006_agent_0007"
+            ],
+            "round": 3,
+            "run_id": "run_f7df9bc466904c0c8461"
+          },
+          {
+            "agent_id": "agent_0008",
+            "evidence_ids": [
+              "day4_demo_fictional_notice_v1"
+            ],
+            "message_ids": [
+              "msg_2_agent_0003_agent_0008",
+              "msg_2_agent_0006_agent_0008",
+              "msg_2_agent_0007_agent_0008"
+            ],
+            "round": 3,
+            "run_id": "run_f7df9bc466904c0c8461"
+          },
+          {
+            "agent_id": "agent_0009",
+            "evidence_ids": [
+              "day4_demo_fictional_notice_v1"
+            ],
+            "message_ids": [
+              "msg_2_agent_0007_agent_0009"
+            ],
+            "round": 3,
+            "run_id": "run_f7df9bc466904c0c8461"
+          }
+        ],
+        "action_refs_truncated": false,
+        "case_id": "day4_demo_fictional_synthetic_v1",
+        "cutoff": "2026-10-07T09:30:00+08:00",
+        "graph_id": "day4_demo_fictional_synthetic_graph_v1",
+        "source_record_ids": [
+          "day4_demo_fictional_notice_v1"
+        ],
+        "source_version": "day4-demo-synthetic-v1"
+      },
+      "execution_mode": "offline_dynamic_substitute",
+      "graph_id": "day4_demo_fictional_synthetic_graph_v1",
+      "level": "blue",
+      "limitations": [
+        "Provisional thresholds on simulated complaint-intent decisions; not calibrated to real incidents.",
+        "Simulation actions and messages are not real platform activity or actual complaint volume.",
+        "Historical-source discovery and actual delivery timestamps are unavailable; the 30-minute red alert SLA is unverified.",
+        "Offline preview only; no WeCom or email notification has been sent.",
+        "Synthetic run must never trigger an external notification."
+      ],
+      "metrics": {
+        "latest_round_failed_decisions": 0,
+        "latest_round_simulated_messages": 30,
+        "latest_round_valid_decisions": 10,
+        "round": 3,
+        "run_failed_decisions": 0,
+        "run_status": "complete",
+        "simulated_complaint_intent_decisions": 0,
+        "simulated_complaint_intent_share": 0.0,
+        "thresholds": {
+          "orange": 0.2,
+          "red": 0.4,
+          "yellow": 0.05
+        }
+      },
+      "rule_version": "day4-simulated-complaint-share-v1-provisional",
+      "run_id": "run_f7df9bc466904c0c8461",
+      "sent_at": null,
+      "status": "provisional_offline_assessment"
+    }
+  },
+  "report_id": "report_222f182315709db12836fb3b",
+  "run_id": "run_f7df9bc466904c0c8461",
+  "run_status": "complete",
+  "source_version": "day4-demo-synthetic-v1"
+}

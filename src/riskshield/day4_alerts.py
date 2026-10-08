@@ -29,6 +29,19 @@ def _dump(value):
     return json.dumps(value, ensure_ascii=False, separators=(",", ":"))
 
 
+def _elapsed_ms(start: str | None, end: str) -> float | None:
+    if not start:
+        return None
+    try:
+        start_at, end_at = datetime.fromisoformat(start), datetime.fromisoformat(end)
+        if (start_at.tzinfo is None or start_at.utcoffset() is None
+                or end_at.tzinfo is None or end_at.utcoffset() is None):
+            return None
+    except (TypeError, ValueError):
+        return None
+    return round(max(0.0, (end_at - start_at).total_seconds() * 1000), 3)
+
+
 class Day4Alerts:
     """Classify a completed simulation round, then optionally record dry-run previews."""
 
@@ -114,13 +127,17 @@ class Day4Alerts:
         limitations = [
             "Provisional thresholds on simulated complaint-intent decisions; not calibrated to real incidents.",
             "Simulation actions and messages are not real platform activity or actual complaint volume.",
-            "Discovery and delivery timestamps are unavailable; a 30-minute red alert SLA is unverified.",
+            "Historical-source discovery and actual delivery timestamps are unavailable; the 30-minute red alert SLA is unverified.",
             "Offline preview only; no WeCom or email notification has been sent.",
         ]
         if snapshot["data_mode"] == "synthetic":
             limitations.append("Synthetic run must never trigger an external notification.")
         if run["status"] != "complete" or total_failures:
             limitations.append("Run is incomplete or contains failed decisions; classify valid latest-round actions only.")
+        execution_mode = (config.get("backend") or {}).get(
+            "type", config.get("backend_mode"))
+        if snapshot["data_mode"] == "real_historical" and execution_mode == "offline_dynamic_substitute":
+            limitations.append("Real historical source material was processed by an offline substitute; this is not real-model reasoning evidence.")
         fingerprint = hashlib.sha256(json.dumps({
             "run_id": run_id, "rule_version": RULE_VERSION,
             "run_status": run["status"], "round": round_number,
@@ -129,13 +146,19 @@ class Day4Alerts:
             "graph_claims": graph["claims"],
             "source_version": snapshot["version"], "cutoff": snapshot["cutoff"],
         }, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()).hexdigest()
+        assessed_at = _now()
         alert = {
             "alert_id": "alert_" + fingerprint[:32],
             "run_id": run_id, "case_id": run["case_id"], "graph_id": run["graph_id"],
             "level": level, "rule_version": RULE_VERSION,
             "assessment_fingerprint_sha256": fingerprint,
-            "data_mode": snapshot["data_mode"], "status": "provisional_offline_assessment",
-            "assessed_at": _now(), "discovered_at": None, "sent_at": None,
+            "data_mode": snapshot["data_mode"], "execution_mode": execution_mode,
+            "status": "provisional_offline_assessment",
+            "assessed_at": assessed_at,
+            # Local rule detection time; it is not the historical event's first-public time.
+            "discovered_at": assessed_at,
+            "discovery_time_semantics": "local simulated-rule assessment time; not historical event discovery",
+            "sent_at": None,
             "metrics": {
                 "round": round_number, "run_status": run["status"],
                 "latest_round_valid_decisions": len(valid),
@@ -181,11 +204,15 @@ class Day4Alerts:
                    if channel == "wecom" else
                    {"subject": f"[OFFLINE PREVIEW] {alert['level'].upper()} simulated alert",
                     "body_text": message, "to_alias": None})
+        previewed_at = _now()
         preview = {
             "preview_id": "preview_" + uuid.uuid4().hex[:20],
             "alert_id": alert_id, "run_id": alert["run_id"], "channel": channel,
-            "delivery_status": "dry_run", "previewed_at": _now(),
-            "discovered_at": None, "sent_at": None, "network_requests": 0,
+            "delivery_status": "dry_run", "previewed_at": previewed_at,
+            "discovered_at": alert.get("discovered_at"),
+            "discovery_to_preview_ms": _elapsed_ms(alert.get("discovered_at"), previewed_at),
+            "latency_basis": "local_rule_assessment_to_preview_generation",
+            "sent_at": None, "network_requests": 0,
             "recipient": None,
             "payload": payload,
             "limitation": "No notification was sent; delivery and 30-minute timing are unverified.",

@@ -1,0 +1,173 @@
+{
+  "direction_agreement": {
+    "confusion_matrix_actual_by_predicted": {
+      "calming": {
+        "calming": 0,
+        "escalation": 0
+      },
+      "escalation": {
+        "calming": 0,
+        "escalation": 0
+      }
+    },
+    "denominator": 0,
+    "excluded_events_or_rows": [
+      {
+        "evaluation_ids": [
+          "unh-change-sec-sentiment-v1",
+          "unh-change-optum-sentiment-v1"
+        ],
+        "event_id": "unh_change_cyberattack_20240222",
+        "reasons": [
+          "missing_or_invalid_direction_prediction",
+          "missing_or_unresolved_observed_direction_label"
+        ]
+      }
+    ],
+    "exclusion_count": 1,
+    "exclusion_reasons": {
+      "missing_or_invalid_direction_prediction": 1,
+      "missing_or_unresolved_observed_direction_label": 1
+    },
+    "numerator": 0,
+    "sample_size_events": 0,
+    "undefined_reason": "no distinct event has both a direction prediction and an evidence-backed observed direction label",
+    "value": null
+  },
+  "evaluation_version": "day5-authorized-local-data-v1",
+  "input_exclusions": {
+    "count": 0,
+    "excluded_rows": [],
+    "reasons": {}
+  },
+  "label_version": "day5-authorized-local-labels-v1",
+  "negative_identification": {
+    "binary_accuracy": {
+      "denominator": 1,
+      "formula": "(TP + TN) / (TP + FP + FN + TN)",
+      "numerator": 0,
+      "undefined_reason": null,
+      "value": 0.0
+    },
+    "counts": {
+      "false_negative": 0,
+      "false_positive": 1,
+      "true_negative": 0,
+      "true_positive": 0
+    },
+    "definition_status": "unresolved by V2-Q03; both candidate definitions are reported",
+    "exclusion_count": 1,
+    "exclusion_reasons": {
+      "annotation_prediction_blinding_not_established": 1,
+      "fewer_than_two_independent_human_labels": 1,
+      "missing_or_invalid_sentiment_prediction": 1,
+      "one_or_more_annotations_not_independent_for_event": 1
+    },
+    "negative_confusion_matrix": {
+      "actual_negative": {
+        "predicted_negative": 0,
+        "predicted_nonnegative": 0
+      },
+      "actual_nonnegative": {
+        "predicted_negative": 1,
+        "predicted_nonnegative": 0
+      }
+    },
+    "precision": {
+      "denominator": 1,
+      "formula": "TP / (TP + FP)",
+      "numerator": 0,
+      "undefined_reason": null,
+      "value": 0.0
+    },
+    "recall": {
+      "denominator": 0,
+      "formula": "TP / (TP + FN)",
+      "numerator": 0,
+      "undefined_reason": "no human-labeled negative records",
+      "value": null
+    },
+    "sample_size": 1
+  },
+  "provenance": {
+    "future_labels_sha256": "9be6997f52dc59b9f5cdd35e8b5be0f923a9aef9b8d1a0bb2889502ed5ddf766",
+    "future_labels_used_only_for_metric_calculation": true,
+    "input_sha256": "4847ea2d86fa600feb57e48a0603e767cad9d095bfaa7b1c0f2a6bd85f28bcd2",
+    "multiple_sources_same_event_counted_as_distinct_direction_events": false,
+    "synthetic_data_in_formal_denominators": false
+  },
+  "sample_size": {
+    "direction_evaluable_events": 0,
+    "distinct_cutoff_qualified_real_events": 1,
+    "distinct_real_events": 1,
+    "distinct_real_source_records": 2,
+    "input_rows": 2,
+    "nonhistorical_rows_excluded": 0,
+    "sentiment_evaluable_records": 1
+  },
+  "schema": "riskshield.day5.evaluation-report.v1",
+  "sentiment_three_class": {
+    "class_support": {
+      "negative": 0,
+      "neutral": 1,
+      "positive": 0
+    },
+    "confusion_matrix_actual_by_predicted": {
+      "negative": {
+        "negative": 0,
+        "neutral": 0,
+        "positive": 0
+      },
+      "neutral": {
+        "negative": 1,
+        "neutral": 0,
+        "positive": 0
+      },
+      "positive": {
+        "negative": 0,
+        "neutral": 0,
+        "positive": 0
+      }
+    },
+    "denominator": 1,
+    "excluded_rows": [
+      {
+        "evaluation_id": "unh-change-optum-sentiment-v1",
+        "event_id": "unh_change_cyberattack_20240222",
+        "reasons": [
+          "annotation_prediction_blinding_not_established",
+          "fewer_than_two_independent_human_labels",
+          "missing_or_invalid_sentiment_prediction",
+          "one_or_more_annotations_not_independent_for_event"
+        ],
+        "unit_id": "optum-status-20240221-cyber-update"
+      }
+    ],
+    "exclusion_count": 1,
+    "exclusion_reasons": {
+      "annotation_prediction_blinding_not_established": 1,
+      "fewer_than_two_independent_human_labels": 1,
+      "missing_or_invalid_sentiment_prediction": 1,
+      "one_or_more_annotations_not_independent_for_event": 1
+    },
+    "numerator": 0,
+    "sample_size": 1,
+    "undefined_reason": null,
+    "value": 0.0
+  },
+  "source_metrics": {
+    "definition_status": {
+      "direction_stability_and_abstention": "unresolved; only explicit escalation/calming pairs are scoreable",
+      "historical_event_count": "unresolved; source range remains 10–20 distinct real events",
+      "negative_identification_accuracy": "unresolved; report negative precision and binary accuracy separately"
+    },
+    "mapping_document": "docs/design/05-赛题指标映射表.md",
+    "thresholds_preserved": {
+      "direction_agreement": "at least 70%",
+      "historical_real_events": "10–20; exact minimum unresolved",
+      "negative_identification_accuracy": "at least 90% (formal formula unresolved)",
+      "negative_recall": "at least 85%",
+      "three_class_sentiment_accuracy": "at least 88%"
+    }
+  }
+}

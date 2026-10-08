@@ -1,0 +1,28 @@
+{
+  "generated_at_utc": "2026-10-08T02:24:11.005965+00:00",
+  "scope": "documentation_and_evidence_sync_nonfinal",
+  "evaluation_reproduces_saved_result": true,
+  "docker_restart_json_equal": {
+    "job": true,
+    "report": true,
+    "alert": true
+  },
+  "prior_full_test_batch": {
+    "date_shanghai": "2026-10-08",
+    "passed": 154,
+    "warnings": 1,
+    "seconds": 37.23
+  },
+  "no_new_model_calls_or_notifications": true,
+  "current_related_tests": {
+    "command": "uv run pytest -q tests/test_day5_evaluation.py tests/test_day5_delivery_audit.py",
+    "passed": 7,
+    "seconds": 0.14
+  },
+  "diff_check_passed": true,
+  "markdown_document_count": 19,
+  "markdown_local_links_checked": 273,
+  "broken_local_links": [],
+  "evidence_files_checked": 72,
+  "missing_evidence_files": []
+}

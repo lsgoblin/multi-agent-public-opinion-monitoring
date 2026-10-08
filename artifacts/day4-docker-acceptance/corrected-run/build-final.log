@@ -1,0 +1,62 @@
+ Image riskshield:day4-local Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 564B 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 373B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/python:3.12-slim
+#3 DONE 0.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 180B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 DONE 0.0s
+
+#6 [1/8] FROM docker.io/library/python:3.12-slim@sha256:05cda9777409a9c3ffddd94a4c476b79f0769a0b4857f0c7ed9226b6800b0d6f
+#6 resolve docker.io/library/python:3.12-slim@sha256:05cda9777409a9c3ffddd94a4c476b79f0769a0b4857f0c7ed9226b6800b0d6f 0.0s done
+#6 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 4.58kB done
+#5 DONE 0.0s
+
+#7 [7/8] COPY data/research/channel_checks_v2.json ./data/research/channel_checks_v2.json
+#7 CACHED
+
+#8 [2/8] WORKDIR /app
+#8 CACHED
+
+#9 [3/8] COPY pyproject.toml ./
+#9 CACHED
+
+#10 [4/8] COPY src ./src
+#10 CACHED
+
+#11 [5/8] COPY ui ./ui
+#11 CACHED
+
+#12 [6/8] COPY data/public ./data/public
+#12 CACHED
+
+#13 [8/8] RUN pip install --no-cache-dir -e . && mkdir -p /app/runtime
+#13 CACHED
+
+#14 exporting to image
+#14 exporting layers done
+#14 exporting manifest sha256:7e548ab0c1d0a0e79a9c372b74fea76416ea140817c6da634970a36a555d9475 done
+#14 exporting config sha256:c57f4610671f8b66a7808412effe009c20d44e981428519520dd75a42117937b done
+#14 exporting attestation manifest sha256:0fda593b553dfc936a488a9f9dee09d11b441be0796952f20a3ede16c7d38034 0.0s done
+#14 exporting manifest list sha256:060d5d00f73720cda6f9ee87429b2bbd1083d90ca109d8c1e4e61486d4a06f86
+#14 exporting manifest list sha256:060d5d00f73720cda6f9ee87429b2bbd1083d90ca109d8c1e4e61486d4a06f86 0.0s done
+#14 naming to docker.io/library/riskshield:day4-local done
+#14 unpacking to docker.io/library/riskshield:day4-local 0.0s done
+#14 DONE 0.2s
+
+#15 resolving provenance for metadata file
+#15 DONE 0.0s
+ Image riskshield:day4-local Built 

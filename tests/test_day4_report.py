@@ -51,6 +51,10 @@ def test_report_has_five_evidence_bound_modules_and_persists(tmp_path):
     reports = Day4Reports(store)
     report = reports.build(run_id)
     assert report["data_mode"] == "synthetic"
+    assert report["execution_mode"] == "OfflineBackend"
+    assert report["binding"] == {"run_id": run_id, "case_id": CASE_ID, "graph_id": GRAPH_ID}
+    for module in report["modules"].values():
+        assert {key: module[key] for key in ("run_id", "case_id", "graph_id")} == report["binding"]
     assert report["source_version"] == "day3-synthetic-v1"
     assert report["run_status"] == "complete"
     assert set(report["modules"]) == {"propagation", "emotion_evolution", "key_nodes",

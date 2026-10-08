@@ -1,6 +1,9 @@
 import json
 import socket
 import threading
+from pathlib import Path
+
+import pytest
 
 import pytest
 
@@ -138,66 +141,73 @@ def test_completed_jobs_persist_and_stale_active_jobs_fail_on_restart(tmp_path):
     assert interrupted["completed_at"] is not None
 
 
-def test_real_historical_run_is_rejected_before_a_job_is_created(tmp_path):
+def test_real_historical_case_runs_only_from_archived_cutoff_inputs(tmp_path, monkeypatch):
     tasks = _tasks(tmp_path)
-    case = CaseImport.model_validate({
-        "case_id": "day4_real_rejection_case",
-        "title": "Historical source kept outside offline demo execution",
-        "scope": "Validation only",
-        "cutoff": "2024-01-01T10:30:00+08:00",
-        "cutoff_basis": "Archived source time plus 30 minutes.",
-        "data_mode": "real_historical",
-        "version": "v1",
-        "records": [{
-            "record_id": "archived_source",
-            "channel": "news",
-            "source_url": "https://example.com/archived-source",
-            "publisher": "Example archive",
-            "title": "Archived source",
-            "summary": "An archived historical source used only to verify rejection.",
-            "data_mode": "real_historical",
-            "published_at": "2024-01-01T10:00:00+08:00",
-            "available_at": "2024-01-01T10:00:00+08:00",
-            "collected_at": "2024-01-01T10:01:00+08:00",
-            "availability_basis": "Archived timestamp.",
-            "historical_integrity": "archived",
-            "acquisition_method": "manual_web_review",
-            "role": "input_candidate",
-        }],
-    })
-    tasks.store.import_case(case)
-    snapshot = tasks.store.snapshot(case.case_id)
-    graph_id = "day4_real_rejection_graph"
-    graph = {
-        "case_id": case.case_id,
-        "cutoff": snapshot["cutoff"],
-        "source_version": snapshot["version"],
-        "nodes": [],
-        "edges": [],
-        "claims": [{
-            "claim_id": "claim:archived_source",
-            "record_id": "archived_source",
-            "text": case.records[0].summary,
-            "title": case.records[0].title,
-            "source_url": str(case.records[0].source_url),
-            "available_at": case.records[0].available_at.isoformat(),
-            "source_node_id": "source:archived_source",
-            "publisher_node_id": "publisher:example",
-            "observation_ids": [],
-            "observation_node_ids": [],
-            "evidence_adapters": ["archive"],
-        }],
-        "excluded_counts": snapshot["excluded_counts"],
-    }
-    with tasks.store.connect() as db:
-        db.execute("INSERT INTO graphs VALUES (?, ?, ?, ?, ?, ?)", (
-            graph_id, case.case_id, snapshot["cutoff"], snapshot["version"],
-            "2026-10-07T00:00:00+00:00", json.dumps(graph),
-        ))
-    run_id = tasks.simulation.create_run(
-        case.case_id, graph_id, agent_count=1, rounds=1, concurrency=1
-    )
+    package_path = (Path(__file__).resolve().parents[1] / "data/public/"
+                    "unh_change_20240222_day2_multisource_event.json")
+    package = json.loads(package_path.read_text(encoding="utf-8"))
+    projection = CaseImport.model_validate(package["case_import_projection"])
+    tasks.store.import_case(projection)
 
-    with pytest.raises(TaskError, match="synthetic"):
-        tasks.start(run_id)
-    assert tasks.list() == []
+    def forbidden_socket(*args, **kwargs):
+        raise AssertionError("historical substitute attempted a network request")
+
+    monkeypatch.setattr(socket, "socket", forbidden_socket)
+    job = tasks.start_historical_case(projection.case_id, agent_count=5, rounds=3,
+                                      concurrency=2)
+    job = tasks.wait(job["job_id"], timeout=10)
+    assert job["status"] == "complete", job
+    assert job["mode"] == TASK_MODE
+    assert job["execution_mode"] == "offline_dynamic_substitute"
+    assert job["data_mode"] == "real_historical"
+    assert job["model_calls"] == job["network_requests"] == 0
+    assert job["input_received_at"] and job["started_at"] and job["report_generated_at"]
+    assert job["elapsed_seconds"] >= 0
+
+    report = tasks.reports.get(job["report_id"])
+    allowed_sources = {"unh-sec-20240222-initial", "optum-status-20240221-cyber-update"}
+    assert report["case_id"] == projection.case_id == job["case_id"]
+    assert report["graph_id"] == job["graph_id"]
+    assert report["run_id"] == job["run_id"]
+    assert report["data_mode"] == "real_historical"
+    assert report["execution_mode"] == "offline_dynamic_substitute"
+    assert report["graph_build_mode"] == "offline_archived_record_projection"
+    assert report["evidence"]["source_record_ids"] == sorted(allowed_sources)
+    assert "unh-sec-20240308-update" not in json.dumps(report)
+    assert any("does not prove real-model" in item for item in report["limitations"])
+    graph = tasks.day2.graph(job["graph_id"])
+    assert {claim["record_id"] for claim in graph["claims"]} == allowed_sources
+    assert graph["excluded_counts"]["not_input"] == 1
+
+    trajectory = tasks.simulation.trajectory(job["run_id"])
+    assert any(row["observation_refs"]["messages"] for row in trajectory
+               if row["round_number"] > 1)
+    assert any(row["observation_refs"]["memories"] for row in trajectory
+               if row["round_number"] > 1)
+    assert all(set(row["observation_refs"]["evidence"]) <= allowed_sources
+               for row in trajectory)
+    assert tasks.start(job["run_id"])["job_id"] == job["job_id"]
+    assert len(tasks.list()) == 1
+
+
+def test_future_graph_claim_fails_before_any_agent_observes_it(tmp_path):
+    tasks = _tasks(tmp_path)
+    package_path = (Path(__file__).resolve().parents[1] / "data/public/"
+                    "unh_change_20240222_day2_multisource_event.json")
+    package = json.loads(package_path.read_text(encoding="utf-8"))
+    case = CaseImport.model_validate(package["case_import_projection"])
+    tasks.store.import_case(case)
+    graph = tasks._build_archived_projection(case.case_id)
+    run_id = tasks.simulation.create_run(
+        case.case_id, graph["graph_id"], agent_count=1, rounds=1, concurrency=1)
+    graph["claims"][0]["available_at"] = "2027-01-01T00:00:00+00:00"
+    with tasks.store.connect() as db:
+        db.execute("UPDATE graphs SET body=? WHERE graph_id=?",
+                   (json.dumps({key: value for key, value in graph.items() if key != "graph_id"}),
+                    graph["graph_id"]))
+
+    job = tasks.start(run_id)
+    job = tasks.wait(job["job_id"], timeout=10)
+    assert job["status"] == "failed"
+    assert job["failure_category"] == "data_integrity_error"
+    assert tasks.simulation.trajectory(run_id) == []
