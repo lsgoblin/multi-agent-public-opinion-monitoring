@@ -11,7 +11,7 @@
 
 ## 当前结论
 
-- 生产模块按功能命名：`evidence`、`sentiment`、`source_probe`、`simulation`、`reporting`、`alerts`、`tasks`、`evaluation`。旧 import 路径目前仍保留轻量兼容入口。
+- 生产模块按功能命名：`evidence`、`sentiment`、`source_probe`、`simulation`、`reporting`、`alerts`、`tasks`、`evaluation`。
 - 本机真实历史材料演示执行 `offline_dynamic_substitute`，来源图为 `offline_archived_record_projection`；这不等于真实模型推演或在线 GraphRAG。
 - 企微与邮件仅生成 `dry_run` 预览，不发送通知。Docker 已有本机构建、运行、重启持久化证据；完整容器出口隔离仍待实测。
 - [测试报告](test-report.md)记录正式走势与情感指标均不可计算；AI 标注仅为探索性参考，并列出端到端结果和剩余阻塞。

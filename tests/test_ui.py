@@ -8,8 +8,8 @@ from fastapi.testclient import TestClient
 from streamlit.testing.v1 import AppTest
 
 from riskshield.api import create_app
-from riskshield.day2 import Day2Pipeline
-from riskshield.day3 import Day3Simulation, DecisionResult
+from riskshield.evidence import Day2Pipeline
+from riskshield.simulation import Day3Simulation, DecisionResult
 from riskshield.schemas import AgentDecision, CaseImport
 from riskshield.store import Store
 from tests.fixtures.day3_synthetic_case import CASE_ID, GRAPH_ID, prepare_synthetic_case

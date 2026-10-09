@@ -38,7 +38,7 @@ uv run streamlit run ui/app.py --server.address 127.0.0.1 --server.port 8501 --s
 | 动态仿真 | `src/riskshield/simulation.py` |
 | 报告、预警、任务、离线评测 | `reporting.py`、`alerts.py`、`tasks.py`、`evaluation.py` |
 
-旧模块路径目前仍保留轻量兼容入口；后续将清理阶段文件名。HTTP 路由、配置键、SQLite 表与评测 JSON schema 暂不因文件名调整而改变。
+提交的生产模块均按功能命名。为保持已有本机数据兼容，HTTP 路由、配置键、SQLite 表与评测 JSON schema 未随文件名调整。
 
 ## 交付与验证
 

@@ -46,7 +46,7 @@ class HistoricalTaskRequest(BaseModel):
 
 
 def create_app(db_path: str | Path | None = None) -> FastAPI:
-    app = FastAPI(title="风控盾 · Day 4 V2", version="0.5.0",
+    app = FastAPI(title="风控盾 · 舆情监测与预警", version="0.5.0",
                   description="公开事件、截止证据图、仿真和离线报告预警工程工作台。")
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "testserver", "api"])
     store = Store(db_path or os.getenv("RISKSHIELD_DB", str(PROJECT_ROOT / "runtime/riskshield.db")))

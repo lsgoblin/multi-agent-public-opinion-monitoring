@@ -620,7 +620,7 @@ def evaluate_files(inputs_path: Path, labels_path: Path) -> dict[str, Any]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Compute source-grounded offline Day 5 evaluation metrics.")
+    parser = argparse.ArgumentParser(description="Compute source-grounded offline evaluation metrics.")
     parser.add_argument("--inputs", required=True, type=Path, help="Versioned cutoff-only evaluation inputs JSON.")
     parser.add_argument("--future-labels", required=True, type=Path, help="Separate evaluation-label JSON; never passed to agents.")
     parser.add_argument("--out", required=True, type=Path, help="Path for the reproducible JSON report.")

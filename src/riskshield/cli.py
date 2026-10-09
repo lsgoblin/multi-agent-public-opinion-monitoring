@@ -12,7 +12,7 @@ from riskshield.store import Store
 
 def main():
     sys.stdout.reconfigure(encoding="utf-8")
-    parser = argparse.ArgumentParser(description="风控盾 Day 1 工具")
+    parser = argparse.ArgumentParser(description="风控盾本机工具")
     subs = parser.add_subparsers(dest="command", required=True)
     importer = subs.add_parser("import-case", help="校验并幂等导入历史案例包")
     importer.add_argument("path", type=Path)
