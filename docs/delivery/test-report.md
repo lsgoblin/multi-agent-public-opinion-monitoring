@@ -1,20 +1,20 @@
 # 测试与运行报告
 
-> 更新：2026-10-09。本文区分代码测试、离线替身运行、真实模型运行和正式业务达标。本轮没有新增收费调用、真实通知或外部部署。
+> 更新：2026-10-09。本文区分代码测试、离线替身运行、真实模型运行和正式业务达标。以下 181 项是精简源码提交前的完整工作区回归快照；过程证据保留在本机归档及既有 Git 历史中。
 
 ## 当前验证结果
 
 | 验证项 | 结果 | 解释 |
 | --- | --- | --- |
-| 全量离线测试 | `uv run pytest -q`：**181 passed, 1 warning，62.46 秒** | 当前工作树；唯一警告是既有 Starlette `TestClient` / `httpx` 弃用提示。可复核输出：[测试摘要 JSON](../../artifacts/final-closure/test-results-functional-names-v1.json)。 |
-| Day 4 API/tasks 基线 | **2 failed, 9 passed** | 两个断言仍匹配旧英文报告文本。修复后断言核验中文限制说明，同时保留离线替身模式及“非真实模型结论”限制检查；定向回归见[基线与回归记录](../../artifacts/final-integration-review/test-results.json)。 |
-| 本机端到端 | **10 Agent × 3 轮，30/30 有效决策** | `offline_dynamic_substitute`；五模块报告、蓝色暂定预警与企微/邮件 `dry_run` 预览绑定同一案例、图、运行；模型调用及外部网络请求均为 0。输入到报告写盘 **0.189624 秒**，API 可读 **0.203963 秒**。详情：[端到端证据](../../artifacts/final-closure/end-to-end-20261009-functional-names-v1.json)。 |
-| A 最新 500×30 批次 | **部分完成，未达规模目标** | 源码锁与运行版本匹配；3,477/15,000 个有效决策，1 次 timeout 后停止，6 轮后为 `partial`。591.206 秒是输入到 partial 报告的时间，不是完整任务 SLA。见[A 批次复核](../../artifacts/final-integration-review/a-simulation-review.json)。 |
-| C 最新正式评分 | **不可计算** | v24 的正式情感、负面识别和走势方向均为 0/0；AI 标注不作人工真值。见[C v24 报告](../../artifacts/final-scoring-20261009/final-score-report-v24.md)。 |
-| Docker 本机验收 | **容器功能已验证，出口隔离未通过** | 有构建、健康检查、Web→API、案例运行和停止/启动持久化证据；入口容器仍有默认路由，完整出口审计和域内部署未验证。见[部署复核](../records/final-deployment-review.md)。 |
-| Web 页面复核 | **部分验证** | B 的 7 项 UI 测试通过；本轮页面绑定和本地计数有只读观察，但当前版本截图未保存。完整自然语言问答尚未实现，现有查询是词项匹配与引用展示。见[Web 复核记录](../records/final-report-web-review.md)。 |
+| 全量离线测试 | 精简前工作区 `uv run pytest -q`：**181 passed, 1 warning** | 唯一警告是既有 Starlette `TestClient` / `httpx` 弃用提示；此数字不作为精简后测试数量。 |
+| 精简源码副本测试 | **95 passed, 1 warning，37.57 秒** | 从当前 Git 暂存文件导出独立目录，确认导入该目录的 `src`；复用本机已有 `.venv` 依赖，尚非全新依赖安装验证。 |
+| 本机端到端 | **10 Agent × 3 轮，30/30 有效决策** | `offline_dynamic_substitute`；五模块报告、蓝色暂定预警与企微/邮件 `dry_run` 预览绑定同一案例、图、运行；模型调用及外部网络请求均为 0。 |
+| A 最新 500×30 批次 | **部分完成，未达规模目标** | 3,477/15,000 个有效决策，1 次 timeout 后停止，6 轮后为 `partial`。591.206 秒只对应部分报告。 |
+| C 最新正式评分 | **不可计算** | v24 的正式情感、负面识别和走势方向均为 0/0；AI 标注不作人工真值。 |
+| Docker 本机验收 | **容器功能已验证，出口隔离未通过** | 已完成构建、健康检查、案例运行和停止/启动持久化；入口容器仍有默认路由，域内部署未验证。 |
+| Web 页面复核 | **部分验证** | 现有查询为词项匹配与引用展示；完整自然语言问答尚未实现。 |
 
-候选 ZIP 内的分发测试子集命令为 `uv run pytest -q tests -k "not actual_500x30_ledger_reconstructs_on_temporary_copy"`。该包不含 `test_simulation_performance.py`、两项 C 数据集测试，以及读取锁定 500×30 数据的报告重建用例；这些材料不属于 demo ZIP。工作区用显式排除参数复核了等价子集，结果为 **170 passed, 1 deselected, 1 warning**，详见本轮测试摘要 JSON。
+精简源码提交移出仅服务于历史实验、冻结评测材料和大体积运行账本的测试；保留的测试覆盖本机应用核心链路。交付 ZIP 是此前冻结的独立产物，不由本次 `.gitignore` 改动重写。
 
 本机端到端的 ID 绑定为：`case_id=unh_change_20240222_day2_multisource`、`graph_id=936c73951d2ab46f8e0ee6bb`、`run_id=run_7aff1ceff6934a1da13e`、`job_id=job_02aa0aed4a594ebe995c`、`report_id=report_26db8f02583eb98bde5f7490`、`alert_id=alert_19fe8d54fd95ea0876eee8b6323fd0c4`。来源引用为两条截止前归档记录；1 条后续 `not_input` 材料被排除。图构建为 `offline_archived_record_projection`，不是在线 GraphRAG。
 
@@ -39,9 +39,4 @@
 
 ## 复核入口
 
-- [最终集成复核记录](../records/final-integration-review.md)：代码命名、版本、接口、限制与责任方。
-- [四类交付文档索引](README.md)：部署、API、用户操作和本报告。
-- [功能模块重命名与迁移前后哈希](../../artifacts/final-closure/rename-map.json)。
-- [C 最新冻结评分报告](../../artifacts/final-scoring-20261009/final-score-report-v24.md)。
-
-G1/G2 的内部受限结论、G3/G4/G5 正式状态以[项目现状](../planning/00-规划总览与待确认事项.md)、对应记录和最终评估对话的独立核验为准。
+[四类交付文档索引](README.md)列出部署、API、用户操作和本报告。详细过程证据保留在本机忽略目录及既有 Git 历史中。G1/G2 仅为内部受限通过；G3/G4/G5 均尚未通过。

@@ -38,15 +38,14 @@ uv run streamlit run ui/app.py --server.address 127.0.0.1 --server.port 8501 --s
 | 动态仿真 | `src/riskshield/simulation.py` |
 | 报告、预警、任务、离线评测 | `reporting.py`、`alerts.py`、`tasks.py`、`evaluation.py` |
 
-旧模块路径保留为轻量兼容入口。HTTP 路由、配置键、SQLite 表与评测 JSON schema 不因文件改名而改变；具体映射见[重命名表](artifacts/final-closure/rename-map.json)。
+旧模块路径目前仍保留轻量兼容入口；后续将清理阶段文件名。HTTP 路由、配置键、SQLite 表与评测 JSON schema 暂不因文件名调整而改变。
 
 ## 交付与验证
 
 - [四类交付文档](docs/delivery/README.md)
 - [测试与运行报告](docs/delivery/test-report.md)
-- [最终集成复核](docs/records/final-integration-review.md)
-- [C v24 评分报告](artifacts/final-scoring-20261009/final-score-report-v24.md)
+- [测试与运行报告](docs/delivery/test-report.md)
 
-本轮候选包清单与冻结交接只保存在项目工作区：`artifacts/final-integration-review/candidate-package-manifest.json` 和 `artifacts/final-closure/integration-ready.json`。它们不是运行时必需文件。
+实验脚本、运行证据、评测材料和交付 ZIP 保留在本机的忽略目录中，不属于源码提交，也不是应用启动所需文件。
 
 G3、G4、G5 均尚未通过；本地演示能力不构成正式业务指标达标。

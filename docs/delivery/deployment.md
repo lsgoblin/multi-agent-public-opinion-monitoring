@@ -39,7 +39,7 @@ $env:no_proxy = $env:NO_PROXY
 uv run streamlit run ui/app.py --server.address 127.0.0.1 --server.port 8501 --server.headless true
 ```
 
-然后打开 `http://127.0.0.1:8501/`。Web 启动时会请求 `/health`、`/readiness`、`/cases` 和 `/channels/status`；API 不可用时页面会提示先启动 API。历史 Web 闭环记录使用上述命令与 loopback 绕过设置，见 [44 号记录](../records/44-Day4Web前端本机闭环实测.md)。
+然后打开 `http://127.0.0.1:8501/`。Web 启动时会请求 `/health`、`/readiness`、`/cases` 和 `/channels/status`；API 不可用时页面会提示先启动 API。
 
 ### 主机配置与数据
 
@@ -123,37 +123,6 @@ docker compose -p riskshield-demo down
 | Engine 可用但构建失败 | 检查 Docker Hub 对 `auth.docker.io:443` 的访问与基础镜像拉取错误。2026-10-07 的复测正是在获取 `python:3.12-slim` token 时超时；未调整代理、DNS 或防火墙。 |
 | 页面可开但任务失败 | 在“处置队列”刷新进度，查看受限错误类别；核对案例、图 ID、数据模式、cutoff、来源版本和可见时间。任务失败不会提供异常堆栈给页面。 |
 
-## 已实测项目与网络边界
+## 已验证范围
 
-[45 号记录](../records/45-Day4Docker本机运行验收.md)保留 2026-10-07 的 Engine 与基础镜像拉取失败；2026-10-08 已成功拉取、构建并修复安装路径。独立本机项目 `riskshieldaccept` 的镜像 ID 为 `sha256:3b548822d8b66783b687b8e6f33db3909a0225e82171f4a065b1b46dadd15ab5`，API healthy，Web 与入口容器运行。原有项目容器和卷保留。
-
-该批采用独立端口，复现命令为：
-
-```powershell
-$env:RISKSHIELD_HOST_API_PORT = '18000'
-$env:RISKSHIELD_HOST_WEB_PORT = '18501'
-docker compose -p riskshieldaccept up -d --build
-docker compose -p riskshieldaccept ps -a
-```
-
-此命令说明复验配置，并非建议覆盖正在运行的验收实例。该项目 API 为 `http://127.0.0.1:18000/`，Web 为 `http://127.0.0.1:18501/`；主机进程和默认 Compose 项目的 8000/8501 不应混记为该批证据。
-
-| 验证项 | 当前结果 |
-| --- | --- |
-| 构建、健康检查、Web 页面、Web→API | 实测通过；`/channels/status` 亦返回 200 |
-| 纯合成 10 Agent × 3 轮 | 完成；run_id 为 `run_f7df9bc466904c0c8461`，模式 `offline_dynamic_substitute`，调用账本为 0 |
-| 自动报告与预警 | 五模块报告和蓝色预警生成 |
-| 服务重启后的持久化 | 同一任务、报告、预警 JSON 相等，API/Web 仍可访问 |
-| API/Web 直接公网出口 | 无默认路由；直连 `1.1.1.1:443` 返回 `errno=101` |
-| 完整容器组出口隔离 | 未通过；local_gateway 有默认路由，未取得全程抓包/完整出口限制证据 |
-| 目标域内部署、域内真实模型、真实通知 | 未验证 |
-
-主要证据：[容器与路由](../../artifacts/day4-docker-acceptance/corrected-run/runtime-cli.txt)、[任务摘要](../../artifacts/day4-docker-acceptance/corrected-run/run-summary.json)、[重启核对](../../artifacts/day4-docker-acceptance/corrected-run/restart-summary.json)、[Web 实图](../../artifacts/day4-docker-acceptance/corrected-run/web-task-overview.png)。完整 Docker 验收仍需入口容器出口限制及网络观测；G4 不因功能项完成而通过。
-
-## 2026-10-09 当前源码验收
-
-无缓存构建镜像 `riskshield:day4-local`，ID 为 `sha256:fc534eac7b89f206ce81e045012fa4bb01f9cf781ec65ac91560b91c4890eea8`，大小 173.20 MiB；容器中的 15 个 Python 源文件与构建时工作树哈希一致。验收项目 `riskshieldagentdfinalutf8` 使用 `127.0.0.1:28002` / `127.0.0.1:28503` 和独立临时目录 `artifacts/final-deployment-review/runtime-final`。该目录绑定只用于本轮验收，普通启动使用项目名隔离的 Compose 命名卷。
-
-固定案例 `unh_change_20240222_day2_multisource` 的源文件以 UTF-8 读取并校验 SHA-256；验收库中已存在该案例，脚本核对标题后直接创建任务，没有重复导入。任务为真实历史材料加 `offline_dynamic_substitute`，10 Agent × 3 轮、30/30 有效决策，`model_calls=0`、`network_requests=0`。报告五模块、蓝色暂定预警均绑定同一 case/graph/run；企微与邮件状态为 `dry_run`、`sent_at=null`。Web 实际打开任务队列、五模块报告和预警中心；先正常停止、再启动 API、Web、入口容器后，同一案例、任务、报告、预警的 HTTP 原始 JSON SHA-256 均保持一致，健康检查和 Web 首页为 200。
-
-本轮最新镜像、代码哈希、任务和重启摘要见[版本清单](../../artifacts/final-deployment-review/version-manifest.json)、[案例闭环](../../artifacts/final-deployment-review/case-closure-summary.json)、[持久化复核](../../artifacts/final-deployment-review/restart-persistence-summary.json)及[构建日志](../../artifacts/final-deployment-review/build.log)。正式真实模型、域内模型、真实通知和全容器出口隔离仍未验证；离线替身成功不代表 G3/G4/G5 通过。源码尚未由 E 最终冻结，因此本轮不生成最终提交 ZIP；打包清单和冻结后命令见[部署复核记录](../records/final-deployment-review.md)。
+此前本机 Docker 验证包括构建、健康检查、Web 到 API、离线案例任务、五模块报告、预警以及停止后再次启动的数据持久化。入口容器仍有默认路由，完整容器出口隔离、真实通知和目标域内部署均未验证。详细运行证据保留在本机忽略目录及既有 Git 历史中；当前源码提交不包含这些产物。验收结论见[测试与运行报告](test-report.md)。

@@ -10,3 +10,30 @@ data/private/
 *.db
 *.db-shm
 *.db-wal
+
+# Local run evidence and one-off evaluation tools; keep these files on disk.
+/artifacts/
+/experiments/
+/scripts/day5_delivery_audit.py
+/data/evaluation/
+/data/research/*
+!/data/research/channel_checks_v2.json
+!/data/research/unh_change_20240222_visibility.json
+
+# Submission docs: keep the current assignment and the concise delivery guides.
+/docs/design/
+/docs/planning/
+/docs/records/
+/docs/sources/*
+!/docs/sources/2026-09-30-新版命题-多智能体仿真舆情监测.md
+
+# Tests tied to omitted experiment scripts or frozen evaluation fixtures.
+/tests/test_bailian_synthetic_backend.py
+/tests/test_bailian_synthetic_run.py
+/tests/test_day5_delivery_audit.py
+/tests/test_final_benchmark_predict_local.py
+/tests/test_final_benchmark_score_adapter.py
+/tests/test_simulation_message_pair_audit.py
+/tests/test_simulation_message_pair_run.py
+/tests/test_simulation_performance.py
+/tests/test_simulation_performance_probe.py

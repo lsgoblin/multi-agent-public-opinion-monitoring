@@ -1,16 +1,11 @@
-# 文档索引
+# 文档入口
 
-> 更新：2026-10-08。下列文件是当前工作入口；编号用于稳定引用，不表示优先级。
+当前源码提交只保留运行和交付所需的简明文档：
 
-| 阅读顺序 | 文档 | 用途 |
-| --- | --- | --- |
-| 1 | [项目现状与待确认](planning/00-规划总览与待确认事项.md) | 已确认决定、G1 状态和未决口径 |
-| 2 | [需求规格](design/01-需求规格说明书.md)、[架构设计](design/02-系统架构设计.md) | 目标行为、模块和接口 |
-| 3 | [五日计划](planning/03-五日施工计划.md)、[MVP 范围](design/04-MVP范围说明.md)、[指标映射](design/05-赛题指标映射表.md) | 交付边界与验收证据 |
-| 4 | [G1 验收记录](records/06-Day1执行与验收记录.md)、[Day 2 一页状态](records/23-Day2受限G2关口复核.md)、[Day 3 工程验证](records/25-Day3动态仿真工程验证.md)、[500×30 真实规模尝试](records/41-Day3百炼500x30真实规模尝试.md)、[Day 3 代码归位](records/42-Day3仿真代码归位与配对脚本命名.md)、[Day 4 本机工程](records/43-Day4本机工程与离线验证.md)、[Day 4 Web 离线闭环](records/44-Day4Web前端本机闭环实测.md)、[Day 4 Docker 本机验收](records/45-Day4Docker本机运行验收.md)、[历史任务与预警补验](records/46-Day4任务报告与预警补验.md)、[Day 5 离线评测](records/day5-evaluation.md)、[Day 5 证据核查](records/day5-delivery-audit.md)、[工程文档同步](records/47-Day5工程文档同步与复核.md) | 实际运行、关口状态与当前代码位置 |
+- [新版命题](sources/2026-09-30-新版命题-多智能体仿真舆情监测.md)：当前需求与验收目标。
+- [部署与运行](delivery/deployment.md)：本机和 Docker 启动方式。
+- [API 参考](delivery/api.md)：接口与请求约束。
+- [用户操作指南](delivery/user-guide.md)：案例、任务、报告与预警操作。
+- [测试与运行报告](delivery/test-report.md)：已有验证、未通过关口与限制。
 
-交付入口：[部署文档](delivery/deployment.md)、[接口文档](delivery/api.md)、[使用手册](delivery/user-guide.md)、[测试报告](delivery/test-report.md)。
-
-专项资料：[数据方案](planning/09-公开投诉自采方案与口径变更.md)、[来源与事件审计](records/11-Day1初始数据采集与审计.md)、[模型预算和域内路线](planning/08-Day1模型接入方案.md)、[模型探测记录](records/12-Day1DeepSeek接入与探测记录.md)、[标签与 cutoff 口径](records/13-Day1案例口径与评测准备.md)、[Day 3 工程决策](planning/24-Day3工程决策.md)。[需求基线决定](planning/14-V2基线替代与迁移决定.md)记录新版完整替代旧版。
-
-[sources/](sources/) 保存赛题和会议的原始材料，仅用于来源追溯；其中旧版资料不指导当前实施。当前需求以[新版命题](sources/2026-09-30-新版命题-多智能体仿真舆情监测.md)为准。设计目标、已实现能力、真实运行和正式达标必须分别记录。
+阶段规划、过程记录、实验材料和运行产物保留在本机归档及既有 Git 历史中，不随精简后的源码提交。

@@ -11,10 +11,9 @@
 
 ## 当前结论
 
-- 生产模块按功能命名：`evidence`、`sentiment`、`source_probe`、`simulation`、`reporting`、`alerts`、`tasks`、`evaluation`。旧 import 路径保留极薄兼容入口；映射与哈希见[重命名表](../../artifacts/final-closure/rename-map.json)。
+- 生产模块按功能命名：`evidence`、`sentiment`、`source_probe`、`simulation`、`reporting`、`alerts`、`tasks`、`evaluation`。旧 import 路径目前仍保留轻量兼容入口。
 - 本机真实历史材料演示执行 `offline_dynamic_substitute`，来源图为 `offline_archived_record_projection`；这不等于真实模型推演或在线 GraphRAG。
 - 企微与邮件仅生成 `dry_run` 预览，不发送通知。Docker 已有本机构建、运行、重启持久化证据；完整容器出口隔离仍待实测。
-- C 的[最终评分报告](../../artifacts/final-scoring-20261009/final-score-report-v24.md)记录正式走势与情感指标均不可计算；AI 标注仅为探索性参考。
-- [最终集成复核](../records/final-integration-review.md)及[测试报告](test-report.md)列出端到端结果和剩余阻塞。
+- [测试报告](test-report.md)记录正式走势与情感指标均不可计算；AI 标注仅为探索性参考，并列出端到端结果和剩余阻塞。
 
-本轮工作区候选包清单为 `artifacts/final-integration-review/candidate-package-manifest.json`；构建与解压验收由 D 在最终哈希交接后执行。
+运行证据和 ZIP 保留在本机归档中，不属于精简后的源码提交。

@@ -1,9 +1,7 @@
 """Report claims are bound to one persisted run and its cutoff-qualified graph."""
 
 import json
-import shutil
 from decimal import Decimal
-from pathlib import Path
 
 import pytest
 
@@ -208,18 +206,3 @@ def test_report_surfaces_failed_decision_counts_and_partial_integrity(tmp_path):
     assert integrity["failed_decisions"] == 1
     assert integrity["integrity_label"] == "存在失败或部分完成"
     assert len(report["evidence"]["failed_action_ids"]) == 1
-
-
-def test_actual_500x30_ledger_reconstructs_on_temporary_copy(tmp_path):
-    original = (Path(__file__).resolve().parents[1] / "data/research/"
-                "day3_synthetic_bailian_500x30_20261007.sqlite3")
-    copy = tmp_path / "large-run-copy.sqlite3"
-    shutil.copy2(original, copy)
-    report = Day4Reports(Store(copy)).build("run_50789c8d2dfe4260b682")
-    emotion = report["modules"]["emotion_evolution"]
-    assert emotion["kind"] == "reconstructed_simulated_emotion_v1"
-    assert emotion["reconstruction_status"] == "validated_against_final_agent_state"
-    assert len(emotion["series"]) == 30
-    assert all(point["agent_count"] == 500 for point in emotion["series"])
-    assert report["modules"]["propagation"]["total_messages"] == 20622
-    assert len(report["evidence"]["failed_action_ids"]) == 6

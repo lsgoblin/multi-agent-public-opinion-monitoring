@@ -1,6 +1,0 @@
-services:
-  api:
-    volumes:
-      - type: bind
-        source: ./artifacts/final-deployment-review/runtime
-        target: /app/runtime

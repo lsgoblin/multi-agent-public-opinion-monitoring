@@ -1,9 +1,0 @@
-{
-  "domain_scope": "candidate only; pending main-agent decision",
-  "future_evidence_or_labels_read": 0,
-  "model_calls": 0,
-  "network_requests": 0,
-  "policy": "constant escalation for every event; independent of event text",
-  "provenance_urls_dereferenced": 0,
-  "sentiment": "abstain; this event-level input is not an original-title sentiment unit"
-}

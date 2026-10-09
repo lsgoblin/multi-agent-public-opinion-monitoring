@@ -1,4 +1,0 @@
-NAME                                        IMAGE                   COMMAND                  SERVICE         CREATED         STATUS                    PORTS
-riskshieldagentdfinalutf8-api-1             riskshield:day4-local   "uvicorn riskshield.…"   api             2 minutes ago   Up 10 seconds (healthy)   8000/tcp, 8501/tcp
-riskshieldagentdfinalutf8-local_gateway-1   riskshield:day4-local   "python -u -c 'impor…"   local_gateway   2 minutes ago   Up 11 seconds             127.0.0.1:28002->8000/tcp, 127.0.0.1:28503->8501/tcp
-riskshieldagentdfinalutf8-web-1             riskshield:day4-local   "streamlit run ui/ap…"   web             2 minutes ago   Up 7 seconds              8000/tcp, 8501/tcp
