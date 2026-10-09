@@ -1,5 +1,7 @@
 # 风控盾 · 多智能体舆情监测与投诉预警
 
+远程仓库：[https://github.com/lsgoblin/multi-agent-public-opinion-monitoring](https://github.com/lsgoblin/multi-agent-public-opinion-monitoring)
+
 [当前命题](docs/sources/2026-09-30-新版命题-多智能体仿真舆情监测.md)要求公开多源监测、情感识别、截止前证据图、动态社会仿真、五模块报告和四级预警。操作与接口见[本机交付文档](docs/delivery/README.md)。
 
 ## 当前结果
