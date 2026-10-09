@@ -16,11 +16,10 @@
 
 ## 主机启动
 
-在项目根目录打开两个 PowerShell 窗口。首次准备环境：
+解压源码后，在项目根目录打开两个 PowerShell 窗口。首次准备环境：
 
 ```powershell
-Set-Location 'D:\test\多智能体仿真舆情监测与投诉预警'
-uv sync --dev
+uv sync --locked --dev
 ```
 
 窗口一启动 API：
@@ -32,7 +31,6 @@ uv run uvicorn riskshield.api:create_app --factory --host 127.0.0.1 --port 8000
 窗口二启动 Web，并让本机代理绕过 loopback：
 
 ```powershell
-Set-Location 'D:\test\多智能体仿真舆情监测与投诉预警'
 $env:RISKSHIELD_API_URL = 'http://127.0.0.1:8000'
 $env:NO_PROXY = '127.0.0.1,localhost'
 $env:no_proxy = $env:NO_PROXY

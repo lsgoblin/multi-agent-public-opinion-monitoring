@@ -46,8 +46,7 @@ uv run streamlit run ui/app.py --server.address 127.0.0.1 --server.port 8501 --s
 
 - [四类交付文档](docs/delivery/README.md)
 - [测试与运行报告](docs/delivery/test-report.md)
-- [测试与运行报告](docs/delivery/test-report.md)
 
-实验脚本、运行证据、评测材料和交付 ZIP 保留在本机的忽略目录中，不属于源码提交，也不是应用启动所需文件。
+最终提交以远程仓库 `main` 分支的源码为准；从 GitHub 下载 ZIP 仅是获取该源码的一种方式。实验脚本、运行证据和评测材料保留在本机的忽略目录中，不属于源码提交，也不是应用启动所需文件。
 
 G3、G4、G5 均尚未通过；本地演示能力不构成正式业务指标达标。

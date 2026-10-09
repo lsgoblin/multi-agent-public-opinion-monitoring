@@ -525,7 +525,7 @@ def evaluate_documents(
         "evaluation_version": inputs.get("dataset_version", "unspecified"),
         "label_version": labels.get("label_version", "unspecified"),
         "source_metrics": {
-            "mapping_document": "docs/design/05-赛题指标映射表.md",
+            "mapping_document": "docs/delivery/test-report.md",
             "definition_status": {
                 "negative_identification_accuracy": "unresolved; report negative precision and binary accuracy separately",
                 "historical_event_count": "unresolved; source range remains 10–20 distinct real events",

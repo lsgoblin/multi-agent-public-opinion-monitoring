@@ -7,14 +7,14 @@
 | 验证项 | 结果 | 解释 |
 | --- | --- | --- |
 | 全量离线测试 | 精简前工作区 `uv run pytest -q`：**181 passed, 1 warning** | 唯一警告是既有 Starlette `TestClient` / `httpx` 弃用提示；此数字不作为精简后测试数量。 |
-| 精简源码副本测试 | **95 passed, 1 warning，37.57 秒** | 从当前 Git 暂存文件导出独立目录，确认导入该目录的 `src`；复用本机已有 `.venv` 依赖，尚非全新依赖安装验证。 |
+| 精简源码副本测试 | **95 passed, 1 warning** | 仅复制 Git 跟踪的 56 个文件，在独立目录执行 `uv sync --locked --offline` 全新安装和 `uv run --locked --offline pytest -q`；API `/health` 与 Web 首页本机启动检查通过。 |
 | 本机端到端 | **10 Agent × 3 轮，30/30 有效决策** | `offline_dynamic_substitute`；五模块报告、蓝色暂定预警与企微/邮件 `dry_run` 预览绑定同一案例、图、运行；模型调用及外部网络请求均为 0。 |
 | A 最新 500×30 批次 | **部分完成，未达规模目标** | 3,477/15,000 个有效决策，1 次 timeout 后停止，6 轮后为 `partial`。591.206 秒只对应部分报告。 |
 | C 最新正式评分 | **不可计算** | v24 的正式情感、负面识别和走势方向均为 0/0；AI 标注不作人工真值。 |
 | Docker 本机验收 | **容器功能已验证，出口隔离未通过** | 已完成构建、健康检查、案例运行和停止/启动持久化；入口容器仍有默认路由，域内部署未验证。 |
 | Web 页面复核 | **部分验证** | 现有查询为词项匹配与引用展示；完整自然语言问答尚未实现。 |
 
-精简源码提交移出仅服务于历史实验、冻结评测材料和大体积运行账本的测试；保留的测试覆盖本机应用核心链路。交付 ZIP 是此前冻结的独立产物，不由本次 `.gitignore` 改动重写。
+精简源码提交移出仅服务于历史实验、冻结评测材料和大体积运行账本的测试；保留的测试覆盖本机应用核心链路。最终提交以远程仓库 `main` 分支的源码为准，下载 ZIP 不包含本机忽略目录中的过程证据。
 
 本机端到端的 ID 绑定为：`case_id=unh_change_20240222_day2_multisource`、`graph_id=936c73951d2ab46f8e0ee6bb`、`run_id=run_7aff1ceff6934a1da13e`、`job_id=job_02aa0aed4a594ebe995c`、`report_id=report_26db8f02583eb98bde5f7490`、`alert_id=alert_19fe8d54fd95ea0876eee8b6323fd0c4`。来源引用为两条截止前归档记录；1 条后续 `not_input` 材料被排除。图构建为 `offline_archived_record_projection`，不是在线 GraphRAG。
 
