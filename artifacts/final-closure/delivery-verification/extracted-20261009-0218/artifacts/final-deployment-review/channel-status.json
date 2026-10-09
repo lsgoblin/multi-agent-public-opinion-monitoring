@@ -1,0 +1,78 @@
+{
+  "checked_on": "2026-10-01",
+  "method": "公开官方文档/入口与少量页面核查；不是平台 API 调用、批量采集或实时接入验收。",
+  "v2_routes_audited": true,
+  "live_five_source_coverage_verified": false,
+  "channels": [
+    {
+      "channel": "weibo",
+      "name": "微博",
+      "status_label": "官方开放平台路线已核查，读取权限和额度未验证",
+      "case_original_records": 0,
+      "evidence": "官方入口提供 OAuth/CLI 接入；官方指引要求开发者认证并开通体验服务或正式积分，具体读取接口由账号权限决定。本项目未提供账号状态、API 授权或查询配额。",
+      "urls": [
+        "https://open.weibo.com/cli/quickstart"
+      ],
+      "next_action": "核对赛事允许范围与已获批读取接口；确认后用指定关键词/时间窗做最小读测试。",
+      "access_status": "route_verified_access_unverified",
+      "usage_scope": "仅按开放平台账户已批准的接口与范围获取；体验接口白名单/额度需账户内核验。"
+    },
+    {
+      "channel": "douyin",
+      "name": "抖音",
+      "status_label": "官方开放平台路线已核查，舆情读取权限未验证",
+      "case_original_records": 0,
+      "evidence": "官方开放平台采用应用及用户授权；权限说明显示热点数据权限默认关闭且需申请。未找到已批准的通用公开帖子/评论批量检索权限。",
+      "urls": [
+        "https://open.douyin.com/",
+        "https://open.douyin.com/platform/resource/docs/operation-standard/agreement-protocol",
+        "https://open.douyin.com/platform/resource/docs/accession-guide/type-and-permission"
+      ],
+      "next_action": "向赛事/平台核实授权应用或内容数据接口；不以登录后手工浏览冒充稳定在线接入。",
+      "access_status": "route_verified_content_access_unverified",
+      "usage_scope": "遵循开发者协议、所获应用权限和用户授权；未授权不得复制/使用/传播平台信息。"
+    },
+    {
+      "channel": "xiaohongshu",
+      "name": "小红书",
+      "status_label": "官方开放平台仅核实账号授权能力，公开笔记检索路线未找到",
+      "case_original_records": 0,
+      "evidence": "官方开放平台当前快速接入/API 参考说明账号 OAuth 与基本资料；没有在本次核查中找到供公开舆情搜索的笔记/评论查询接口。应用需审核且用户须授权。",
+      "urls": [
+        "https://openaccount.xiaohongshu.com/docs/quick-start",
+        "https://openaccount.xiaohongshu.com/docs/api-reference"
+      ],
+      "next_action": "若赛事提供专项内容访问授权，登记授权主体、范围与有效期后再核查；否则保持不可采集状态。",
+      "access_status": "public_content_route_not_found",
+      "usage_scope": "OAuth 账号资料权限不等于公开笔记/评论再利用许可。"
+    },
+    {
+      "channel": "blackcat",
+      "name": "黑猫投诉",
+      "status_label": "详情页可读并留存 1 条脱敏事件；商家列表完整性未验证",
+      "case_original_records": 1,
+      "evidence": "已核验众安保险商家页与投诉详情 17374386012。用户确认主办方授权参赛人员爬取；事件包只保留人工脱敏摘要、来源/时间字段和后续状态证据。浏览器截图显示商家页记录，但本轮工具未获得可复核的完整翻页/列表枚举证据。",
+      "urls": [
+        "https://zj.tousu.sina.com.cn/company/view/?couid=5133070655",
+        "https://tousu.sina.com.cn/complaint/view/17374386012"
+      ],
+      "next_action": "按授权范围扩大样本并核验分页覆盖；不把单个详情或商家聚合数当成日度全量。",
+      "access_status": "one_redacted_event_collected_coverage_incomplete",
+      "usage_scope": "项目方/主办方授权按用户确认记录；当前留存限定为必要元数据和人工脱敏摘要。"
+    },
+    {
+      "channel": "news",
+      "name": "新闻门户",
+      "status_label": "门户文章页可读；未建立自动检索或批量复用权限",
+      "case_original_records": 0,
+      "evidence": "可从门户原始文章页核验标题、发布时间、作者/来源和后续回应；本轮验证了一篇公开的中消协调解案例报道入口，但未把它作为黑猫事件包样本或新闻门户批次。门户接口、批量条款、门户计数口径未核实。",
+      "urls": [
+        "https://news.cctv.cn/2026/03/19/ARTIlzZC93O0Nmu4NagBM2zf260319.shtml",
+        "https://www.samr.gov.cn/jzxts/tzgg/index.html"
+      ],
+      "next_action": "选定门户范围并核实原发/转载去重和复用条件；保存链接、最小摘要、时间和来源版本。",
+      "access_status": "article_pages_readable_batch_access_unverified",
+      "usage_scope": "门户公开页面可用于人工核验不自动等于批量复制、模型处理或再发布许可。"
+    }
+  ]
+}

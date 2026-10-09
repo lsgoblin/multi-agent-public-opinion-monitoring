@@ -1,0 +1,6 @@
+ Container riskshieldagentd-web-1 Restarting 
+ Container riskshieldagentd-api-1 Restarting 
+ Container riskshieldagentd-local_gateway-1 Restarting 
+ Container riskshieldagentd-api-1 Started 
+ Container riskshieldagentd-web-1 Started 
+ Container riskshieldagentd-local_gateway-1 Started 

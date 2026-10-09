@@ -1,0 +1,476 @@
+{
+  "all_freeze_members_and_parent_hashes_ok": true,
+  "formal_score_ready_holdout_total": 0,
+  "freezes_checked": [
+    {
+      "freeze": "freeze-v1.json",
+      "member_count": 16,
+      "member_errors": [],
+      "members_ok": true,
+      "parent_hash_ok": true,
+      "sha256": "f452859c41acee69d1a299c46b41715229fc2433f6993b9a0a5622e4f9d039c3",
+      "version_sequence_ok": true
+    },
+    {
+      "freeze": "freeze-v2.json",
+      "member_count": 23,
+      "member_errors": [],
+      "members_ok": true,
+      "parent_hash_ok": true,
+      "sha256": "803c12e7acf8578cfafbb0f67eba325723e0a5fb704051f43d9a7fb5d1b6a9aa",
+      "version_sequence_ok": true
+    },
+    {
+      "freeze": "freeze-v3.json",
+      "member_count": 12,
+      "member_errors": [],
+      "members_ok": true,
+      "parent_hash_ok": true,
+      "sha256": "50a365f063853ad0a2dbc399f939b867286e23c522ce0ddb84a4ef58b27442c6",
+      "version_sequence_ok": true
+    },
+    {
+      "freeze": "freeze-v4.json",
+      "member_count": 12,
+      "member_errors": [],
+      "members_ok": true,
+      "parent_hash_ok": true,
+      "sha256": "cbc898c10081d9524d9c62bd1e278dc3fc72243fe9339c6a0a34bcda011a5081",
+      "version_sequence_ok": true
+    },
+    {
+      "freeze": "freeze-v5.json",
+      "member_count": 8,
+      "member_errors": [],
+      "members_ok": true,
+      "parent_hash_ok": true,
+      "sha256": "75b02d7f2d9970c20dadd8cc5214869bd601ba3eecb4c9a4a90b13c2b1094e83",
+      "version_sequence_ok": true
+    },
+    {
+      "freeze": "freeze-v6.json",
+      "member_count": 6,
+      "member_errors": [],
+      "members_ok": true,
+      "parent_hash_ok": true,
+      "sha256": "5656e8e172e8a844e35877c148b3f6b19b9c570a8c414c982c1226d01b5a2811",
+      "version_sequence_ok": true
+    },
+    {
+      "freeze": "freeze-v7.json",
+      "member_count": 7,
+      "member_errors": [],
+      "members_ok": true,
+      "parent_hash_ok": true,
+      "sha256": "d533bd1041d0f3ee2f59ebd21434a601e5f9497bed437e9e5859bc34f7069dc6",
+      "version_sequence_ok": true
+    },
+    {
+      "freeze": "freeze-v8.json",
+      "member_count": 9,
+      "member_errors": [],
+      "members_ok": true,
+      "parent_hash_ok": true,
+      "sha256": "9110a1c397ed94c790a493af6796b9df692615ec022eda67fd577ce717356aa7",
+      "version_sequence_ok": true
+    },
+    {
+      "freeze": "freeze-v9.json",
+      "member_count": 1,
+      "member_errors": [],
+      "members_ok": true,
+      "parent_hash_ok": true,
+      "sha256": "30d4fa8cdb3806a32130253bf7140e86d2ca5d8978c43486b1152120cbcb3067",
+      "version_sequence_ok": true
+    },
+    {
+      "freeze": "freeze-v10.json",
+      "member_count": 4,
+      "member_errors": [],
+      "members_ok": true,
+      "parent_hash_ok": true,
+      "sha256": "543d1c1eb43f1edff019212b1ab7a38999c88bcf3401151ac66c0636b0b96397",
+      "version_sequence_ok": true
+    },
+    {
+      "freeze": "freeze-v11.json",
+      "member_count": 7,
+      "member_errors": [],
+      "members_ok": true,
+      "parent_hash_ok": true,
+      "sha256": "2125d4dbcff67dfcee9888c6ebc2a84a90d2b165642f394f7f76d35182af0694",
+      "version_sequence_ok": true
+    },
+    {
+      "freeze": "freeze-v12.json",
+      "member_count": 3,
+      "member_errors": [],
+      "members_ok": true,
+      "parent_hash_ok": true,
+      "sha256": "92fc628160297b9bdb3afa847a15ccb80afca62badb4669de8d21e914b82314c",
+      "version_sequence_ok": true
+    },
+    {
+      "freeze": "freeze-v13.json",
+      "member_count": 7,
+      "member_errors": [],
+      "members_ok": true,
+      "parent_hash_ok": true,
+      "sha256": "126f8ca57fddd498efcb4269ae5909972e8e485867afe1bf671dd8eb9982d3db",
+      "version_sequence_ok": true
+    },
+    {
+      "freeze": "freeze-v14.json",
+      "member_count": 3,
+      "member_errors": [],
+      "members_ok": true,
+      "parent_hash_ok": true,
+      "sha256": "c6f50253cd0cf6418202dca4bfca0b99d45218c24681e45a15462f5b8e58552b",
+      "version_sequence_ok": true
+    },
+    {
+      "freeze": "freeze-v15.json",
+      "member_count": 2,
+      "member_errors": [],
+      "members_ok": true,
+      "parent_hash_ok": true,
+      "sha256": "12fed14c1680f2b3308f3ae17f1dccbe48e4de362028ee0d60b7f7aee086b9f7",
+      "version_sequence_ok": true
+    },
+    {
+      "freeze": "freeze-v16.json",
+      "member_count": 2,
+      "member_errors": [],
+      "members_ok": true,
+      "parent_hash_ok": true,
+      "sha256": "e1ed3254d4682bef8e45de0234b945128b94b1f663144d017b2c79269d82f791",
+      "version_sequence_ok": true
+    },
+    {
+      "freeze": "freeze-v17.json",
+      "member_count": 2,
+      "member_errors": [],
+      "members_ok": true,
+      "parent_hash_ok": true,
+      "sha256": "bb21a00dab0f380ec7b2edea819f5078d6d823d5f1aab067fba80f1ad690fd70",
+      "version_sequence_ok": true
+    },
+    {
+      "freeze": "freeze-v18.json",
+      "member_count": 2,
+      "member_errors": [],
+      "members_ok": true,
+      "parent_hash_ok": true,
+      "sha256": "8a37151856f8e160e51bb0097db8ed5c0730879a1c37221cd2b33bf46703e9cf",
+      "version_sequence_ok": true
+    },
+    {
+      "freeze": "freeze-v19.json",
+      "member_count": 3,
+      "member_errors": [],
+      "members_ok": true,
+      "parent_hash_ok": true,
+      "sha256": "7eeab73a8b72abccb54a6f10b7ddd76d529c6a5f66aa900a1477e9b9a5d29854",
+      "version_sequence_ok": true
+    },
+    {
+      "freeze": "freeze-v20.json",
+      "member_count": 2,
+      "member_errors": [],
+      "members_ok": true,
+      "parent_hash_ok": true,
+      "sha256": "f9da39749de815f192eb98a25aab898314bb22a7858ed76000d02fcc8b1dd155",
+      "version_sequence_ok": true
+    },
+    {
+      "freeze": "freeze-v21.json",
+      "member_count": 2,
+      "member_errors": [],
+      "members_ok": true,
+      "parent_hash_ok": true,
+      "sha256": "d12dfa1ac18f4d745394a641cebc189eb4fc42d0b49261718d2a7d4f6579dd7a",
+      "version_sequence_ok": true
+    },
+    {
+      "freeze": "freeze-v22.json",
+      "member_count": 2,
+      "member_errors": [],
+      "members_ok": true,
+      "parent_hash_ok": true,
+      "sha256": "f850031d0d59a561216cc0b08149c4fc7bf6ae4b383b15416a91ce3340871bd0",
+      "version_sequence_ok": true
+    },
+    {
+      "freeze": "freeze-v23.json",
+      "member_count": 2,
+      "member_errors": [],
+      "members_ok": true,
+      "parent_hash_ok": true,
+      "sha256": "f9eab15a9cd76887bc5156f4ea2ee6549ca5710baadea6946645e1dbb73be213",
+      "version_sequence_ok": true
+    },
+    {
+      "freeze": "freeze-v24.json",
+      "member_count": 2,
+      "member_errors": [],
+      "members_ok": true,
+      "parent_hash_ok": true,
+      "sha256": "f8e3c3dc812d96827d3ebd2d5ae95c4f4882493f18f07b9a270d16993f7ae246",
+      "version_sequence_ok": true
+    }
+  ],
+  "handoffs": [
+    {
+      "complete_cutoff_handoff": false,
+      "errors": [
+        "handoff_event_inventory_mismatch",
+        "input_sha256_mismatch"
+      ],
+      "event_count": 20,
+      "event_ids": [],
+      "handoff": "e-handoff-v3.json",
+      "handoff_in_corresponding_freeze": true,
+      "handoff_sha256": "eee5215c23d975961efefff46afa1b7af5869c34577247be8eee02d48522e5bd",
+      "input_in_corresponding_freeze": true,
+      "input_path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v3.json",
+      "input_sha256": "2da016be8f7fad54a4263f1d596a27d16a528f3d26a03401ad4a3b26d7344847",
+      "score_side_count": 0,
+      "split_counts": {},
+      "version": 3
+    },
+    {
+      "complete_cutoff_handoff": false,
+      "errors": [
+        "handoff_event_inventory_mismatch",
+        "input_sha256_mismatch"
+      ],
+      "event_count": 20,
+      "event_ids": [],
+      "handoff": "e-handoff-v4.json",
+      "handoff_in_corresponding_freeze": true,
+      "handoff_sha256": "4645451f230d539bcd102fa2e0869cdce3dac3ef79db59f8bf9dade3ccc8d478",
+      "input_in_corresponding_freeze": true,
+      "input_path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v4.json",
+      "input_sha256": "07ca323bc55b0bf7c47eddbeb922c2ba4c4df41dfc88a0ee9ec40c7570aa21f6",
+      "score_side_count": 0,
+      "split_counts": {},
+      "version": 4
+    },
+    {
+      "complete_cutoff_handoff": false,
+      "errors": [
+        "handoff_event_inventory_mismatch"
+      ],
+      "event_count": 2,
+      "event_ids": [],
+      "handoff": "e-handoff-v5.json",
+      "handoff_in_corresponding_freeze": true,
+      "handoff_sha256": "4249f7b74b87b18ce7f00ac8bc79216ed6e898d91a327fafdeed4d10fd171d31",
+      "input_in_corresponding_freeze": true,
+      "input_path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v5.json",
+      "input_sha256": "8303e6e1107035b82b176b9cabe0d9727fa6795e747a7de2127e51df90933879",
+      "score_side_count": 2,
+      "split_counts": {},
+      "version": 5
+    },
+    {
+      "complete_cutoff_handoff": false,
+      "errors": [
+        "cutoff_or_source_time_invalid",
+        "input_not_in_corresponding_freeze"
+      ],
+      "event_count": 2,
+      "event_ids": [
+        "fnf_cyberattack_20231123",
+        "bcbs_louisiana_elevance_sale_20240206"
+      ],
+      "handoff": "e-handoff-v6.json",
+      "handoff_in_corresponding_freeze": true,
+      "handoff_sha256": "8c35421bd9685bc315c642a0009812d6c2edf0df61261e757415dca80b89caf3",
+      "input_in_corresponding_freeze": false,
+      "input_path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v5.json",
+      "input_sha256": "8303e6e1107035b82b176b9cabe0d9727fa6795e747a7de2127e51df90933879",
+      "score_side_count": 2,
+      "split_counts": {
+        "holdout": 1,
+        "holdout_candidate": 1
+      },
+      "version": 6
+    },
+    {
+      "complete_cutoff_handoff": false,
+      "errors": [
+        "cutoff_or_source_time_invalid"
+      ],
+      "event_count": 3,
+      "event_ids": [
+        "fnf_cyberattack_20231123",
+        "bcbs_louisiana_elevance_sale_20240206",
+        "aflac_cybersecurity_incident_20250620"
+      ],
+      "handoff": "e-handoff-v7.json",
+      "handoff_in_corresponding_freeze": true,
+      "handoff_sha256": "42e1da910e867b36d03cadf9be256d138656d56650d3d777e12c3790018d2361",
+      "input_in_corresponding_freeze": true,
+      "input_path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v6.json",
+      "input_sha256": "f02876394a5e840fb3c06a93f30ccffb5445afe0e28e9dbefd281ab003d82a83",
+      "score_side_count": 2,
+      "split_counts": {
+        "holdout": 2,
+        "holdout_candidate": 1
+      },
+      "version": 7
+    },
+    {
+      "complete_cutoff_handoff": true,
+      "errors": [],
+      "event_count": 4,
+      "event_ids": [
+        "fnf_cyberattack_20231123",
+        "bcbs_louisiana_elevance_sale_20240206",
+        "aflac_cybersecurity_incident_20250620",
+        "state_farm_ca_new_business_pause_20230526"
+      ],
+      "handoff": "e-handoff-v8.json",
+      "handoff_in_corresponding_freeze": true,
+      "handoff_sha256": "d554d5b1e415ea6ca51c51b6db7b1ee9bc14b3aeec34459c0dc3421916246477",
+      "input_in_corresponding_freeze": true,
+      "input_path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+      "input_sha256": "c49df7870676303950b859729c65def50d5d0042a8ca363fb425bc53a2e2027a",
+      "score_side_count": 2,
+      "split_counts": {
+        "holdout": 2,
+        "holdout_candidate": 2
+      },
+      "version": 8
+    },
+    {
+      "complete_cutoff_handoff": false,
+      "errors": [
+        "input_not_in_corresponding_freeze"
+      ],
+      "event_count": 4,
+      "event_ids": [
+        "fnf_cyberattack_20231123",
+        "bcbs_louisiana_elevance_sale_20240206",
+        "aflac_cybersecurity_incident_20250620",
+        "state_farm_ca_new_business_pause_20230526"
+      ],
+      "handoff": "e-handoff-v10.json",
+      "handoff_in_corresponding_freeze": true,
+      "handoff_sha256": "047ce1a58105ca0a9a4681400e887165e63b456c4f68eaa0637ea77b782f5a8c",
+      "input_in_corresponding_freeze": false,
+      "input_path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+      "input_sha256": "c49df7870676303950b859729c65def50d5d0042a8ca363fb425bc53a2e2027a",
+      "score_side_count": 0,
+      "split_counts": {
+        "holdout": 2,
+        "holdout_candidate": 2
+      },
+      "version": 10
+    },
+    {
+      "complete_cutoff_handoff": false,
+      "errors": [
+        "cutoff_or_source_time_invalid"
+      ],
+      "event_count": 1,
+      "event_ids": [
+        "unitedhealth_algorithm_care_lawsuit_20231115"
+      ],
+      "handoff": "e-handoff-v11.json",
+      "handoff_in_corresponding_freeze": true,
+      "handoff_sha256": "0e34f20d559842487ba1e14cae8ee51698880ffa07b63efd3d5699510d5b5a29",
+      "input_in_corresponding_freeze": true,
+      "input_path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v11.json",
+      "input_sha256": "55755aeadedc06497a819667c8721fd93950c9c9f5f9a3a2ec1d18cadd590490",
+      "score_side_count": 0,
+      "split_counts": {
+        "holdout_candidate": 1
+      },
+      "version": 11
+    },
+    {
+      "complete_cutoff_handoff": false,
+      "errors": [
+        "cutoff_or_source_time_invalid"
+      ],
+      "event_count": 1,
+      "event_ids": [
+        "unitedhealth_algorithm_care_lawsuit_20231115"
+      ],
+      "handoff": "e-handoff-v12.json",
+      "handoff_in_corresponding_freeze": true,
+      "handoff_sha256": "1a6960934706abc60913d2b7a58cccb1847bff9c13609dbf249e6f0c4e4a64a9",
+      "input_in_corresponding_freeze": true,
+      "input_path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v12.json",
+      "input_sha256": "d881f93faf83ddcc99381fa036659ed99ca792ab75df6c645aea87ea590d580c",
+      "score_side_count": 0,
+      "split_counts": {
+        "holdout_candidate": 1
+      },
+      "version": 12
+    },
+    {
+      "complete_cutoff_handoff": true,
+      "errors": [],
+      "event_count": 1,
+      "event_ids": [
+        "windows_recall_privacy_controversy_20240607"
+      ],
+      "handoff": "e-handoff-v13.json",
+      "handoff_in_corresponding_freeze": true,
+      "handoff_sha256": "cc5a4d46d088dcb5bf0c46c9ab9bfcfe65bd34386dcc31d769c513c88db977b9",
+      "input_in_corresponding_freeze": true,
+      "input_path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v13.json",
+      "input_sha256": "01193167bc59ec4e6d59c12922ad7a9e09d9886deb520c255a5e963aaa9b772c",
+      "score_side_count": 0,
+      "split_counts": {
+        "holdout_candidate": 1
+      },
+      "version": 13
+    }
+  ],
+  "latest_complete_handoff": {
+    "complete_cutoff_handoff": true,
+    "errors": [],
+    "event_count": 1,
+    "event_ids": [
+      "windows_recall_privacy_controversy_20240607"
+    ],
+    "handoff": "e-handoff-v13.json",
+    "handoff_in_corresponding_freeze": true,
+    "handoff_sha256": "cc5a4d46d088dcb5bf0c46c9ab9bfcfe65bd34386dcc31d769c513c88db977b9",
+    "input_in_corresponding_freeze": true,
+    "input_path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v13.json",
+    "input_sha256": "01193167bc59ec4e6d59c12922ad7a9e09d9886deb520c255a5e963aaa9b772c",
+    "score_side_count": 0,
+    "split_counts": {
+      "holdout_candidate": 1
+    },
+    "version": 13
+  },
+  "latest_freeze": {
+    "freeze": "freeze-v24.json",
+    "member_count": 2,
+    "member_errors": [],
+    "members_ok": true,
+    "parent_hash_ok": true,
+    "sha256": "f8e3c3dc812d96827d3ebd2d5ae95c4f4882493f18f07b9a270d16993f7ae246",
+    "version_sequence_ok": true
+  },
+  "latest_status_counts": {
+    "completed_independent_human_sentiment_double_label_units": 5,
+    "computed_sentiment_score_units": 0,
+    "formal_event_gap": 20,
+    "formal_event_target": 20,
+    "formal_score_ready_holdout_events": 0,
+    "independent_human_trajectory_labels": 0,
+    "same_label_agreement_units": 5,
+    "sentiment_units_with_paired_E_prediction": 0,
+    "trajectory_evidence_qualified_events": 0
+  },
+  "schema": "riskshield.final_integration.c_batch_integrity.v1",
+  "status_count_error": null,
+  "status_payload_policy": "Only aggregate counts were parsed; C label, title, AI annotation, and trajectory payloads were not opened."
+}

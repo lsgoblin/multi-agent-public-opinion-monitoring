@@ -1,0 +1,114 @@
+{
+  "schema": "riskshield.final_benchmark.trend_annotation_template.v3",
+  "dataset_version": "final-benchmark-public-history-v3-2026-10-08",
+  "access": "independent scoring only; never prediction execution context",
+  "tasks": [
+    {
+      "event_id": "unh_change_cyberattack_20240222",
+      "split": "development",
+      "evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/0"
+      },
+      "status": "do_not_label_until_main_agent_freezes_window_baseline_and_criteria",
+      "annotator_assignments": [],
+      "observed_direction": null,
+      "reason": null,
+      "submitted_at": null
+    },
+    {
+      "event_id": "fnf_cyberattack_20231123",
+      "split": "holdout",
+      "evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/1"
+      },
+      "status": "do_not_label_until_main_agent_freezes_window_baseline_and_criteria",
+      "annotator_assignments": [],
+      "observed_direction": null,
+      "reason": null,
+      "submitted_at": null
+    },
+    {
+      "event_id": "aflac_cybersecurity_incident_20250620",
+      "split": "holdout",
+      "evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/2"
+      },
+      "status": "do_not_label_until_main_agent_freezes_window_baseline_and_criteria",
+      "annotator_assignments": [],
+      "observed_direction": null,
+      "reason": null,
+      "submitted_at": null
+    },
+    {
+      "event_id": "allianz_life_data_breach_20250727",
+      "split": "holdout",
+      "evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/3"
+      },
+      "status": "do_not_label_until_main_agent_freezes_window_baseline_and_criteria",
+      "annotator_assignments": [],
+      "observed_direction": null,
+      "reason": null,
+      "submitted_at": null
+    },
+    {
+      "event_id": "anthem_anesthesia_proposal_20241204",
+      "split": "holdout",
+      "evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/4"
+      },
+      "status": "do_not_label_until_main_agent_freezes_window_baseline_and_criteria",
+      "annotator_assignments": [],
+      "observed_direction": null,
+      "reason": null,
+      "submitted_at": null
+    },
+    {
+      "event_id": "cigna_algorithm_denial_lawsuit_20230725",
+      "split": "holdout",
+      "evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/5"
+      },
+      "status": "do_not_label_until_main_agent_freezes_window_baseline_and_criteria",
+      "annotator_assignments": [],
+      "observed_direction": null,
+      "reason": null,
+      "submitted_at": null
+    },
+    {
+      "event_id": "unitedhealth_algorithm_care_lawsuit_20231115",
+      "split": "holdout",
+      "evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/6"
+      },
+      "status": "do_not_label_until_main_agent_freezes_window_baseline_and_criteria",
+      "annotator_assignments": [],
+      "observed_direction": null,
+      "reason": null,
+      "submitted_at": null
+    },
+    {
+      "event_id": "humana_algorithm_care_lawsuit_20231214",
+      "split": "holdout",
+      "evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/7"
+      },
+      "status": "do_not_label_until_main_agent_freezes_window_baseline_and_criteria",
+      "annotator_assignments": [],
+      "observed_direction": null,
+      "reason": null,
+      "submitted_at": null
+    }
+  ],
+  "status": "template_only_waiting_main_agent_freeze; no seven-day outcome judgments requested or recorded",
+  "model_predictions_included": false,
+  "other_annotator_answers_included": false
+}

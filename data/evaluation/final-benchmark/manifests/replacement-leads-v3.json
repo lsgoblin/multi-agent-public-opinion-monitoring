@@ -1,0 +1,287 @@
+{
+  "schema": "riskshield.final_benchmark.replacement_leads.v3",
+  "dataset_version": "final-benchmark-public-history-v3-2026-10-08",
+  "selection_rule": "Select by event-specific evidence quality, timing and task fit before prediction review; URLs/posts do not add events.",
+  "shortfall_to_20_independent_holdout_events": 13,
+  "lead_count": 13,
+  "admitted_replacement_count": 0,
+  "warning": "These are research leads, not qualified events. Some overlap topic groups and may merge after identity review; 13 leads do not guarantee a 13-event yield.",
+  "leads": [
+    {
+      "lead_id": "replacement_bcbs_louisiana_sale",
+      "event_summary": "Louisiana BCBS proposed sale/reorganization and policyholder/regulator opposition, later withdrawn as one transaction controversy",
+      "topic_group": "regional_insurer_transaction",
+      "sources": [
+        {
+          "publisher": "AP",
+          "url": "https://apnews.com/article/968df3fb5b53a1fb678c27afcebccbf1",
+          "published_at": "2024-02-06T22:38:11Z",
+          "role": "pre-outcome report"
+        },
+        {
+          "publisher": "Louisiana Senate",
+          "url": "https://senate.louisiana.gov/CommunicationOffice/NewsReleases/2024/02082024%20BCBS%20Report%20FINAL.pdf",
+          "published_at": "2024-02-08",
+          "role": "official report"
+        },
+        {
+          "publisher": "AP",
+          "url": "https://apnews.com/article/188d0c5b0936a18baa8628d49f7aa10d",
+          "published_at": "2024-02-14T18:47:32Z",
+          "role": "withdrawal outcome"
+        }
+      ],
+      "why_promising": "Public controversy, official hearing and identifiable decision. One transaction counts once.",
+      "why_not_admitted": "No immutable cutoff version or comparable public opinion time series assembled.",
+      "qualification_status": "not_admitted_no_cutoff_snapshot_and_comparable_public_opinion_series",
+      "prediction_exposure": "No predictions exist or were reviewed before lead selection.",
+      "next_required_check": "Freeze identity and cutoff source version before prediction; collect comparable pre-cutoff baseline and outcome observations; retain only if evidence and independent human labels pass."
+    },
+    {
+      "lead_id": "replacement_state_farm_ca_nonrenewals",
+      "event_summary": "State Farm announced discontinuation/nonrenewal of about 72,000 California home policies.",
+      "topic_group": "california_homeowners_market_retreat",
+      "sources": [
+        {
+          "publisher": "AP",
+          "url": "https://apnews.com/article/149da2ade4546404a8bd02c08416833b",
+          "published_at": "2024-03-22T02:32:48Z",
+          "role": "announcement report"
+        }
+      ],
+      "why_promising": "Specific company decision and dated reporting.",
+      "why_not_admitted": "Broader California insurance retreat topic; no immutable page snapshot or comparable discussion series.",
+      "qualification_status": "not_admitted_no_cutoff_snapshot_and_comparable_public_opinion_series",
+      "prediction_exposure": "No predictions exist or were reviewed before lead selection.",
+      "next_required_check": "Freeze identity and cutoff source version before prediction; collect comparable pre-cutoff baseline and outcome observations; retain only if evidence and independent human labels pass."
+    },
+    {
+      "lead_id": "replacement_progressive_fl_nonrenewals",
+      "event_summary": "Progressive planned nonrenewals/transfer of about 100,000 Florida home and dwelling policies.",
+      "topic_group": "homeowners_market_nonrenewals",
+      "sources": [
+        {
+          "publisher": "Insurance Journal",
+          "url": "https://www.insurancejournal.com/news/southeast/2023/10/03/742689.htm",
+          "published_at": "2023-10-03",
+          "role": "policy report"
+        },
+        {
+          "publisher": "Insurance Journal",
+          "url": "https://www.insurancejournal.com/news/southeast/2024/01/09/754866.htm",
+          "published_at": "2024-01-09",
+          "role": "transfer follow-up"
+        }
+      ],
+      "why_promising": "Specific company policy and later transfer follow-up.",
+      "why_not_admitted": "No historical byte snapshot or same-source opinion baseline; policy transfer alone is not calming.",
+      "qualification_status": "not_admitted_no_cutoff_snapshot_and_comparable_public_opinion_series",
+      "prediction_exposure": "No predictions exist or were reviewed before lead selection.",
+      "next_required_check": "Freeze identity and cutoff source version before prediction; collect comparable pre-cutoff baseline and outcome observations; retain only if evidence and independent human labels pass."
+    },
+    {
+      "lead_id": "replacement_nationwide_nc_nonrenewals",
+      "event_summary": "Nationwide did not renew about 10,525 North Carolina homeowners policies.",
+      "topic_group": "homeowners_market_nonrenewals",
+      "sources": [
+        {
+          "publisher": "Insurance Journal",
+          "url": "https://www.insurancejournal.com/news/southeast/2023/09/29/742310.htm",
+          "published_at": "2023-09-29",
+          "role": "policy report"
+        },
+        {
+          "publisher": "News & Observer",
+          "url": "https://www.newsobserver.com/news/business/real-estate-news/article279932479.html",
+          "published_at": "2023-09",
+          "role": "regional coverage"
+        }
+      ],
+      "why_promising": "Specific carrier and state decision with regional coverage.",
+      "why_not_admitted": "No verified archive version or measured opinion series; overlaps broad homeowners nonrenewal issue.",
+      "qualification_status": "not_admitted_no_cutoff_snapshot_and_comparable_public_opinion_series",
+      "prediction_exposure": "No predictions exist or were reviewed before lead selection.",
+      "next_required_check": "Freeze identity and cutoff source version before prediction; collect comparable pre-cutoff baseline and outcome observations; retain only if evidence and independent human labels pass."
+    },
+    {
+      "lead_id": "replacement_citizens_debby_claims",
+      "event_summary": "Public dispute about Citizens Property Insurance Hurricane Debby claims closed without payment, followed by board response/audit discussion.",
+      "topic_group": "citizens_debby_claims_review",
+      "sources": [
+        {
+          "publisher": "NOTUS",
+          "url": "https://www.notus.org/florida/citizens-hurricane-debby-claims",
+          "published_at": "2024-10-18",
+          "role": "investigative report"
+        },
+        {
+          "publisher": "News4Jax",
+          "url": "https://www.news4jax.com/news/local/2024/10/23/citizens-property-insurance-denied-77-of-florida-homeowners-claims-from-hurricane-debby-new-data-shows/",
+          "published_at": "2024-10-23T20:25:00Z",
+          "role": "follow-up report"
+        },
+        {
+          "publisher": "Citizens Florida",
+          "url": "https://www.citizensfla.com/documents/20702/31300530/20241204%2BFINAL%2BBOG%2BM%E2%80%8Cinutes%2B12.04.24.pdf/434cd2c6-81fc-139b-f0b1-e5ba9e54c1fd?t=1752782525055",
+          "published_at": "2024-12-04",
+          "role": "official board counterevidence"
+        }
+      ],
+      "why_promising": "Specific storm/insurer dispute with later counterevidence.",
+      "why_not_admitted": "“Denied” vs “closed without payment” needs careful event framing; no archive cutoff snapshot or comparable opinion baseline.",
+      "qualification_status": "not_admitted_no_cutoff_snapshot_and_comparable_public_opinion_series",
+      "prediction_exposure": "No predictions exist or were reviewed before lead selection.",
+      "next_required_check": "Freeze identity and cutoff source version before prediction; collect comparable pre-cutoff baseline and outcome observations; retain only if evidence and independent human labels pass."
+    },
+    {
+      "lead_id": "replacement_prudential_life_claims_settlement",
+      "event_summary": "U.S. Department of Labor settlement required Prudential to revise life-insurance practices affecting denied claims.",
+      "topic_group": "life_claims_regulatory_enforcement",
+      "sources": [
+        {
+          "publisher": "U.S. Department of Labor",
+          "url": "https://www.dol.gov/index.php/newsroom/releases/ebsa/ebsa20230419",
+          "published_at": "2023-04-19",
+          "role": "official settlement"
+        }
+      ],
+      "why_promising": "Primary government source and bounded company practice.",
+      "why_not_admitted": "No public discussion baseline or comparable later sentiment measure; settlement alone is not direction.",
+      "qualification_status": "not_admitted_no_cutoff_snapshot_and_comparable_public_opinion_series",
+      "prediction_exposure": "No predictions exist or were reviewed before lead selection.",
+      "next_required_check": "Freeze identity and cutoff source version before prediction; collect comparable pre-cutoff baseline and outcome observations; retain only if evidence and independent human labels pass."
+    },
+    {
+      "lead_id": "replacement_kemper_wildfire_refunds",
+      "event_summary": "California regulator reported Kemper wildfire-risk surcharge refunds after an overcharge finding.",
+      "topic_group": "wildfire_insurance_pricing_enforcement",
+      "sources": [
+        {
+          "publisher": "California Department of Insurance",
+          "url": "https://www.insurance.ca.gov/0400-news/0100-press-releases/2023/release012-2023.cfm",
+          "published_at": "2023",
+          "role": "official refund announcement"
+        }
+      ],
+      "why_promising": "Specific insurer/pricing practice and regulator finding.",
+      "why_not_admitted": "Exact publication time/version and comparable discussion window not captured.",
+      "qualification_status": "not_admitted_no_cutoff_snapshot_and_comparable_public_opinion_series",
+      "prediction_exposure": "No predictions exist or were reviewed before lead selection.",
+      "next_required_check": "Freeze identity and cutoff source version before prediction; collect comparable pre-cutoff baseline and outcome observations; retain only if evidence and independent human labels pass."
+    },
+    {
+      "lead_id": "replacement_uhc_birth_control_settlement",
+      "event_summary": "New York Attorney General announced a UnitedHealthcare settlement over birth-control coverage.",
+      "topic_group": "health_coverage_regulatory_enforcement",
+      "sources": [
+        {
+          "publisher": "New York Attorney General",
+          "url": "https://ag.ny.gov/press-release/2024/attorney-general-james-announces-settlement-unitedhealthcare-failing-provide",
+          "published_at": "2024-06-20",
+          "role": "official settlement"
+        },
+        {
+          "publisher": "Los Angeles Times",
+          "url": "https://www.latimes.com/business/story/2024-06-25/this-huge-insurer-got-caught-flouting-a-law-protecting-contraceptive-access-but-its-fine-is-a-joke",
+          "published_at": "2024-06-25",
+          "role": "response coverage"
+        }
+      ],
+      "why_promising": "Distinct state-law enforcement with subsequent reporting.",
+      "why_not_admitted": "No historical page snapshot or pre-cutoff opinion baseline; legal settlement is not sentiment.",
+      "qualification_status": "not_admitted_no_cutoff_snapshot_and_comparable_public_opinion_series",
+      "prediction_exposure": "No predictions exist or were reviewed before lead selection.",
+      "next_required_check": "Freeze identity and cutoff source version before prediction; collect comparable pre-cutoff baseline and outcome observations; retain only if evidence and independent human labels pass."
+    },
+    {
+      "lead_id": "replacement_uhc_anorexia_coverage_ruling",
+      "event_summary": "Appellate court reversed a UnitedHealthcare coverage-denial ruling in a specific treatment case.",
+      "topic_group": "health_coverage_appeal_rulings",
+      "sources": [
+        {
+          "publisher": "Bloomberg Law",
+          "url": "https://news.bloomberglaw.com/employee-benefits/united-healthcares-doozy-of-anorexia-coverage-denial-reversed",
+          "published_at": "2024-06-19T15:56:00Z",
+          "role": "court-ruling report"
+        }
+      ],
+      "why_promising": "Discrete court decision with exact report time.",
+      "why_not_admitted": "Case-level story has no separate public opinion time series; do not retain patient details.",
+      "qualification_status": "not_admitted_no_cutoff_snapshot_and_comparable_public_opinion_series",
+      "prediction_exposure": "No predictions exist or were reviewed before lead selection.",
+      "next_required_check": "Freeze identity and cutoff source version before prediction; collect comparable pre-cutoff baseline and outcome observations; retain only if evidence and independent human labels pass."
+    },
+    {
+      "lead_id": "replacement_anthem_complaint_fine",
+      "event_summary": "California fined Anthem Blue Cross for complaint-handling deficiencies involving delayed/denied claims.",
+      "topic_group": "anthem_claims_complaint_handling",
+      "sources": [
+        {
+          "publisher": "KQED",
+          "url": "https://www.kqed.org/news/12018653/california-fines-health-insurer-mishandling-complaints-delayed-denied-claims",
+          "published_at": "2024-12-17",
+          "role": "regulatory report"
+        }
+      ],
+      "why_promising": "Specific regulatory action.",
+      "why_not_admitted": "May overlap the December 2024 insurer scrutiny wave and Anthem anesthesia discussion; no independent baseline.",
+      "qualification_status": "not_admitted_no_cutoff_snapshot_and_comparable_public_opinion_series",
+      "prediction_exposure": "No predictions exist or were reviewed before lead selection.",
+      "next_required_check": "Freeze identity and cutoff source version before prediction; collect comparable pre-cutoff baseline and outcome observations; retain only if evidence and independent human labels pass."
+    },
+    {
+      "lead_id": "replacement_liberty_mutual_refunds",
+      "event_summary": "Florida regulators and Liberty Mutual discussed refunds after an auto-rate filing review.",
+      "topic_group": "auto_insurance_rate_enforcement",
+      "sources": [
+        {
+          "publisher": "Insurance Journal",
+          "url": "https://www.insurancejournal.com/news/southeast/2024/06/13/779240.htm",
+          "published_at": "2024-06-13",
+          "role": "regulatory refund report"
+        }
+      ],
+      "why_promising": "Separate auto pricing issue from homeowners and health topics.",
+      "why_not_admitted": "No archived cutoff version or measured opinion baseline.",
+      "qualification_status": "not_admitted_no_cutoff_snapshot_and_comparable_public_opinion_series",
+      "prediction_exposure": "No predictions exist or were reviewed before lead selection.",
+      "next_required_check": "Freeze identity and cutoff source version before prediction; collect comparable pre-cutoff baseline and outcome observations; retain only if evidence and independent human labels pass."
+    },
+    {
+      "lead_id": "replacement_erie_cyber_outage",
+      "event_summary": "Public reports described an Erie Insurance service outage later characterized as a cybersecurity event.",
+      "topic_group": "insurance_sector_cyber_2025",
+      "sources": [
+        {
+          "publisher": "Reddit r/Insurance",
+          "url": "https://www.reddit.com/r/Insurance/comments/1l86gwx/insurance_outage/",
+          "published_at": "2025-06-11",
+          "role": "public discussion thread"
+        }
+      ],
+      "why_promising": "Potential customer-facing disruption with contemporaneous discussion.",
+      "why_not_admitted": "One thread only; no official source/version capture or comparable discussion baseline verified.",
+      "qualification_status": "not_admitted_no_cutoff_snapshot_and_comparable_public_opinion_series",
+      "prediction_exposure": "No predictions exist or were reviewed before lead selection.",
+      "next_required_check": "Freeze identity and cutoff source version before prediction; collect comparable pre-cutoff baseline and outcome observations; retain only if evidence and independent human labels pass."
+    },
+    {
+      "lead_id": "replacement_farmers_data_breach_notice",
+      "event_summary": "Farmers customers criticized delayed notification about a third-party data breach.",
+      "topic_group": "insurance_sector_cyber_2025",
+      "sources": [
+        {
+          "publisher": "Kiplinger",
+          "url": "https://www.kiplinger.com/personal-finance/home-insurance/farmers-insurance-irks-customers-with-data-breach-handling",
+          "published_at": "2025-09",
+          "role": "consumer-response reporting"
+        }
+      ],
+      "why_promising": "Specific insurer breach and notification response.",
+      "why_not_admitted": "Exact publication/cutoff time and pre/post comparable discussion series not verified; overlaps 2025 insurer cyber campaign.",
+      "qualification_status": "not_admitted_no_cutoff_snapshot_and_comparable_public_opinion_series",
+      "prediction_exposure": "No predictions exist or were reviewed before lead selection.",
+      "next_required_check": "Freeze identity and cutoff source version before prediction; collect comparable pre-cutoff baseline and outcome observations; retain only if evidence and independent human labels pass."
+    }
+  ]
+}

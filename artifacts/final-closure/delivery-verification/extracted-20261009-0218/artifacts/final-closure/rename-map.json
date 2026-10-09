@@ -1,0 +1,375 @@
+{
+  "schema": "riskshield.final_closure.rename_map.v1",
+  "closure_id": "closure-20261009-functional-names-v1",
+  "created_at_local": "2026-10-09",
+  "purpose": "Functional module/test names while retaining behavior and historical evidence hashes.",
+  "initial_git_head": "17495e6400d8352c84722a4cb374200d8f12b02f",
+  "initial_worktree_was_dirty": true,
+  "moves": [
+    {
+      "kind": "production_module",
+      "from": "src/riskshield/day2.py",
+      "to": "src/riskshield/evidence.py",
+      "sha256_before_move": "23719222572887332adb743ace3c080938d45562a6a8b9173b80e7c062b43f10",
+      "bytes": 17673,
+      "compatibility_entry": "src/riskshield/day2.py",
+      "sha256_after_reference_sync": "e877bf54da03875c76a822a6364da2f984b486b06801cc867d569d45bd1f1919",
+      "bytes_after_reference_sync": 17771,
+      "content_hash_unchanged": false
+    },
+    {
+      "kind": "production_module",
+      "from": "src/riskshield/day2_sentiment.py",
+      "to": "src/riskshield/sentiment.py",
+      "sha256_before_move": "e79824a7974df47b845348cb4999d9767896303f2bb2ebc5be43140db0494a35",
+      "bytes": 7298,
+      "compatibility_entry": "src/riskshield/day2_sentiment.py",
+      "sha256_after_reference_sync": "e79824a7974df47b845348cb4999d9767896303f2bb2ebc5be43140db0494a35",
+      "bytes_after_reference_sync": 7298,
+      "content_hash_unchanged": true
+    },
+    {
+      "kind": "production_module",
+      "from": "src/riskshield/day2_live_probe.py",
+      "to": "src/riskshield/source_probe.py",
+      "sha256_before_move": "2c722a6f4a5b6b36e97308498cb4d941e76e9e080aa659365baa390e082d6573",
+      "bytes": 2947,
+      "compatibility_entry": "src/riskshield/day2_live_probe.py",
+      "sha256_after_reference_sync": "2c722a6f4a5b6b36e97308498cb4d941e76e9e080aa659365baa390e082d6573",
+      "bytes_after_reference_sync": 2947,
+      "content_hash_unchanged": true
+    },
+    {
+      "kind": "production_module",
+      "from": "src/riskshield/day3.py",
+      "to": "src/riskshield/simulation.py",
+      "sha256_before_move": "c78404e242bb18d3d179da5865cbae1227fc1ed3f13717fe249d8e11849d17c7",
+      "bytes": 73653,
+      "compatibility_entry": "src/riskshield/day3.py",
+      "sha256_after_reference_sync": "df0143331503b12f7642c6a68ace2e68c7dc1711f184e0e6166d97f2a051eac6",
+      "bytes_after_reference_sync": 72467,
+      "content_hash_unchanged": false
+    },
+    {
+      "kind": "production_module",
+      "from": "src/riskshield/day4_alerts.py",
+      "to": "src/riskshield/alerts.py",
+      "sha256_before_move": "62a13dca72506be591c2f086298afaec77681cb7d23ea812c6022c92ec08d874",
+      "bytes": 11551,
+      "compatibility_entry": "src/riskshield/day4_alerts.py",
+      "sha256_after_reference_sync": "811289e5bb778556c8fc2ef8eae5e6aab9efc96d159945843f30dae19ab1805e",
+      "bytes_after_reference_sync": 11577,
+      "content_hash_unchanged": false
+    },
+    {
+      "kind": "production_module",
+      "from": "src/riskshield/day4_report.py",
+      "to": "src/riskshield/reporting.py",
+      "sha256_before_move": "4bfc52367fbc81b77dbcd65d0a3d175f4dc04a177c146ea0ad510677307e1b3d",
+      "bytes": 25772,
+      "compatibility_entry": "src/riskshield/day4_report.py",
+      "sha256_after_reference_sync": "4bfc52367fbc81b77dbcd65d0a3d175f4dc04a177c146ea0ad510677307e1b3d",
+      "bytes_after_reference_sync": 25772,
+      "content_hash_unchanged": true
+    },
+    {
+      "kind": "production_module",
+      "from": "src/riskshield/day4_tasks.py",
+      "to": "src/riskshield/tasks.py",
+      "sha256_before_move": "536af452ad482962660ed7963cea89d089449dae1898f7fb5e23546f9663d650",
+      "bytes": 28716,
+      "compatibility_entry": "src/riskshield/day4_tasks.py",
+      "sha256_after_reference_sync": "35c3e23cfc9a3fcc47b3ff2161f7ba62b69e83c86762f4b33c6aeea54c7d496b",
+      "bytes_after_reference_sync": 28739,
+      "content_hash_unchanged": false
+    },
+    {
+      "kind": "production_module",
+      "from": "src/riskshield/day5_evaluation.py",
+      "to": "src/riskshield/evaluation.py",
+      "sha256_before_move": "e0c73f0f126894a465e49dcc37f9c408e61cc23ad8d573452adaf5e9178047bc",
+      "bytes": 32160,
+      "compatibility_entry": "src/riskshield/day5_evaluation.py",
+      "sha256_after_reference_sync": "e0c73f0f126894a465e49dcc37f9c408e61cc23ad8d573452adaf5e9178047bc",
+      "bytes_after_reference_sync": 32160,
+      "content_hash_unchanged": true
+    },
+    {
+      "kind": "test_module",
+      "from": "tests/test_day1_archived_event.py",
+      "to": "tests/test_archived_event.py",
+      "sha256_before_move": "853c996a86f30d2140ceaed1f3d660ecf64e57e544d102e2c8d0f8d7fef13b85",
+      "bytes": 2054,
+      "compatibility_entry": null,
+      "sha256_after_reference_sync": "c03f35f98561e6c5b5402e6d82ce28c9918f23256d46c74eedfe3470b5dddf71",
+      "bytes_after_reference_sync": 2053,
+      "content_hash_unchanged": false
+    },
+    {
+      "kind": "test_module",
+      "from": "tests/test_day2_cross_case_isolation.py",
+      "to": "tests/test_cross_case_isolation.py",
+      "sha256_before_move": "5c7569011f51e526e070b72a7fffc8d0cccb978817df228098109f723e1391b2",
+      "bytes": 3967,
+      "compatibility_entry": null,
+      "sha256_after_reference_sync": "d03d8fc74f31577828d3e40b267cb27dfcbd062ec5ac917f3f83b6062351792f",
+      "bytes_after_reference_sync": 3966,
+      "content_hash_unchanged": false
+    },
+    {
+      "kind": "test_module",
+      "from": "tests/test_day2_live_probe.py",
+      "to": "tests/test_source_probe.py",
+      "sha256_before_move": "58a4ff31f9128923c5427ad2b367f8f5433dd46b48a2f90656ac0179e7f9bd86",
+      "bytes": 1494,
+      "compatibility_entry": null,
+      "sha256_after_reference_sync": "dd9f6f8e052976ec56edede989241ca2b13fcf581201e79c6c6f76cbc8b11c63",
+      "bytes_after_reference_sync": 1491,
+      "content_hash_unchanged": false
+    },
+    {
+      "kind": "test_module",
+      "from": "tests/test_day2_multisource.py",
+      "to": "tests/test_multisource_evidence.py",
+      "sha256_before_move": "643542dbf0b176ef1b15836399c69d3ed119375e35036a66f5f1cf308e817f0d",
+      "bytes": 6718,
+      "compatibility_entry": null,
+      "sha256_after_reference_sync": "0bc9287454113bbd6017c0c87cc5fdc92eec5c2d074362eba777d2ed4586e343",
+      "bytes_after_reference_sync": 6715,
+      "content_hash_unchanged": false
+    },
+    {
+      "kind": "test_module",
+      "from": "tests/test_day2_pipeline.py",
+      "to": "tests/test_evidence_pipeline.py",
+      "sha256_before_move": "e91f703b7a632a5ac91a39102c23021e740b3479b520a481c8f7b75acdabf4bd",
+      "bytes": 7055,
+      "compatibility_entry": null,
+      "sha256_after_reference_sync": "de473aafcf551ac1a7e8f1de149bb49e00b034b1ea6d8c7ad8dbb8d0b5cd5758",
+      "bytes_after_reference_sync": 7052,
+      "content_hash_unchanged": false
+    },
+    {
+      "kind": "test_module",
+      "from": "tests/test_day2_sentiment.py",
+      "to": "tests/test_sentiment.py",
+      "sha256_before_move": "65ebb54440e0a38cf48bae73af5882f1a4ce6a8d485bfc02854173743ec41bf5",
+      "bytes": 2992,
+      "compatibility_entry": null,
+      "sha256_after_reference_sync": "1a81ac987c8a332754c2ba4e0b534b575d233f72cda1b2bbd6697d2514f10b41",
+      "bytes_after_reference_sync": 2987,
+      "content_hash_unchanged": false
+    },
+    {
+      "kind": "test_module",
+      "from": "tests/test_day3_simulation.py",
+      "to": "tests/test_simulation.py",
+      "sha256_before_move": "b8d3cf50fcc5d075c76671d04ff1504975e4c4ce94138e97b2e87ebe678d5a95",
+      "bytes": 17586,
+      "compatibility_entry": null,
+      "sha256_after_reference_sync": "5013ce20282c58fd406b85f2f9a52556e4fdbb46a125e529d8f565b5a3d234a8",
+      "bytes_after_reference_sync": 17592,
+      "content_hash_unchanged": false
+    },
+    {
+      "kind": "test_module",
+      "from": "tests/test_day3_simulation_message_pair_audit.py",
+      "to": "tests/test_simulation_message_pair_audit.py",
+      "sha256_before_move": "e5b20bff134a165b04418b021347545695aa6aac7e0e73067f0d18174a6bec83",
+      "bytes": 8208,
+      "compatibility_entry": null,
+      "sha256_after_reference_sync": "783fc5b66f0862febffe780782a22f553b32970207e304a9370b75e84d8351c0",
+      "bytes_after_reference_sync": 8214,
+      "content_hash_unchanged": false
+    },
+    {
+      "kind": "test_module",
+      "from": "tests/test_day3_simulation_message_pair_run.py",
+      "to": "tests/test_simulation_message_pair_run.py",
+      "sha256_before_move": "ccad8f9bcf8196e244eacf31f4a475ec20d6bb5a07ce2bd592f431d36566799c",
+      "bytes": 16628,
+      "compatibility_entry": null,
+      "sha256_after_reference_sync": "ccad8f9bcf8196e244eacf31f4a475ec20d6bb5a07ce2bd592f431d36566799c",
+      "bytes_after_reference_sync": 16628,
+      "content_hash_unchanged": true
+    },
+    {
+      "kind": "test_module",
+      "from": "tests/test_day3_bailian_synthetic_backend.py",
+      "to": "tests/test_bailian_synthetic_backend.py",
+      "sha256_before_move": "475915d1f73ddea75c0d751bf2507578c81224cd0c094c8aaf4bfb9d5fe6ad3b",
+      "bytes": 33580,
+      "compatibility_entry": null,
+      "sha256_after_reference_sync": "70a2bce6f27d6c01130c1595fe140f8502d193fa75c00a631e84f99c85ec2171",
+      "bytes_after_reference_sync": 33586,
+      "content_hash_unchanged": false
+    },
+    {
+      "kind": "test_module",
+      "from": "tests/test_day3_bailian_synthetic_run.py",
+      "to": "tests/test_bailian_synthetic_run.py",
+      "sha256_before_move": "0753b5ad47863c12398c2e38839a1d578303ba3184e150a7ab503258f98c6c3c",
+      "bytes": 20338,
+      "compatibility_entry": null,
+      "sha256_after_reference_sync": "eb2e79459c1a76a7c45ea65c2b86e32a94a8bb3671cc9c9d4c65f9ced76e614e",
+      "bytes_after_reference_sync": 20344,
+      "content_hash_unchanged": false
+    },
+    {
+      "kind": "test_module",
+      "from": "tests/test_day4_alerts.py",
+      "to": "tests/test_alerts.py",
+      "sha256_before_move": "a35e842bfb4296dc30ff412ffb416d26f2d31303196f3d03654f3436722a3920",
+      "bytes": 7689,
+      "compatibility_entry": null,
+      "sha256_after_reference_sync": "a11a2146205c768496ca50c271f6b8651cecd9d903022e8f19a32b5dacec536e",
+      "bytes_after_reference_sync": 7702,
+      "content_hash_unchanged": false
+    },
+    {
+      "kind": "test_module",
+      "from": "tests/test_day4_api.py",
+      "to": "tests/test_api.py",
+      "sha256_before_move": "8c9e168b0a7b8d6a7c4c59ce01f3a553cfbf9ab94e114a62e652cbcd5d8fdae8",
+      "bytes": 10533,
+      "compatibility_entry": null,
+      "sha256_after_reference_sync": "f532c320e6921948875473023c8fbb73569e88e37a18d5197e02b680b46573bc",
+      "bytes_after_reference_sync": 10539,
+      "content_hash_unchanged": false
+    },
+    {
+      "kind": "test_module",
+      "from": "tests/test_day4_report.py",
+      "to": "tests/test_reporting.py",
+      "sha256_before_move": "af3d115cddec8e1ec889fdd52706596cd0b6e1c4f33fbc2b92c24272615facbc",
+      "bytes": 11508,
+      "compatibility_entry": null,
+      "sha256_after_reference_sync": "e751e0dfc8a7b505b4b380dcfb62f72c5ab2136d1903de130ce89ea8a40dc9f3",
+      "bytes_after_reference_sync": 11507,
+      "content_hash_unchanged": false
+    },
+    {
+      "kind": "test_module",
+      "from": "tests/test_day4_tasks.py",
+      "to": "tests/test_tasks.py",
+      "sha256_before_move": "b9f55ba1edaf793025d0acbd87a88f30497812aee6f97beb77f72870c83cee6c",
+      "bytes": 11050,
+      "compatibility_entry": null,
+      "sha256_after_reference_sync": "126d1502057c9088b1af57fc448e5faf7e4d78846db8282194e2a036b9cff32f",
+      "bytes_after_reference_sync": 11049,
+      "content_hash_unchanged": false
+    },
+    {
+      "kind": "test_module",
+      "from": "tests/test_day5_evaluation.py",
+      "to": "tests/test_evaluation.py",
+      "sha256_before_move": "028d490834f578b8c18b075e284b5b0274c3d8e506445227548be5479b5f70b3",
+      "bytes": 11701,
+      "compatibility_entry": null,
+      "sha256_after_reference_sync": "988b38895cfffd56f11f5e603f9ca76a7e62870032660c5ae33bed21ac0f3ea8",
+      "bytes_after_reference_sync": 11696,
+      "content_hash_unchanged": false
+    }
+  ],
+  "retained_historical_names": [
+    {
+      "path": "experiments/day3_bailian_synthetic_run.py",
+      "reason": "A v4 execution lock hashes this runner path; retained as archived experiment entry."
+    },
+    {
+      "path": "experiments/day3_bailian_synthetic_backend.py",
+      "reason": "A v4 execution lock hashes this backend path; retained as archived experiment entry."
+    },
+    {
+      "path": "experiments/day3_simulation_message_pair_audit.py",
+      "reason": "Archived experiment with test imports; old module compatibility shims keep it runnable."
+    },
+    {
+      "path": "experiments/day3_simulation_message_pair_run.py",
+      "reason": "Archived experiment with test imports; old module compatibility shims keep it runnable."
+    },
+    {
+      "path": "scripts/day5_delivery_audit.py",
+      "reason": "Historical delivery-audit evidence hashes this script path and companion test path."
+    },
+    {
+      "path": "tests/test_day5_delivery_audit.py",
+      "reason": "Historical delivery-audit source manifest names this exact test path."
+    }
+  ],
+  "compatibility_policy": "Old riskshield module paths remain tiny explicit re-export shims. Public result schemas, HTTP routes, config keys, database tables, case/run IDs, and output semantics remain unchanged.",
+  "references_to_sync": [
+    "src/riskshield/api.py",
+    "tests/**",
+    "experiments/final_benchmark_score.py",
+    "experiments/simulation_performance_probe.py",
+    "experiments/final_integration_probe.py",
+    "docs/delivery/README.md",
+    "docs/delivery/api.md",
+    "docs/delivery/test-report.md",
+    "docs/records/final-integration-review.md",
+    "B/D-owned files after verified handoffs"
+  ],
+  "compatibility_shims": [
+    {
+      "path": "src/riskshield/day2.py",
+      "sha256": "534af507723580b3664dcb8ce22b5588add935e01aae1d40d3e5cbcaa433e89b",
+      "bytes": 206,
+      "compatibility_for": "src/riskshield/evidence.py"
+    },
+    {
+      "path": "src/riskshield/day2_sentiment.py",
+      "sha256": "973bcfad0239f9dbd5418265d9e6208c1347c6a1117d3d35e3b42c6059e37bc6",
+      "bytes": 131,
+      "compatibility_for": "src/riskshield/sentiment.py"
+    },
+    {
+      "path": "src/riskshield/day2_live_probe.py",
+      "sha256": "6b204031344205f62702a95593c9daf5e0c7f0a687acd2b2eb9537329a0b465a",
+      "bytes": 129,
+      "compatibility_for": "src/riskshield/source_probe.py"
+    },
+    {
+      "path": "src/riskshield/day3.py",
+      "sha256": "7ee2d7b24ec861825ba75f55c8aa8cd2315f531c796e31b0fea5d280a89219be",
+      "bytes": 283,
+      "compatibility_for": "src/riskshield/simulation.py"
+    },
+    {
+      "path": "src/riskshield/day4_alerts.py",
+      "sha256": "fdc1bec39c25ebc218fdff6b2ac36c6297d0e1996fe99f4c5e2a9f3d08641619",
+      "bytes": 259,
+      "compatibility_for": "src/riskshield/alerts.py"
+    },
+    {
+      "path": "src/riskshield/day4_report.py",
+      "sha256": "2d948ee741dad0dfcef13e04933527df9e27d808e97664490aca9faab9db3fec",
+      "bytes": 262,
+      "compatibility_for": "src/riskshield/reporting.py"
+    },
+    {
+      "path": "src/riskshield/day4_tasks.py",
+      "sha256": "5d155d07a0ed8b468bab0ef9b271cc51f8bc0c9e88861dc49d2b3eff50c1747f",
+      "bytes": 257,
+      "compatibility_for": "src/riskshield/tasks.py"
+    },
+    {
+      "path": "src/riskshield/day5_evaluation.py",
+      "sha256": "e5cd06c3691c9c5b1572a85f7641c0b044f28d0592478065c1498e446bfdf764",
+      "bytes": 354,
+      "compatibility_for": "src/riskshield/evaluation.py"
+    }
+  ],
+  "historical_lock_notes": [
+    {
+      "lock": "artifacts/final-simulation-review/live-validation-20261008-v4/execution-lock.json",
+      "pre_rename_paths": "The historical lock remains byte-for-byte unchanged; pre-move file hashes above preserve its path-to-content mapping.",
+      "current_run": "No A simulation was rerun under the renamed sources; the A v4 result remains historical evidence."
+    },
+    {
+      "lock": "artifacts/final-scoring-20261009/c-ready.json",
+      "pre_rename_paths": "C report files and freeze dependencies were individually hash-verified. The current scorer module path and import hash changed during functional-name cleanup; the handoff retains the exact original source hash."
+    }
+  ],
+  "final_renames_recorded_at_git_head": "17495e6400d8352c84722a4cb374200d8f12b02f"
+}

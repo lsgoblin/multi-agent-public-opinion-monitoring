@@ -1,0 +1,80 @@
+{
+  "action_counts": {
+    "valid": 30
+  },
+  "actions_with_own_memory": 20,
+  "actions_with_runtime_messages": 17,
+  "alert_id": "alert_792d2cfe70ca3f788851c35a4c4b51a8",
+  "alert_level": "blue",
+  "alert_status": "provisional_offline_assessment",
+  "all_decisions_valid": true,
+  "binding": {
+    "case_id": "unh_change_20240222_day2_multisource",
+    "graph_id": "936c73951d2ab46f8e0ee6bb",
+    "run_id": "run_02438ef960cf4850873d"
+  },
+  "code_sha256": {
+    "src/riskshield/api.py": "243f914ae366522e5c1ca311f9b224da41f131c003e8e8e4986bf6895be326be",
+    "src/riskshield/day3.py": "c78404e242bb18d3d179da5865cbae1227fc1ed3f13717fe249d8e11849d17c7",
+    "src/riskshield/day4_alerts.py": "62a13dca72506be591c2f086298afaec77681cb7d23ea812c6022c92ec08d874",
+    "src/riskshield/day4_report.py": "4bfc52367fbc81b77dbcd65d0a3d175f4dc04a177c146ea0ad510677307e1b3d",
+    "src/riskshield/day4_tasks.py": "536af452ad482962660ed7963cea89d089449dae1898f7fb5e23546f9663d650",
+    "ui/app.py": "bf3b0974150504513c3eac8132976bcd11f9b4b1514af0f05b6fc98ae11d4f97"
+  },
+  "completed_rounds": 3,
+  "data_mode": "real_historical",
+  "excluded_counts": {
+    "not_input": 1
+  },
+  "execution_mode": "offline_dynamic_substitute",
+  "generated_at_utc": "2026-10-08T16:39:00.572340+00:00",
+  "graph_build_mode": "offline_archived_record_projection",
+  "graph_claim_record_ids": [
+    "optum-status-20240221-cyber-update",
+    "unh-sec-20240222-initial"
+  ],
+  "input_received_at": "2026-10-08T16:39:00.251127+00:00",
+  "input_to_report_readable_seconds": 0.293399,
+  "input_to_report_seconds": 0.259985,
+  "job_id": "job_63bd5455f8ef44e7ab29",
+  "job_status": "complete",
+  "limitations": [
+    "Local archived-record projection, not online GraphRAG",
+    "Offline dynamic substitute, not a real model run",
+    "Dry-run previews, not delivery or 30-minute notification evidence"
+  ],
+  "model_calls": 0,
+  "network_requests": 0,
+  "previews": [
+    {
+      "channel": "wecom",
+      "delivery_status": "dry_run",
+      "network_requests": 0,
+      "sent_at": null
+    },
+    {
+      "channel": "email",
+      "delivery_status": "dry_run",
+      "network_requests": 0,
+      "sent_at": null
+    }
+  ],
+  "report_generated_at": "2026-10-08T16:39:00.511112+00:00",
+  "report_id": "report_055c318eb3c62ad516a4bf5c",
+  "report_modules": [
+    "emotion_evolution",
+    "key_nodes",
+    "propagation",
+    "recommendations",
+    "risk"
+  ],
+  "report_source_record_ids": [
+    "optum-status-20240221-cyber-update",
+    "unh-sec-20240222-initial"
+  ],
+  "result_state": "success",
+  "schema": "riskshield.final_integration.end_to_end.v2",
+  "simulation_status": "complete",
+  "source_package_sha256": "5b81d0e76f5445c978d85d1462780b51ecc12c69c407d0b71d4a9b45ed3291b4",
+  "target_rounds": 3
+}

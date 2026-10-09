@@ -1,0 +1,89 @@
+{
+  "schema": "riskshield.final_benchmark.human_sentiment_submissions.v16",
+  "dataset_version": "final-benchmark-human-annotations-v16-2026-10-08",
+  "base_freeze_v15_sha256": "12fed14c1680f2b3308f3ae17f1dccbe48e4de362028ee0d60b7f7aee086b9f7",
+  "batch_id": "sentiment-title-pilot-5-v5",
+  "submission_scope": "One blind human annotator pass for five existing frozen title units. Two independent human passes are required per unit; this batch does not complete double annotation or adjudication.",
+  "annotator_id": "leos",
+  "submitted_at": "2026-10-08T22:09:36+08:00",
+  "source_version": "Per-unit source version is recorded below.",
+  "prediction_exposure": false,
+  "saw_other_annotator_answer": false,
+  "material_version": "data/evaluation/final-benchmark/labels/blind-sentiment-packet-v6.json; SHA-256 e31e1a2962e40bbbe4e2e06dbc7a8cbd2c1198031398b4407a47923b81ec29fc",
+  "units": [
+    {
+      "unit_id": "sent-fnf-1821s44",
+      "event_id_reference": "fnf_cyberattack_20231123",
+      "frozen_text": "Fidelity National Financial shuts down network in wake of cybersecurity incident",
+      "label": "neutral",
+      "rationale": "标题陈述网络因网络安全事件关闭，没有明确表达标题作者的评价立场。",
+      "confidence": 0.86,
+      "annotator_id": "leos",
+      "submitted_at": "2026-10-08T22:09:36+08:00",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "prediction_exposure": false,
+      "saw_other_annotator_answer": false
+    },
+    {
+      "unit_id": "sent-anthem-1h6mj0x",
+      "event_id_reference": "anthem_anesthesia_proposal_20241204",
+      "frozen_text": "Anthem Blue Cross Blue Shield Won’t Pay for the Complete Duration of Anesthesia",
+      "label": "negative",
+      "rationale": "“不会支付完整麻醉时长费用”直接呈现对报销范围的不利影响，标题表达出明确负向内容。",
+      "confidence": 0.91,
+      "annotator_id": "leos",
+      "submitted_at": "2026-10-08T22:09:36+08:00",
+      "source_version": "arctic-shift-title-snapshot-v1 plus indexed original headline",
+      "prediction_exposure": false,
+      "saw_other_annotator_answer": false
+    },
+    {
+      "unit_id": "sent-cigna-159ce8g",
+      "event_id_reference": "cigna_algorithm_denial_lawsuit_20230725",
+      "frozen_text": "Cigna Sued Over Algorithm Allegedly Used To Deny Coverage To Hundreds Of Thousands Of Patients",
+      "label": "neutral",
+      "rationale": "标题主要转述诉讼及其中“算法被用于拒保”的指称，并用 allegedly 保留了指控语气；标题本身没有明确评价立场。",
+      "confidence": 0.78,
+      "annotator_id": "leos",
+      "submitted_at": "2026-10-08T22:09:36+08:00",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "prediction_exposure": false,
+      "saw_other_annotator_answer": false
+    },
+    {
+      "unit_id": "sent-humana-ars-20231213",
+      "event_id_reference": "humana_algorithm_care_lawsuit_20231214",
+      "frozen_text": "Humana also using AI tool with 90% error rate to deny care, lawsuit claims",
+      "label": "neutral",
+      "rationale": "标题是在转述诉讼主张，并以 “lawsuit claims” 标明指称来源；不把标题中的错误率说法视为已证实事实，也未见明确评价语气。",
+      "confidence": 0.75,
+      "annotator_id": "leos",
+      "submitted_at": "2026-10-08T22:09:36+08:00",
+      "source_version": "Dated original article page; Dec 13 2023 4:40 PM",
+      "prediction_exposure": false,
+      "saw_other_annotator_answer": false
+    },
+    {
+      "unit_id": "sent-aflac-1lg33ey",
+      "event_id_reference": "aflac_cybersecurity_incident_20250620",
+      "frozen_text": "Aflac [AFL] hit with a cybersecurity breach",
+      "label": "negative",
+      "rationale": "“hit with a cybersecurity breach”将公司遭遇入侵写成负面冲击，标题措辞带有明显负向色彩。",
+      "confidence": 0.83,
+      "annotator_id": "leos",
+      "submitted_at": "2026-10-08T22:09:36+08:00",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "prediction_exposure": false,
+      "saw_other_annotator_answer": false
+    }
+  ],
+  "statistics": {
+    "units_in_batch": 5,
+    "human_submissions_received": 5,
+    "second_rater_slots_missing": 5,
+    "units_with_two_independent_answers": 0,
+    "adjudications_completed": 0
+  },
+  "label_mapping_note": "All five submitted values are in the v6 allowed_labels set. The v6 definitions mismatch remains relevant to any future mixed/unclear/uncertain response; no unsupported relabeling was applied.",
+  "status": "Recorded as user-submitted human annotations. Preserve these answers verbatim; do not send to E or expose them to the second annotator."
+}

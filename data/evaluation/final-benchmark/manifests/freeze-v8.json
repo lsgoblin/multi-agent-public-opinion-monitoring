@@ -1,0 +1,62 @@
+{
+  "schema": "riskshield.final_benchmark.freeze.v8",
+  "dataset_version": "final-benchmark-evidence-pilot-v8-2026-10-08",
+  "created_at_utc": "2026-10-08T09:55:51Z",
+  "base_freeze_v7_sha256": "d533bd1041d0f3ee2f59ebd21434a601e5f9497bed437e9e5859bc34f7069dc6",
+  "input_file": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+  "input_sha256": "c49df7870676303950b859729c65def50d5d0042a8ca363fb425bc53a2e2027a",
+  "files": [
+    {
+      "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+      "sha256": "c49df7870676303950b859729c65def50d5d0042a8ca363fb425bc53a2e2027a",
+      "bytes": 14717
+    },
+    {
+      "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v8.json",
+      "sha256": "47a3b4191c826c53cc1005ed8960c9372a1934a3f4b87582f10118fe4457d058",
+      "bytes": 24818
+    },
+    {
+      "path": "data/evaluation/final-benchmark/labels/trend-protocol-proposal-v8.md",
+      "sha256": "1c22d0a272e5480c03e3cb0be0a705608692b89a8a79f86337001b61a79cde32",
+      "bytes": 3741
+    },
+    {
+      "path": "data/evaluation/final-benchmark/labels/human-annotation-worklist-v8.md",
+      "sha256": "b8c790294801acbb49f775d9963e1df9cca78b44e7a0c88277e46168c0a4b7d7",
+      "bytes": 1439
+    },
+    {
+      "path": "data/evaluation/final-benchmark/labels/e-field-mapping-v8.md",
+      "sha256": "1d9c6a8539fecf43aa930641354f7f13ae5989922f3eff76f6c4b65326cb7a38",
+      "bytes": 3490
+    },
+    {
+      "path": "data/evaluation/final-benchmark/labels/blind-sentiment-packet-v6.json",
+      "sha256": "e31e1a2962e40bbe4e2e06dbc7a8cbdd2c1198031398b4407a47923b81ec29fc",
+      "bytes": 9540
+    },
+    {
+      "path": "data/evaluation/final-benchmark/manifests/candidate-status-v8.json",
+      "sha256": "bc8b447683d9406f901bdd7a9bd5107e2cade4b8a1821264968aee602af93a85",
+      "bytes": 3497
+    },
+    {
+      "path": "data/evaluation/final-benchmark/manifests/e-handoff-v8.json",
+      "sha256": "d554d5b1e415ea6ca51c51b6db7b1ee9bc14b3aeec34459c0dc3421916246477",
+      "bytes": 2807
+    },
+    {
+      "path": "data/evaluation/final-benchmark/manifests/public-research-log-v8.json",
+      "sha256": "5275c41af250974a5cc926e60bc5ef92d3c71c2807c09d98fa1b5c8a580db3dd",
+      "bytes": 4495
+    }
+  ],
+  "notes": [
+    "v1-v7 frozen artifacts remain unchanged.",
+    "v8 adds one distinct holdout candidate and one same-archive 7-day pre/post series; it adds zero formally score-ready events.",
+    "State Farm direction remains unknown pending main-agent protocol freeze and independent human annotation.",
+    "The E field mapping is a proposal only; no evaluator code or prediction result was changed.",
+    "Freeze file does not self-hash; record its SHA-256 externally."
+  ]
+}

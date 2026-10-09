@@ -1,0 +1,174 @@
+{
+  "schema_version": "day3-real-concurrency-validation-lock-v1",
+  "batch_id": "live-validation-20261008-v4",
+  "created_at": "2026-10-08T23:13:07.528919+08:00",
+  "authorization": {
+    "basis": "explicit user instruction in current conversation",
+    "data_scope": "fictional Northstar synthetic case and graph only",
+    "models": [
+      "qwen-turbo",
+      "qwen-flash"
+    ],
+    "purpose": "25 agents x 2 rounds at concurrency 4 and 8; if both arms pass the predeclared gates, one clean 500 x 30 run with five-module report",
+    "call_ceiling_this_batch": 15100,
+    "retry_policy": "no automatic or manual replay of failed requests; stop the active run on first failed decision",
+    "task_cost_ceiling_cny": "30.00",
+    "previous_estimated_spend_included_cny": "0.85392558",
+    "pilot_budget_ceiling_per_arm_cny": "0.10",
+    "pilot_budget_ceiling_total_cny": "0.20",
+    "full_run_budget_ceiling_cny": "28.94607442",
+    "cost_cap_arithmetic": "0.85392558 previous estimate + 0.20 pilot caps + 28.94607442 full-run cap = 30.00"
+  },
+  "source_and_runtime": {
+    "git_head": "17495e6400d8352c84722a4cb374200d8f12b02f",
+    "source_sha256": {
+      "experiments/day3_bailian_synthetic_run.py": "51944d344990e83c6921ea04a21e39531a342f90ad8a959ebb5b4194db854506",
+      "experiments/day3_bailian_synthetic_backend.py": "fc0faada6a4f1bd5cf5f93ff371698110481f8627a0404823d73d5bdeb797f3a",
+      "src/riskshield/day3.py": "c78404e242bb18d3d179da5865cbae1227fc1ed3f13717fe249d8e11849d17c7",
+      "src/riskshield/day4_alerts.py": "62a13dca72506be591c2f086298afaec77681cb7d23ea812c6022c92ec08d874",
+      "src/riskshield/day4_report.py": "4bfc52367fbc81b77dbcd65d0a3d175f4dc04a177c146ea0ad510677307e1b3d",
+      "src/riskshield/schemas.py": "8d90cbd605475ce0cd3c891a8b0df250b6ff252e3967303dac83f169ef4d67e5",
+      "src/riskshield/store.py": "88ff4349ce8b527c82b7352b4e479d59aa7147e648fed7244eccc4361ee216b9",
+      "tests/fixtures/day3_synthetic_case.py": "8845dab1e7590f8404b3a04ddb484a4c5f01dc45c0138c63be942e22aee1fc9b",
+      "pyproject.toml": "47cb0450cbbc5fe7416fac2930e5bcd3820ee97f2c2ded126ec92c0adf40ed28",
+      "uv.lock": "0e6e5d30e5c81e80fc0f104b870490c1e34575180b565f3ec3c661552a42996c",
+      "tests/test_day3_bailian_synthetic_run.py": "0753b5ad47863c12398c2e38839a1d578303ba3184e150a7ab503258f98c6c3c",
+      "tests/test_day3_simulation.py": "b8d3cf50fcc5d075c76671d04ff1504975e4c4ce94138e97b2e87ebe678d5a95",
+      "tests/test_simulation_performance.py": "03a88bb308faceb572755e7828d37922aa74b368b8cf3ed7cd4b84b01405ca32",
+      "tests/test_simulation_performance_probe.py": "793f39f3550f99bd7f8f450a556128d3eb86d59674c02c0d3cd6003ecbdc1e1e"
+    },
+    "system_prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+    "python_version": "3.12.4"
+  },
+  "dependencies": {
+    "uv_lock_sha256": "0e6e5d30e5c81e80fc0f104b870490c1e34575180b565f3ec3c661552a42996c",
+    "runtime_packages": {
+      "httpx": "0.28.1",
+      "pydantic": "2.13.5",
+      "pytest": "9.1.1"
+    },
+    "python": "3.12.4",
+    "platform": "Windows-11-10.0.26200-SP0"
+  },
+  "backend_configuration": {
+    "sanitized": {
+      "type": "BailianBackend",
+      "provider": "alibaba-cloud-bailian",
+      "region": "cn-beijing",
+      "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+      "thinking": "disabled",
+      "role_models": {
+        "netizen": "qwen-turbo",
+        "customer": "qwen-turbo",
+        "media": "qwen-flash",
+        "kol": "qwen-flash",
+        "regulator": "qwen-flash"
+      },
+      "routes": {
+        "qwen-turbo": {
+          "price_version": "official-docs-2026-10-06-beijing",
+          "input_cny_per_million": "0.3",
+          "cached_input_cny_per_million": "0.06",
+          "output_cny_per_million": "0.6",
+          "max_input_tokens": 8192,
+          "max_output_tokens": 160,
+          "input_bound_method": "utf8_bytes_plus_protocol_allowance",
+          "reservation_cny": "0.0025536"
+        },
+        "qwen-flash": {
+          "price_version": "official-docs-2026-10-06-beijing",
+          "input_cny_per_million": "0.15",
+          "cached_input_cny_per_million": "0.03",
+          "output_cny_per_million": "1.5",
+          "max_input_tokens": 8192,
+          "max_output_tokens": 256,
+          "input_bound_method": "utf8_bytes_plus_protocol_allowance",
+          "reservation_cny": "0.0016128"
+        }
+      }
+    },
+    "canonical_sha256": "d549d117fff33ded69dcaca9f065be35b766716442e4c85a38617766381c56a6",
+    "credential_material_recorded": false,
+    "credential_file_sha256_recorded": false
+  },
+  "price_check": {
+    "checked_at": "2026-10-08",
+    "region": "North China 2 (Beijing)",
+    "qwen_turbo_cny_per_million": {
+      "input": "0.30",
+      "cached_input": "0.06",
+      "output": "0.60"
+    },
+    "qwen_flash_cny_per_million_input_le_128k": {
+      "input": "0.15",
+      "cached_input": "0.03",
+      "output": "1.50"
+    },
+    "configured_uncached_rates_match": true,
+    "sources": [
+      "https://help.aliyun.com/zh/model-studio/qwen-turbo",
+      "https://help.aliyun.com/zh/model-studio/qwen-flash",
+      "https://help.aliyun.com/zh/model-studio/model-pricing"
+    ],
+    "promotions_excluded": true
+  },
+  "fixed_variables": {
+    "case_version": "day3-synthetic-v1",
+    "case_id": "fictional_northstar_service_day3",
+    "graph_id": "fictional_northstar_graph_v1",
+    "seed": 1,
+    "role_offset": 0,
+    "roles_and_model_routes": {
+      "netizen": "qwen-turbo",
+      "customer": "qwen-turbo",
+      "media": "qwen-flash",
+      "kol": "qwen-flash",
+      "regulator": "qwen-flash"
+    },
+    "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+    "memory_rules": "unchanged",
+    "output_token_limits": "unchanged",
+    "variable_between_pilots": "concurrency only",
+    "independent_run_databases": true
+  },
+  "plans": {
+    "pilot": {
+      "agents": 25,
+      "rounds": 2,
+      "calls_per_arm": 50,
+      "candidates": [
+        4,
+        8
+      ],
+      "budget_per_arm_cny": "0.10",
+      "preflight_reservation_per_arm_cny": "0.0897480",
+      "deadline_per_arm_seconds": 1200,
+      "stop_on_failure": true,
+      "auto_retry": false
+    },
+    "full_scale": {
+      "agents": 500,
+      "rounds": 30,
+      "calls": 15000,
+      "concurrency": "choose only after pilot evidence",
+      "budget_cny": "28.94607442",
+      "preflight_reservation_cny": "26.9244000",
+      "deadline_seconds": 21600,
+      "stop_on_failure": true,
+      "auto_retry": false
+    }
+  },
+  "gates": {
+    "pilot_arm_pass": "complete status; all 50 valid; zero failed, not-dispatched or unknown-usage requests; actual in-flight <= configured concurrency; complete report; cost <= ¥0.10; no unexpected model/route/limit errors",
+    "choose_full_concurrency": "prefer 4 unless c8 demonstrates lower wall time and effective-decision throughput without increased failures, unknown usage or cost",
+    "full_scale_status": "must be complete, 15,000/15,000 valid, all_decisions_valid true, and complete five-module report; partial report is not full success",
+    "stop_conditions": "first schema/reference, transport/rate-limit, unknown-usage, budget/call/deadline violation; drain dispatched requests and retain their usage/cost/error records"
+  },
+  "timing_scope": {
+    "simulation": "runner monotonic timer around Day3Simulation.advance including request and round persistence",
+    "input_to_report": "runner monotonic timer from fixed case/graph preparation through persisted five-module report artifact",
+    "request": "queue, backend method, validation, calculation/persistence subtimers; backend duration is not supplier inference time"
+  },
+  "preflight_evidence": "preflight.json; all checks local, zero network requests and zero model calls",
+  "lock_sha256": "1c71aaa4b8799063d6859470f5590731f314afdca67544e679baed8f91bdb545"
+}

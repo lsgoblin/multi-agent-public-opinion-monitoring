@@ -1,0 +1,25 @@
+{
+  "schema": "riskshield.final_benchmark.freeze.v16",
+  "dataset_version": "final-benchmark-evidence-v16-2026-10-08",
+  "created_at_utc": "2026-10-08T14:15:36+00:00",
+  "base_freeze_v15_sha256": "12fed14c1680f2b3308f3ae17f1dccbe48e4de362028ee0d60b7f7aee086b9f7",
+  "freeze_is_self_hashed": false,
+  "files": [
+    {
+      "path": "data/evaluation/final-benchmark/labels/human-sentiment-submissions-v16.json",
+      "bytes": 4730,
+      "sha256": "5a083a6f545bfc6c75749e97db5b17a1362a8c32f22ee4a5825180bf1ac79060"
+    },
+    {
+      "path": "data/evaluation/final-benchmark/manifests/candidate-status-v16.json",
+      "bytes": 2329,
+      "sha256": "12f54bca44f7123aea48e78d32b927031bb47e47f98a755ccbdd568f24f43cd4"
+    }
+  ],
+  "notes": [
+    "Append-only recording of the five user-submitted first-rater answers; v1-v15 source inputs, labels, and freezes remain unchanged.",
+    "The submitted labels were already in the v6 allowed-label list.",
+    "No second-rater answer, adjudication, trajectory label, predictor handoff, or score-ready event was created.",
+    "Keep this file out of the prediction context and do not reveal it to the second annotator."
+  ]
+}

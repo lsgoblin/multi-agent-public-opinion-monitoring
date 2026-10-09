@@ -1,0 +1,173 @@
+{
+  "schema": "riskshield.final_benchmark.inputs.v8",
+  "dataset_version": "final-benchmark-evidence-pilot-v8-2026-10-08",
+  "data_mode": "real_historical_public_sources",
+  "use_scope": "User-authorized public-source review for local offline evaluation preparation; no paid models, external transfer, notices or deployment.",
+  "base_v7_input_sha256": "f02876394a5e840fb3c06a93f30ccffb5445afe0e28e9dbefd281ab003d82a83",
+  "purpose": "Four cutoff-only pilot inputs for E ingestion. They are not formally trajectory-score eligible; protocol freeze and independent human labels remain pending.",
+  "label_access": "none; future evidence, human labels, other annotators, and model answers are excluded",
+  "events": [
+    {
+      "event_id": "fnf_cyberattack_20231123",
+      "case_id": "fnf_cyberattack_20231123_v5",
+      "split": "holdout",
+      "event_identity": "One Fidelity National Financial 2023-11 cybersecurity incident across SEC, news, Reddit and forum sources.",
+      "target_subject": "Fidelity National Financial",
+      "cutoff": "2023-11-23T14:29:55Z",
+      "cutoff_rule": "Existing frozen Arctic Shift public-post witness at 2023-11-23T13:59:55Z plus 30 minutes; v4 cutoff unchanged.",
+      "input_text": "Fidelity National Financial reported a cybersecurity incident affecting certain systems. It blocked access to some systems while containing the incident, disrupting title insurance, escrow, mortgage transaction and real-estate technology services. The investigation was ongoing and impact remained uncertain; F&G Annuities & Life was not affected.",
+      "input_text_kind": "Time-bounded human summary of a fixed original SEC filing and archived public-post title.",
+      "cutoff_sources": [
+        {
+          "record_id": "reddit_archived_post_1821s44",
+          "publisher": "Public Reddit post archived by Arctic Shift",
+          "source_url": "https://www.reddit.com/r/technology/comments/1821s44/",
+          "source_version": "arctic-shift-title-snapshot-v1",
+          "post_created_at": "2023-11-23T13:59:40Z",
+          "captured_at": "2023-11-23T13:59:55Z",
+          "title": "Fidelity National Financial shuts down network in wake of cybersecurity incident",
+          "time_evidence": "Existing v4 archive-post evidence and input; original cutoff witness retained.",
+          "available_at": "2023-11-23T13:59:55Z",
+          "available_at_precision": "snapshot capture time",
+          "available_at_evidence_url": "https://www.reddit.com/r/technology/comments/1821s44/"
+        },
+        {
+          "record_id": "fnf-sec-original-8k-20231121",
+          "publisher": "U.S. SEC EDGAR; filer Fidelity National Financial, Inc.",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1331875/000133187523000064/fnf-20231119.htm",
+          "source_version": "Fixed SEC accession 0001331875-23-000064, original Form 8-K; not either later amendment.",
+          "published_at": "2023-11-21",
+          "published_at_precision": "date; filing/signature date on fixed accession",
+          "summary": "The company reported unauthorized access to certain systems, containment measures that disrupted title, escrow, mortgage and real-estate technology services, an ongoing investigation and uncertain impact.",
+          "content_evidence": "The SEC accession page shows the original filing content and its Nov 21 signature date. The specific accession fixes the document version. No local source bytes retained.",
+          "time_evidence": "Last10K reports submission at Nov 21 2023, 5:06:23 PM EST; exact accepted time is cross-reported but not used to set this package cutoff.",
+          "time_evidence_url": "https://last10k.com/sec-filings/fnf/0001331875-23-000064.htm",
+          "future_result": false,
+          "available_at": "2023-11-21T22:06:23Z",
+          "available_at_precision": "second; cross-reported SEC acceptance time, not used to set package cutoff",
+          "available_at_evidence_url": "https://last10k.com/sec-filings/fnf/0001331875-23-000064.htm"
+        }
+      ],
+      "cutoff_context_supplements": [
+        "fnf-sec-original-8k-20231121"
+      ],
+      "future_evidence_ref": null,
+      "annotation_ref": null,
+      "prediction_context_limit": "No later discussion, filing amendments, outcome, labels or predictions."
+    },
+    {
+      "event_id": "bcbs_louisiana_elevance_sale_20240206",
+      "case_id": "bcbs_louisiana_elevance_sale_20240206_v5",
+      "split": "holdout_candidate",
+      "event_identity": "One proposed reorganization/sale of Blue Cross and Blue Shield of Louisiana to Elevance. Hearings, posts, reports and later pause are one transaction controversy.",
+      "target_subject": "Blue Cross and Blue Shield of Louisiana / Elevance Health",
+      "cutoff": "2024-02-06T23:08:11Z",
+      "cutoff_rule": "AP original report timestamp 2024-02-06T22:38:11Z plus 30 minutes. This is a dated observation point for the 2024 hearing phase, not the first public mention of the sale.",
+      "input_text": "Louisiana officials were considering a proposed sale of nonprofit Blue Cross and Blue Shield of Louisiana to Elevance. A legislative committee had held an approximately eight-hour hearing; policyholders were described as divided, with concerns about premiums and proponents citing improved service. Approval remained undecided and depended on state review and policyholder voting.",
+      "input_text_kind": "Time-bounded human summary of the AP report published before cutoff.",
+      "cutoff_sources": [
+        {
+          "record_id": "ap-bcbsla-elevance-hearing-20240206",
+          "publisher": "Associated Press",
+          "source_url": "https://apnews.com/article/blue-cross-elevance-louisiana-health-insurance-sale-968df3fb5b53a1fb678c27afcebccbf1",
+          "source_version": "AP story ID 968df3fb5b53a1fb678c27afcebccbf1; original report dated 2024-02-06",
+          "published_at": "2024-02-06T22:38:11Z",
+          "published_at_precision": "second, AP indexed article metadata",
+          "title": "Nonprofit Blue Cross and Blue Shield of Louisiana seeks approval for sale to Elevance",
+          "content_evidence": "The dated AP page describes the Feb 5 hearing, divided policyholders, concerns and pending approval. It has no visible updated marker; historical page bytes were not retained.",
+          "time_evidence": "AP article metadata/search result gives Tue Feb 6 22:38:11 UTC 2024; cutoff adds 30 minutes.",
+          "future_result": false,
+          "available_at": "2024-02-06T22:38:11Z",
+          "available_at_precision": "second, AP indexed article metadata",
+          "available_at_evidence_url": "https://apnews.com/article/blue-cross-elevance-louisiana-health-insurance-sale-968df3fb5b53a1fb678c27afcebccbf1"
+        }
+      ],
+      "cutoff_context_supplements": [],
+      "future_evidence_ref": null,
+      "annotation_ref": null,
+      "prediction_context_limit": "No later public comments, Feb 8 report, Feb 14 withdrawal, labels or predictions."
+    },
+    {
+      "event_id": "aflac_cybersecurity_incident_20250620",
+      "case_id": "aflac_cybersecurity_incident_20250620_v6",
+      "split": "holdout",
+      "event_identity": "One Aflac June 2025 cybersecurity incident; distinct from the separate Allianz Life incident.",
+      "target_subject": "Aflac Incorporated",
+      "cutoff": "2025-06-20T13:16:30Z",
+      "cutoff_rule": "Existing Arctic Shift title witness captured 2025-06-20T12:46:30Z plus 30 minutes; v4 cutoff unchanged.",
+      "input_text": "Aflac reported that it detected unauthorized access to its U.S. network on June 12 and believed it contained the intrusion within hours. The business remained operational and the filing said systems were not affected by ransomware. A review of potentially affected files was in an early stage; the company could not yet determine the number of affected people or the full scope. Potentially affected files could contain claims, health, Social Security and other personal information. Aflac said it expected to notify regulators and affected individuals and offer credit monitoring and identity protection.",
+      "input_text_kind": "Time-bounded human summary of the original SEC Form 8-K accession, accepted before cutoff; original archived public-post title also retained.",
+      "cutoff_sources": [
+        {
+          "record_id": "aflac-sec-original-8k-20250620",
+          "publisher": "U.S. SEC EDGAR; filer Aflac Incorporated",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/4977/000000497725000128/afl-20250620.htm",
+          "source_version": "Fixed original SEC accession 0000004977-25-000128, Form 8-K; no later company update included.",
+          "accepted_at_source_time": "2025-06-20T08:01:13-04:00",
+          "accepted_at_utc": "2025-06-20T12:01:13Z",
+          "time_evidence": "SEC accession submission header states ACCEPTANCE-DATETIME 20250620080113. On this date the timestamp is Eastern Daylight Time; converted to UTC it precedes cutoff by 1 hour 15 minutes 17 seconds.",
+          "content_evidence": "The original accession contains the June 20 incident disclosure and states that the impact review was early and affected-person count was not yet known. Fixed accession identifies document version; no local source bytes retained.",
+          "future_result": false,
+          "available_at": "2025-06-20T12:01:13Z",
+          "available_at_precision": "SEC acceptance timestamp, UTC",
+          "available_at_evidence_url": "https://www.sec.gov/Archives/edgar/data/4977/000000497725000128/afl-20250620.htm"
+        },
+        {
+          "record_id": "reddit_archived_post_1lg33ey",
+          "publisher": "Public Reddit r/cybersecurity post archived by Arctic Shift",
+          "source_url": "https://www.reddit.com/r/cybersecurity/comments/1lg33ey/",
+          "source_version": "arctic-shift-title-snapshot-v1",
+          "post_created_at": "2025-06-20T12:46:13Z",
+          "captured_at": "2025-06-20T12:46:30Z",
+          "title": "Aflac [AFL] hit with a cybersecurity breach",
+          "time_evidence": "Existing frozen v4 archive-post witness; cutoff is capture time plus 30 minutes.",
+          "future_result": false,
+          "available_at": "2025-06-20T12:46:30Z",
+          "available_at_precision": "snapshot capture time",
+          "available_at_evidence_url": "https://www.reddit.com/r/cybersecurity/comments/1lg33ey/"
+        }
+      ],
+      "cutoff_context_supplements": [
+        "aflac-sec-original-8k-20250620"
+      ],
+      "future_evidence_ref": null,
+      "annotation_ref": null,
+      "prediction_context_limit": "Cutoff-only. No later Reddit counts, company updates, later incident scope, human labels, or predictions."
+    },
+    {
+      "event_id": "state_farm_ca_new_business_pause_20230526",
+      "case_id": "state_farm_ca_new_business_pause_20230526_v8",
+      "split": "holdout_candidate",
+      "event_identity": "One State Farm General May 2023 decision to pause new California property and casualty applications. Distinct from its March 2024 nonrenewal of existing policies and from other insurers’ California decisions; broader California insurance-market discussion is a confound to monitor.",
+      "target_subject": "State Farm General Insurance Company",
+      "cutoff": "2023-05-26T19:59:00Z",
+      "cutoff_precision": "minute; source publication displayed to minute, plus project rule of 30 minutes",
+      "cutoff_rule": "Official State Farm newsroom page displays publication 2023-05-26 14:29 America/Chicago (UTC−05:00); add 30 minutes, yielding 14:59 local / 19:59Z. Entire UTC date 2023-05-26 is D0 and excluded from the proposed daily baseline and observation windows.",
+      "input_text": "On May 26, State Farm General announced it would stop accepting new applications for California property and casualty coverage, effective May 27. The announcement covered business and personal property lines and did not affect personal auto. State Farm cited construction-cost increases, catastrophe exposure and reinsurance conditions, and said it would continue serving existing customers for the affected products.",
+      "input_text_kind": "Time-bounded paraphrase of the official dated newsroom announcement; no post-cutoff reports, replies, votes, later policy outcomes or labels included.",
+      "cutoff_sources": [
+        {
+          "record_id": "statefarm-newsroom-ca-new-business-20230526",
+          "publisher": "State Farm official newsroom",
+          "source_url": "https://newsroom.statefarm.com/state-farm-general-insurance-company-california-new-business-update/",
+          "source_version": "Official page identified by its article title and publication time; current public page queried 2026-10-08. No historical byte snapshot or revision history was retained; no updated marker was visible in the inspected page.",
+          "title": "State Farm General Insurance Company®: California New Business Update",
+          "published_at": "2023-05-26T14:29:00-05:00",
+          "published_at_precision": "minute; source page display says 14:29 America/Chicago",
+          "summary": "The company announced a pause on new California property and casualty applications effective May 27, with personal auto excluded; it cited construction costs, catastrophe exposure and reinsurance conditions.",
+          "content_evidence": "Current official page carries the dated title and announcement text. This supports an E pilot input; lack of retained historical bytes leaves formal historical-version admission for main-agent review.",
+          "time_evidence": "Official page displays 26 May 2023, 14:29 America/Chicago. May 26 was UTC−05:00; adding the confirmed project 30-minute cutoff rule gives 2023-05-26T19:59:00Z.",
+          "future_result": false,
+          "available_at": "2023-05-26T14:29:00-05:00",
+          "available_at_precision": "minute; source page display says 14:29 America/Chicago",
+          "available_at_evidence_url": "https://newsroom.statefarm.com/state-farm-general-insurance-company-california-new-business-update/"
+        }
+      ],
+      "cutoff_context_supplements": [],
+      "future_evidence_ref": null,
+      "annotation_ref": null,
+      "formal_admission_status": "holdout_candidate_pending_main_agent_review_of_historical_version_and_scoring_protocol",
+      "prediction_context_limit": "Do not expose any May 26 Reddit thread without an exact time proving it precedes cutoff; no post-cutoff discussion, later outcomes, labels or predictions are in this input."
+    }
+  ]
+}

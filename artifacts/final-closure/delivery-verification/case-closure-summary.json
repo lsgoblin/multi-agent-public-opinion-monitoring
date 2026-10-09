@@ -1,0 +1,68 @@
+{
+  "case_id": "unh_change_20240222_day2_multisource",
+  "case_title_utf8_matches": true,
+  "case_imported": true,
+  "case_input_sha256": "5b81d0e76f5445c978d85d1462780b51ecc12c69c407d0b71d4a9b45ed3291b4",
+  "graph_id": "936c73951d2ab46f8e0ee6bb",
+  "run_id": "run_5b34f55b8e4a48e9bba5",
+  "job_id": "job_36e9dbf63cac48758d9e",
+  "report_id": "report_8d276af64ee76780c9e7632f",
+  "alert_id": "alert_ad9dcaeff2912edb52f3f57e361f8051",
+  "job_status": "complete",
+  "result_state": "success",
+  "execution_mode": "offline_dynamic_substitute",
+  "data_mode": "real_historical",
+  "completed_rounds": 3,
+  "target_rounds": 3,
+  "all_decisions_valid": true,
+  "action_counts": {
+    "valid": 30
+  },
+  "model_calls": 0,
+  "network_requests": 0,
+  "progress": [
+    {
+      "status": "running",
+      "result_state": "running",
+      "completed_rounds": 0,
+      "target_rounds": 3,
+      "progress": 0.0
+    },
+    {
+      "status": "complete",
+      "result_state": "success",
+      "completed_rounds": 3,
+      "target_rounds": 3,
+      "progress": 1.0
+    }
+  ],
+  "report_modules": [
+    "emotion_evolution",
+    "key_nodes",
+    "propagation",
+    "recommendations",
+    "risk"
+  ],
+  "graph_claims": 2,
+  "observed_actions": 30,
+  "report_sha256": "5958b1a1072650c852779941162ec6ce715451ce6868fb788e7b1d04ce99c6fb",
+  "alert_sha256": "9d89e7892bdfd911df687efffbd283f3de68d5970c6b1aee7e0d5d69a52d05b1",
+  "alert_level": "blue",
+  "alert_status": "provisional_offline_assessment",
+  "previews": [
+    {
+      "channel": "wecom",
+      "preview_id": "preview_26671aaf07eb409884c5",
+      "delivery_status": "dry_run",
+      "network_requests": 0,
+      "sent_at": null
+    },
+    {
+      "channel": "email",
+      "preview_id": "preview_8ba5a905d7a14b5c9346",
+      "delivery_status": "dry_run",
+      "network_requests": 0,
+      "sent_at": null
+    }
+  ]
+}

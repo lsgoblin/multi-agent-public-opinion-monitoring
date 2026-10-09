@@ -1,0 +1,70 @@
+{
+  "schema": "riskshield.final_benchmark.public_research_log.v8",
+  "dataset_version": "final-benchmark-evidence-pilot-v8-2026-10-08",
+  "authorization_scope": "User-authorized public historical-source review for local preparation. No login bypass, paid model, external transfer, notification or deployment.",
+  "retrieval_session_utc_minute": "2026-10-08T09:53Z",
+  "items": [
+    {
+      "source": "State Farm official newsroom",
+      "source_url": "https://newsroom.statefarm.com/state-farm-general-insurance-company-california-new-business-update/",
+      "source_version": "dated page title and public page as queried 2026-10-08; no historical byte snapshot retained",
+      "published_at": "2023-05-26 14:29 America/Chicago",
+      "use": "cutoff-only input candidate",
+      "finding": "Official release announces the California new property and casualty application pause effective May 27; personal auto excluded. Historical exact byte version remains unverified."
+    },
+    {
+      "source": "PullPush public historical Reddit search API",
+      "source_url": "https://pullpush.io/",
+      "query": "State Farm California",
+      "windows_utc": {
+        "baseline": "2023-05-19T00:00:00Z / 2023-05-26T00:00:00Z, end exclusive",
+        "observation": "2023-05-27T00:00:00Z / 2023-06-03T00:00:00Z, end exclusive"
+      },
+      "use": "score-side only; not predictor input",
+      "finding": "Baseline submissions 19 rows / 16 unique; comments 82 / 82. Observation submissions 163 / 157 unique; comments 236 / 235. Observation was queried in seven UTC-day partitions for each metric; all 14 responses were below 100 rows. The initial whole-window call returned 100 rows and was treated as potentially truncated. Only aggregates retained; no author names, raw text or item IDs retained. Archive completeness/query recall and item-level event relevance remain unknown."
+    },
+    {
+      "source": "California Department of Insurance consumer alert",
+      "source_url": "https://www.insurance.ca.gov/0400-news/0102-alerts/2023/Consumer-Alert-on-State-Farm%27s-Decision.cfm",
+      "published_at": "2023-05-30",
+      "use": "post-cutoff context only",
+      "finding": "Regulator explains announcement and current-customer/auto scope; this is not a comparable discussion-volume series and does not prove sentiment calmed."
+    },
+    {
+      "source": "GDELT DOC 2.0",
+      "source_url": "https://api.gdeltproject.org/api/v2/doc/doc",
+      "use": "independent second-series check attempted once",
+      "finding": "HTTP 429; no timeline output retained; no retry in this pass."
+    },
+    {
+      "source": "Reddit search/indexed public post page",
+      "source_urls": [
+        "https://www.reddit.com/r/California/comments/13t10ms/",
+        "https://www.reddit.com/r/news/comments/13tp62z/"
+      ],
+      "use": "dated post-cutoff discussion corroboration",
+      "finding": "Search results show California discussion on May 27 and news discussion on May 28. Platform votes/crawls are volatile; not used as an independent baseline or a count of people/events."
+    },
+    {
+      "source": "Los Angeles Times and Axios",
+      "source_urls": [
+        "https://www.latimes.com/california/story/2023-05-27/state-farm-is-no-longer-accepting-property-insurance-applications-in-california",
+        "https://www.axios.com/2023/05/29/state-farm-home-insurance-california-wildfires"
+      ],
+      "use": "dated post-cutoff reporting context",
+      "finding": "Independent reports verify continuing coverage on May 27 and May 29, but no comparable news-count series was obtained."
+    },
+    {
+      "source": "State Farm 2024 nonrenewal replacement lead",
+      "source_url": "https://apnews.com/article/149da2ade4546404a8bd02c08416833b",
+      "use": "identity separation only",
+      "finding": "March 2024 nonrenewal of existing policies is a distinct event and remains unadmitted; it is not merged into the May 2023 pause."
+    }
+  ],
+  "failures_and_limitations": [
+    "GDELT DOC endpoint returned HTTP 429; no retry.",
+    "Stanford TV analyzer certificate validation and Internet Archive TV page retrieval limitations are retained in public-research-log-v6/v7; no bypass.",
+    "PullPush historical search is a partial archive/search proxy; segmented daily result limits do not establish archive completeness.",
+    "No human labels received; no human labels or formal trend directions created."
+  ]
+}

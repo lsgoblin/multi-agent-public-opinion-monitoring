@@ -1,0 +1,25 @@
+{
+  "schema": "riskshield.final_benchmark.freeze.v17",
+  "dataset_version": "final-benchmark-evidence-v17-2026-10-08",
+  "created_at_utc": "2026-10-08T14:21:37+00:00",
+  "base_freeze_v16_sha256": "e1ed3254d4682bef8e45de0234b945128b94b1f663144d017b2c79269d82f791",
+  "freeze_is_self_hashed": false,
+  "files": [
+    {
+      "path": "data/evaluation/final-benchmark/labels/human-sentiment-submissions-v17.json",
+      "bytes": 14812,
+      "sha256": "d283723f075f0a362176b1aa1e993902474e8c6b6257b71f68cbde74061859e7"
+    },
+    {
+      "path": "data/evaluation/final-benchmark/manifests/candidate-status-v17.json",
+      "bytes": 3257,
+      "sha256": "f89491985d4892f3203be642804b1650a94eab05aa80116549455aca1e8063f7"
+    }
+  ],
+  "notes": [
+    "Append-only recording of 15 additional user-submitted labels; v1-v16 inputs, label packets, answers and freezes remain unchanged.",
+    "The submission IDs map to all 15 remaining v4 input records, including one development event and 14 holdout record references.",
+    "The 12 complaint annotations are based on redacted summaries and are not counted as original-title gold labels or independent event identities.",
+    "No second-rater responses, trend labels, predictions, or formal score-ready events were created."
+  ]
+}

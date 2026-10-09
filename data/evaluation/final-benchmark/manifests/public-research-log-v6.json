@@ -1,0 +1,47 @@
+{
+  "schema": "riskshield.final_benchmark.public_research_log.v6",
+  "dataset_version": "final-benchmark-evidence-status-v6-2026-10-08",
+  "captured_at_utc": "2026-10-08T09:24:35.964257+00:00",
+  "scope": "Authorized public-source research for local benchmark preparation. No paid model, account login, access restriction bypass, external data transfer or notice.",
+  "entries": [
+    {
+      "source": "Stanford Cable TV News Analyzer / Internet Archive TV News Archive",
+      "source_urls": [
+        "https://tvnews.stanford.edu/data",
+        "https://tvnews.stanford.edu/docs",
+        "https://tvnews.stanford.edu/methodology"
+      ],
+      "finding": "The public data page describes CNN, FOX and MSNBC coverage from 2010-01-01 through 2024-10-05, more than 380,000 hours, with closed captions for 97.9% of videos. The query documentation states that results are video-segment time, and supports fixed caption text, channels, date aggregation and normalization. This is a television-news propagation proxy, not public discussion or public sentiment.",
+      "time_or_version_evidence": "Current public documentation retrieved 2026-10-08; historical archive coverage period stated on the source page.",
+      "access_result": "Capability and scope verified from the public pages. No event-specific series was returned or saved: the direct query page was not accessible in the current research tool; a local HTTPS request to the data page failed certificate validation (expired certificate).",
+      "event_queries_attempted": [
+        "Fidelity National Financial + cyberattack; 2023-11-16 through 2023-11-30, CNN/FOX/MSNBC",
+        "Blue Cross Louisiana + Elevance/sale; 2024-01-30 through 2024-02-13, CNN/FOX/MSNBC"
+      ],
+      "admission": "No baseline/observation values available; no trend label."
+    },
+    {
+      "source": "GDELT TV 2.0 API over Internet Archive captions",
+      "source_urls": [
+        "https://api.gdeltproject.org/api/v2/tv/tv",
+        "https://blog.gdeltproject.org/gdelt-2-0-television-api-debuts/"
+      ],
+      "finding": "Official documentation describes a normalized timeline of the share of monitored 15-second television-caption clips matching a query, with fixed station and date filters. This is a propagation proxy only.",
+      "time_or_version_evidence": "API documentation accessed 2026-10-08; proposed query windows recorded in this log.",
+      "access_result": "Two event-specific timeline requests (FNF and Louisiana) failed before returning data with TLS unexpected EOF. A direct web-tool fetch of the FNF query URL also reported it inaccessible. No CSV or series values were retained; no retry through alternate access controls was attempted.",
+      "admission": "No baseline/observation values available; no trend label."
+    },
+    {
+      "source": "Existing v5 evidence dossiers",
+      "source_urls": [
+        "https://www.sec.gov/Archives/edgar/data/1331875/000133187523000064/fnf-20231119.htm",
+        "https://apnews.com/article/blue-cross-elevance-louisiana-health-insurance-sale-968df3fb5b53a1fb678c27afcebccbf1"
+      ],
+      "finding": "The v5 package already contains cutoff inputs and dated later public-discussion records for two distinct events (FNF cyber incident; BCBS Louisiana–Elevance transaction). The records are selected documents/posts, not exhaustive comparable counts.",
+      "time_or_version_evidence": "See qualified-inputs-v5.json and trajectory-evidence-v5.json; v5 source timestamps and fixed versions remain unchanged.",
+      "access_result": "No new event or comparable trend series admitted in this pass.",
+      "admission": "Both remain pilot inputs only; trajectory unknown."
+    }
+  ],
+  "constraints": "A source access error is not evidence that no discussion occurred. Do not infer calm from absence of retrieved material. No future data is added to prediction inputs."
+}

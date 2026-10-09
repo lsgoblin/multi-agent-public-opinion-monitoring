@@ -1,0 +1,21 @@
+{
+  "schema": "riskshield.final_benchmark.replacement_lead_delta.v5",
+  "dataset_version": "final-benchmark-evidence-pilot-v5-2026-10-08",
+  "base_file": "data/evaluation/final-benchmark/manifests/replacement-leads-v4.json",
+  "base_file_sha256": "1184a62d02234c6b2b2461b42ffb6c47238ccd57317b09abbf8637583e2af7ec",
+  "lead_count_retained": 13,
+  "formally_admitted_replacements": 0,
+  "advanced_to_evidence_dossier_not_admitted": [
+    {
+      "lead_id": "replacement_bcbs_louisiana_sale",
+      "event_id": "bcbs_louisiana_elevance_sale_20240206",
+      "evidence_ref": "data/evaluation/final-benchmark/labels/trajectory-evidence-v5.json",
+      "decision": "Advance for evidence review only. Do not count as a formal replacement yet.",
+      "reason": "Dated baseline and later public discussion records exist, but collection is not exhaustive or fixed-query; comparable discussion measures and human labels are missing.",
+      "prediction_exposure": "No model prediction output was inspected for this selection."
+    }
+  ],
+  "remaining_leads": 12,
+  "remaining_lead_disposition": "Keep all other v4 lead descriptions, source scopes and exclusion reasons unchanged in the referenced immutable v4 file. No other lead was admitted or rejected in v5.",
+  "replacement_shortfall": "The target remains 20 independent holdout events. v5 adds an evidence dossier but no formally qualified replacement."
+}

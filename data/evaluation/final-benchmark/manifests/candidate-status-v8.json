@@ -1,0 +1,56 @@
+{
+  "schema": "riskshield.final_benchmark.candidate_status.v8",
+  "dataset_version": "final-benchmark-evidence-pilot-v8-2026-10-08",
+  "selection_rule": "Select by identity, cutoff evidence, comparable measurements and task fit before prediction review; sources/posts/case_ids do not add event count.",
+  "basis": "Immutable v1-v7 records plus one new State Farm 2023 event candidate and fixed-query PullPush daily measurements; no model prediction was reviewed.",
+  "counts": {
+    "pilot_dossiers_in_v8": 4,
+    "distinct_event_identities_in_v8": 4,
+    "new_candidate_identity_added_this_pass_vs_v7": 1,
+    "new_candidate_identities_vs_v4": 2,
+    "cutoff_inputs_staged_for_E_pilot": 4,
+    "cutoff_content_sufficient_for_E_pilot": 4,
+    "events_with_later_public_discussion_records": 4,
+    "events_with_same_archive_pre_post_queries": 4,
+    "events_with_complete_7day_same_archive_metric_pair": 1,
+    "events_with_two_independent_comparable_source_families": 0,
+    "events_with_sufficient_trajectory_evidence_under_frozen_protocol": 0,
+    "independent_human_sentiment_labels_completed": 0,
+    "independent_human_trend_labels_completed": 0,
+    "new_formal_score_ready_events_this_pass": 0,
+    "formal_score_ready_holdout_events_total": 0,
+    "tonight_10_event_milestone_gap": 10,
+    "target_20_event_gap": 20
+  },
+  "dispositions": [
+    {
+      "event_id": "fnf_cyberattack_20231123",
+      "decision": "retain as cutoff-valid E pilot; trajectory unknown",
+      "evidence": "v5 cutoff input and later records; v7 same-archive post/comment counts in both windows.",
+      "limitation": "Submission and comment coverage sparse; archive completeness unknown.",
+      "formal_score_ready": false
+    },
+    {
+      "event_id": "bcbs_louisiana_elevance_sale_20240206",
+      "decision": "retain as replacement dossier only; not formally admitted",
+      "evidence": "v5 AP cutoff summary and dated later records; v7 one versus three matching submissions, zero comments.",
+      "limitation": "Sparse archive results; historical AP bytes not retained; protocol pending.",
+      "formal_score_ready": false
+    },
+    {
+      "event_id": "aflac_cybersecurity_incident_20250620",
+      "decision": "retain as cutoff-valid E pilot; trajectory unknown",
+      "evidence": "v4 title plus fixed SEC 8-K accepted before cutoff; v7 same-archive measures.",
+      "limitation": "Zero baseline is not evidence of no discussion; archive completeness unknown.",
+      "formal_score_ready": false
+    },
+    {
+      "event_id": "state_farm_ca_new_business_pause_20230526",
+      "decision": "retain as cutoff-only E pilot candidate; one strong same-archive activity rise; direction unknown",
+      "evidence": "Official dated newsroom announcement at 2023-05-26 14:29 America/Chicago; D0-excluded Reddit archive query: unique posts 16 to 157 and comments 82 to 235, each 7/7 result days.",
+      "limitation": "No historical page bytes; broad query not item-level coded; only one source family; archive completeness and recall unknown; protocol and human labels pending. Distinct from the 2024 State Farm nonrenewal lead in v4.",
+      "formal_score_ready": false
+    }
+  ],
+  "summary": "One additional event identity and one complete same-archive 7-day pre/post query series were added. This is evidence for main-agent review, not an approved trend label. Formal score-ready count remains zero; E prediction is staged but not dispatched."
+}

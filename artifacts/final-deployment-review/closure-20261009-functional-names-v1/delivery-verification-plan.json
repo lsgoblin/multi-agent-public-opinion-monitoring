@@ -1,0 +1,23 @@
+{
+  "round_id": "closure-20261009-functional-names-v1",
+  "status": "awaiting_matching_freeze",
+  "package_path": "artifacts/final-deployment-review/riskshield-local-demo-20261009.zip",
+  "verification_workspace": "artifacts/final-closure/delivery-verification/",
+  "freeze_gates": [
+    "artifacts/final-closure/integration-ready.json exists and round_id matches.",
+    "artifacts/final-integration-review/candidate-package-manifest.json exists and round_id matches.",
+    "E records full-suite tests passed and confirms members are frozen.",
+    "Every package member SHA-256 equals the frozen candidate manifest; no missing or extra files."
+  ],
+  "steps": [
+    "Build the ZIP from the frozen whitelist only; calculate ZIP byte size and SHA-256.",
+    "Extract into a new isolated verification directory; scan for .env secrets, tokens, personal data, runtime databases, and unlisted files.",
+    "In the extracted directory, select and record free loopback API/Web ports; start with a unique Compose project and --build.",
+    "Verify Docker Compose service status, API /health, channel status, and browser HTTP access to the Web home page.",
+    "Run the fixed authorized historical case under offline_dynamic_substitute; verify task progress and terminal state.",
+    "Open the report and alert in the browser; verify the five modules, identical case/graph/run binding, provisional warning, and WeCom/email dry_run with zero network requests and sent_at=null.",
+    "Stop then start all package containers normally; verify health and Web again, and compare case/task/report/alert record hashes.",
+    "Write only under artifacts/final-closure/delivery-verification/ and artifacts/final-closure/d-delivery-ready.json; do not modify frozen members."
+  ],
+  "failure_route": "If frozen package contents omit a required file or cannot pass the extracted-copy check, do not patch the ZIP. Write status=needs_revision and concrete evidence into d-delivery-ready.json for E/main integration to handle."
+}

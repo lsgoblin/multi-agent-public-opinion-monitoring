@@ -1,0 +1,28 @@
+{
+  "schema": "riskshield.final_benchmark.e_handoff.v11",
+  "dataset_version": "final-benchmark-candidate-evidence-v11-2026-10-08",
+  "base_freeze_v10_sha256": "543d1c1eb43f1edff019212b1ab7a38999c88bcf3401151ac66c0636b0b96397",
+  "dispatch_status": "sent_to_existing_Agent_E_thread; prediction pending",
+  "dispatch_target": "agentE",
+  "predictor_execution_read_allowlist": [
+    "data/evaluation/final-benchmark/inputs/qualified-inputs-v11.json"
+  ],
+  "input_sha256": "55755aeadedc06497a819667c8721fd93950c9c9f5f9a3a2ec1d18cadd590490",
+  "input_event_count": 1,
+  "input_events": [
+    {
+      "event_id": "unitedhealth_algorithm_care_lawsuit_20231115",
+      "split": "holdout_candidate",
+      "formal_score_ready": false
+    }
+  ],
+  "label_files_readable_by_predictor": false,
+  "score_side_may_read_after_prediction_and_input_hash_are_sealed": [
+    "data/evaluation/final-benchmark/labels/trajectory-evidence-v11.json",
+    "data/evaluation/final-benchmark/labels/human-annotation-worklist-v11.md"
+  ],
+  "required_action": "Run an isolated cutoff-only E pilot on the allowlisted input. Seal prediction, exact input hash, configuration/code hashes, execution mode and output before reading score-side evidence. This pilot is not formal scoring.",
+  "formal_status": "not_score_ready; trend evidence unknown and independent human labels missing",
+  "created_at_utc": "2026-10-08T10:41:36.795044+00:00",
+  "sent_at_utc": "2026-10-08T10:41:48Z"
+}

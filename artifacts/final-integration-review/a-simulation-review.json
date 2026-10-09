@@ -1,0 +1,255 @@
+{
+  "schema": "riskshield.final_integration.a_simulation_review.v2",
+  "batch_id": "live-validation-20261008-v4",
+  "artifact_directory": "artifacts/final-simulation-review/live-validation-20261008-v4",
+  "artifact_index_sha256": "7454dc7c45e2cd5440c277ce91e49364b4159f1fa19b4483f07820a0528eff65",
+  "artifact_index_member_count": 13,
+  "artifact_index_members_all_match": true,
+  "artifact_members": [
+    {
+      "path": "execution-lock.json",
+      "bytes": 8065,
+      "sha256": "a07765ce127e05d5c3d8d2c6787e5a9cdbc134163ade56a983aa2a87dc4675f3",
+      "size_match": true,
+      "hash_match": true
+    },
+    {
+      "path": "full-c8-outcome.json",
+      "bytes": 11950,
+      "sha256": "d32015142b87309408e3f92760e62baff9c408df47e9c32ac84fdf399e76c568",
+      "size_match": true,
+      "hash_match": true
+    },
+    {
+      "path": "full-c8.five-module-report.json",
+      "bytes": 911106,
+      "sha256": "aed13b9bbb4c5e13ac2f300d8667cccdc777ffadf12bda3ea04bddfb937cfae3",
+      "size_match": true,
+      "hash_match": true
+    },
+    {
+      "path": "full-c8.json",
+      "bytes": 12107039,
+      "sha256": "7c444ad5c6bdc00e4fb305b544c0a6774d988ca37fe2b87d7c46b9179e8395c6",
+      "size_match": true,
+      "hash_match": true
+    },
+    {
+      "path": "full-c8.sqlite3",
+      "bytes": 11894784,
+      "sha256": "7600f476c4f0be632afc13942232548457d4a1b832933e7358daa98c00c9d412",
+      "size_match": true,
+      "hash_match": true
+    },
+    {
+      "path": "pilot-c4.five-module-report.json",
+      "bytes": 25974,
+      "sha256": "67ff70fd4f85c725d387c0b81dc5fccbade6a750cfb51f809616c3d110070806",
+      "size_match": true,
+      "hash_match": true
+    },
+    {
+      "path": "pilot-c4.json",
+      "bytes": 174664,
+      "sha256": "09285199e7e99151e0d58b19d9d12d599e95ae302764f9831de34aa53df50741",
+      "size_match": true,
+      "hash_match": true
+    },
+    {
+      "path": "pilot-c4.sqlite3",
+      "bytes": 319488,
+      "sha256": "e9585a32b62db28acc4ede48a8ba0961f389f38cbf5dcc1a40df8ca4cfb8f7f9",
+      "size_match": true,
+      "hash_match": true
+    },
+    {
+      "path": "pilot-c8.five-module-report.json",
+      "bytes": 25005,
+      "sha256": "82222d58872c87aca6e62f353ffe2fcba88c6c716fda50a346f94746a44b52f2",
+      "size_match": true,
+      "hash_match": true
+    },
+    {
+      "path": "pilot-c8.json",
+      "bytes": 173730,
+      "sha256": "9538ca1e45e8519b55adc0c239128ac2782b91b787b0a33c45a027a29eb25864",
+      "size_match": true,
+      "hash_match": true
+    },
+    {
+      "path": "pilot-c8.sqlite3",
+      "bytes": 315392,
+      "sha256": "1fcad1cb70afa7c323bb228226de17e02d4ccf3549ab7142ff04588f8d1acb06",
+      "size_match": true,
+      "hash_match": true
+    },
+    {
+      "path": "pilot-comparison.json",
+      "bytes": 16074,
+      "sha256": "fbf1c4a62f280185b4a643eb51d86dccbf863f182d751f241fe049bda3af8f5b",
+      "size_match": true,
+      "hash_match": true
+    },
+    {
+      "path": "preflight.json",
+      "bytes": 6283,
+      "sha256": "5f3e30d964ed9f78f6f240bb261fea940a4f378ff9d8ac5bf9a908bd77865039",
+      "size_match": true,
+      "hash_match": true
+    }
+  ],
+  "execution_lock_sha256": "a07765ce127e05d5c3d8d2c6787e5a9cdbc134163ade56a983aa2a87dc4675f3",
+  "outcome_run_id": "run_c532286a08384534bc08",
+  "outcome_execution_lock_matches": false,
+  "run_source_hashes_match_lock": true,
+  "locked_source_hashes_match_current": true,
+  "source_hashes": {
+    "experiments/day3_bailian_synthetic_run.py": {
+      "locked": "51944d344990e83c6921ea04a21e39531a342f90ad8a959ebb5b4194db854506",
+      "current": "51944d344990e83c6921ea04a21e39531a342f90ad8a959ebb5b4194db854506",
+      "match": true
+    },
+    "experiments/day3_bailian_synthetic_backend.py": {
+      "locked": "fc0faada6a4f1bd5cf5f93ff371698110481f8627a0404823d73d5bdeb797f3a",
+      "current": "fc0faada6a4f1bd5cf5f93ff371698110481f8627a0404823d73d5bdeb797f3a",
+      "match": true
+    },
+    "src/riskshield/day3.py": {
+      "locked": "c78404e242bb18d3d179da5865cbae1227fc1ed3f13717fe249d8e11849d17c7",
+      "current": "c78404e242bb18d3d179da5865cbae1227fc1ed3f13717fe249d8e11849d17c7",
+      "match": true
+    },
+    "src/riskshield/day4_alerts.py": {
+      "locked": "62a13dca72506be591c2f086298afaec77681cb7d23ea812c6022c92ec08d874",
+      "current": "62a13dca72506be591c2f086298afaec77681cb7d23ea812c6022c92ec08d874",
+      "match": true
+    },
+    "src/riskshield/day4_report.py": {
+      "locked": "4bfc52367fbc81b77dbcd65d0a3d175f4dc04a177c146ea0ad510677307e1b3d",
+      "current": "4bfc52367fbc81b77dbcd65d0a3d175f4dc04a177c146ea0ad510677307e1b3d",
+      "match": true
+    },
+    "src/riskshield/schemas.py": {
+      "locked": "8d90cbd605475ce0cd3c891a8b0df250b6ff252e3967303dac83f169ef4d67e5",
+      "current": "8d90cbd605475ce0cd3c891a8b0df250b6ff252e3967303dac83f169ef4d67e5",
+      "match": true
+    },
+    "src/riskshield/store.py": {
+      "locked": "88ff4349ce8b527c82b7352b4e479d59aa7147e648fed7244eccc4361ee216b9",
+      "current": "88ff4349ce8b527c82b7352b4e479d59aa7147e648fed7244eccc4361ee216b9",
+      "match": true
+    },
+    "tests/fixtures/day3_synthetic_case.py": {
+      "locked": "8845dab1e7590f8404b3a04ddb484a4c5f01dc45c0138c63be942e22aee1fc9b",
+      "current": "8845dab1e7590f8404b3a04ddb484a4c5f01dc45c0138c63be942e22aee1fc9b",
+      "match": true
+    },
+    "pyproject.toml": {
+      "locked": "47cb0450cbbc5fe7416fac2930e5bcd3820ee97f2c2ded126ec92c0adf40ed28",
+      "current": "47cb0450cbbc5fe7416fac2930e5bcd3820ee97f2c2ded126ec92c0adf40ed28",
+      "match": true
+    },
+    "uv.lock": {
+      "locked": "0e6e5d30e5c81e80fc0f104b870490c1e34575180b565f3ec3c661552a42996c",
+      "current": "0e6e5d30e5c81e80fc0f104b870490c1e34575180b565f3ec3c661552a42996c",
+      "match": true
+    },
+    "tests/test_day3_bailian_synthetic_run.py": {
+      "locked": "0753b5ad47863c12398c2e38839a1d578303ba3184e150a7ab503258f98c6c3c",
+      "current": "0753b5ad47863c12398c2e38839a1d578303ba3184e150a7ab503258f98c6c3c",
+      "match": true
+    },
+    "tests/test_day3_simulation.py": {
+      "locked": "b8d3cf50fcc5d075c76671d04ff1504975e4c4ce94138e97b2e87ebe678d5a95",
+      "current": "b8d3cf50fcc5d075c76671d04ff1504975e4c4ce94138e97b2e87ebe678d5a95",
+      "match": true
+    },
+    "tests/test_simulation_performance.py": {
+      "locked": "03a88bb308faceb572755e7828d37922aa74b368b8cf3ed7cd4b84b01405ca32",
+      "current": "03a88bb308faceb572755e7828d37922aa74b368b8cf3ed7cd4b84b01405ca32",
+      "match": true
+    },
+    "tests/test_simulation_performance_probe.py": {
+      "locked": "793f39f3550f99bd7f8f450a556128d3eb86d59674c02c0d3cd6003ecbdc1e1e",
+      "current": "793f39f3550f99bd7f8f450a556128d3eb86d59674c02c0d3cd6003ecbdc1e1e",
+      "match": true
+    }
+  },
+  "concurrency_pilots": {
+    "c4": {
+      "path": "artifacts/final-simulation-review/live-validation-20261008-v4/pilot-c4.json",
+      "run_id": "run_dbccf3d32d5d44bab1c6",
+      "agents": 25,
+      "target_rounds": 2,
+      "valid_decisions": 50,
+      "failed_decisions": 0,
+      "status": "complete",
+      "input_to_report_seconds": 18.357740999999805,
+      "estimated_cost_cny": "0.00623805",
+      "message_refs": null
+    },
+    "c8": {
+      "path": "artifacts/final-simulation-review/live-validation-20261008-v4/pilot-c8.json",
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "agents": 25,
+      "target_rounds": 2,
+      "valid_decisions": 50,
+      "failed_decisions": 0,
+      "status": "complete",
+      "input_to_report_seconds": 14.205598000000464,
+      "estimated_cost_cny": "0.00619086",
+      "message_refs": null
+    }
+  },
+  "full_scale": {
+    "agents": 500,
+    "target_rounds": 30,
+    "planned_decisions": 15000,
+    "task_status": "partial",
+    "run_status": "partial",
+    "completed_rounds": 6,
+    "valid_decisions": 3477,
+    "failed_decisions": 1,
+    "not_dispatched_current_round": 22,
+    "not_started_future_round_opportunities": 11500,
+    "valid_fraction": 0.2318,
+    "stop_reason": "stop_on_failure after one qwen-flash transport timeout with unknown usage; no retry",
+    "timing": {
+      "simulation_elapsed_seconds": 590.8720476000017,
+      "report_generation_elapsed_seconds": 0.2107603000040399,
+      "event_input_to_report_artifact_elapsed_seconds": 591.2058462999994
+    },
+    "effective_decision_throughput_per_second": 5.885293,
+    "estimated_cost_cny": "0.53111850",
+    "runtime_interaction": {
+      "message_refs": 2340,
+      "valid_prior_round_recipient_message_refs": 2340,
+      "invalid_message_refs": 0,
+      "own_memory_refs": 12647,
+      "valid_prior_same_agent_memory_refs": 12647,
+      "invalid_memory_refs": 0,
+      "persisted_message_count": 2340,
+      "persisted_memory_count": 4548,
+      "agents_with_persisted_memories": 500
+    },
+    "five_module_report": {
+      "status": "generated",
+      "module_names": [
+        "emotion_evolution",
+        "key_nodes",
+        "propagation",
+        "recommendations",
+        "risk"
+      ],
+      "artifact_path": "full-c8.five-module-report.json",
+      "is_partial_input_report": true
+    }
+  },
+  "conclusion": "A v4 run matches the current locked source files and 13/13 indexed artifacts. The c4/c8 pilots are complete 25-agent x 2-round runs (50/50 each). The 500x30 run is partial (3,477/15,000 valid after one timeout); its 591.206s input-to-partial-report duration is not a complete-run SLA pass.",
+  "limitations": [
+    "Synthetic input and A-approved model execution only; no additional E model call was made.",
+    "Persisted message/memory reference integrity is verified; message-to-action counterfactual causality is not.",
+    "Estimated cost is not a verified provider invoice.",
+    "G3 remains not passed; a complete 500x30 run and ≤60-minute full-report result are unproven."
+  ]
+}

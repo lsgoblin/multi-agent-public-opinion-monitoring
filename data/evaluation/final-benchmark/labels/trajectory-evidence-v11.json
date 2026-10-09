@@ -1,0 +1,131 @@
+{
+  "schema": "riskshield.final_benchmark.trajectory_evidence.v11",
+  "dataset_version": "final-benchmark-candidate-evidence-v11-2026-10-08",
+  "protocol_reference": {
+    "path": "docs/records/final-scoring-protocol.md",
+    "status": "internal project protocol v1; main-agent/sponsor confirmation not evidenced in this batch",
+    "use": "screening only; no formal trend label assigned"
+  },
+  "retrieval_interval_utc": {
+    "start": "2026-10-08T10:39:41.793994Z",
+    "end": "2026-10-08T10:39:52.435603Z"
+  },
+  "event_identity_rule": "One Lokken lawsuit controversy; news links, Reddit posts, HN posts, comments and court records are evidence for the same event, not additional events.",
+  "events": [
+    {
+      "event_id": "unitedhealth_algorithm_care_lawsuit_20231115",
+      "split": "holdout_candidate",
+      "cutoff": "2023-11-15T21:52:18Z",
+      "baseline_utc": "2023-11-08 through 2023-11-14 inclusive",
+      "observation_utc": "2023-11-16 through 2023-11-22 inclusive",
+      "window_status": "D0=2023-11-15 excluded; seven full UTC dates on each side, for diagnostic comparison only",
+      "sources": [
+        {
+          "source_family": "Hacker News public search index",
+          "source": "Algolia HN Search API search_by_date",
+          "query": "UnitedHealth algorithm",
+          "query_scope": "Same exact query, separate story and comment searches; created_at_i bounded to each full UTC window.",
+          "retrieved_at_utc": "2026-10-08T10:39:41.793994Z/2026-10-08T10:39:52.435603Z",
+          "baseline": {
+            "stories": 1,
+            "comments": 0,
+            "nonempty_days_stories": 1,
+            "nonempty_days_comments": 0,
+            "event_relevant_story_titles": 1,
+            "story_day_counts": {"2023-11-14": 1},
+            "story_title": "UnitedHealth made employees use an AI algorithm to end Medicare patients rehab",
+            "story_created_at": "2023-11-14T17:53:06Z",
+            "story_url": "https://www.statnews.com/2023/11/14/unitedhealth-algorithm-medicare-advantage-investigation/"
+          },
+          "observation": {
+            "stories": 1,
+            "comments": 1,
+            "nonempty_days_stories": 1,
+            "nonempty_days_comments": 1,
+            "event_relevant_story_titles": 1,
+            "story_day_counts": {"2023-11-16": 1},
+            "comment_day_counts": {"2023-11-17": 1},
+            "story_title": "UnitedHealth sued over use of algorithm in Medicare Advantage plans",
+            "story_created_at": "2023-11-16T07:41:11Z",
+            "story_url": "https://www.statnews.com/2023/11/14/unitedhealth-class-action-lawsuit-algorithm-medicare-advantage/",
+            "comment_parent_title": "UnitedHealth uses AI model with 90% error rate to deny care, lawsuit alleges",
+            "comment_created_at": "2023-11-17T05:54:04Z"
+          },
+          "response_sha256": {
+            "baseline_story": "d5b5b212ab4e0f36c0ab9801d4a9e6558ff6dffa787ae7411a5a15a841b7f687",
+            "baseline_comment": "afa0fcf64cfb867c96ff779bbfc77177c03deb45830736eaf5e33427b63559b6",
+            "observation_story": "405c21d56899589759a04b25591290ae4f030cbbb51c5592d8db2d8a3e772dfe",
+            "observation_comment": "3f3367e6be9bbabf898160606ba9c79f78ecb98889267b425400a11b34e66a24"
+          },
+          "assessment": "The matching story and one comment are event-relevant, but only 1/7 baseline story days and 1/7 observation story days contain a result. This is a sparse public-discussion series, not broad audience coverage."
+        },
+        {
+          "source_family": "Reddit public-post archive/search proxy",
+          "source": "PullPush archived Reddit search API; endpoint documentation at https://pullpush.io/",
+          "query": "UnitedHealth algorithm",
+          "query_scope": "Same exact query, separate submission and comment searches; after/before timestamps bound to each full UTC window; requested size=1000.",
+          "retrieved_at_utc": "2026-10-08T10:39:41.793994Z/2026-10-08T10:39:52.435603Z",
+          "baseline": {
+            "submissions_returned": 4,
+            "comments_returned": 0,
+            "nonempty_days_submissions": 1,
+            "nonempty_days_comments": 0,
+            "submission_day_counts": {"2023-11-14": 4},
+            "submission_relevance": "Four query-matching titles passed a keyword screen; source titles were not retained in this redacted aggregate, so independent item-level coding remains pending.",
+            "response_cap_1000_reached": false
+          },
+          "observation": {
+            "submissions_returned": 5,
+            "comments_returned": 9,
+            "nonempty_days_submissions": 2,
+            "nonempty_days_comments": 5,
+            "submission_day_counts": {"2023-11-16": 2, "2023-11-17": 3},
+            "comment_day_counts": {"2023-11-16": 2, "2023-11-17": 3, "2023-11-18": 1, "2023-11-19": 1, "2023-11-20": 2},
+            "submission_relevance": "Only 2 of 5 returned titles passed the event-keyword screen; the other 3 are not counted as confirmed event-specific discussion.",
+            "comment_relevance": "Nine returned comments were not retained or item-level event-coded; do not treat all nine as confirmed event discussion.",
+            "response_cap_1000_reached": false
+          },
+          "response_sha256": {
+            "baseline_submission": "bc7924098418da9f97bd24ed568d4f407a1b69ac871991de6aef1818d0a2e7fb",
+            "baseline_comment": "a8801d8bd9e7e56a40dc73279c4362318c2a1d41447d25bbf1e696fc7fe82edc",
+            "observation_submission": "fb6c25f9abbf48bc6f122b96df582baeb4fbc613e948bcebc1db43abc99fb1cd",
+            "observation_comment": "8531c137553bd2a5e522effe1a779ce3a7963265182392c7d56ba64cea486dad"
+          },
+          "assessment": "Search/archive proxy only; completeness and query recall are unknown. Returned rows are under the requested cap, but this does not establish platform coverage. No author names, raw post/comment text or item identifiers are retained."
+        }
+      ],
+      "other_later_context": [
+        {
+          "source": "Ars Technica contemporaneous article carrying allegations from the lawsuit",
+          "url": "https://arstechnica.com/science/2023/11/ai-with-90-error-rate-forces-elderly-out-of-rehab-nursing-homes-suit-claims/",
+          "use": "confirms post-cutoff coverage; no independent count added"
+        },
+        {
+          "source": "STAT report on the later case proceeding",
+          "url": "https://www.statnews.com/2023/12/28/medicare-advantage-united-health-navihealth-rehab-care-restrictions/",
+          "use": "later context outside the seven-day observation window; excluded from direction label"
+        }
+      ],
+      "direction_label": "unknown",
+      "direction_label_basis": "Insufficient source coverage and event-coded volume; HN has one story in each window and one observation comment, while Reddit event-specific item coding is incomplete and the active days are sparse. No ratio smoothing or absence inference applied.",
+      "trend_evidence_sufficient": false,
+      "formal_trajectory_eligible": false,
+      "human_trend_label_status": "not_ready; evidence insufficiency means no direction task was issued",
+      "e_prediction_status": "pending; cutoff-only input handed off separately"
+    }
+  ],
+  "aggregate": {
+    "events_screened": 1,
+    "events_with_cutoff_input": 1,
+    "events_with_two_source_families_present": 1,
+    "events_meeting_internal_coverage_and_relevance_gate": 0,
+    "events_with_human_trend_labels": 0,
+    "events_formally_score_ready": 0
+  },
+  "limitations": [
+    "Window and numerical gates are internal v1 methods, not sponsor-confirmed requirements.",
+    "A search result or a zero result is not a full-platform census; archive completeness and query recall are not established.",
+    "The source responses were hashed but raw social content, author identifiers and item IDs were not retained.",
+    "Later procedural developments and later public material were not used in the cutoff input or the seven-day trend label."
+  ]
+}

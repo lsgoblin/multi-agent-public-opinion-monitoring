@@ -1,0 +1,2 @@
+Initial attempt stopped before any API write because Windows PowerShell read UTF-8 JSON with its default legacy encoding; script updated to read UTF-8 explicitly.
+A second acceptance-script run correctly read the newly imported case, then failed because the POST /cases response is an import receipt rather than the case object; script now GETs the persisted case before checking the UTF-8 title.

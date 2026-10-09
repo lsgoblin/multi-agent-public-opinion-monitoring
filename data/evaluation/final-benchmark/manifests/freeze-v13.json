@@ -1,0 +1,49 @@
+{
+  "schema": "riskshield.final_benchmark.freeze.v13",
+  "dataset_version": "final-benchmark-candidate-evidence-v13-2026-10-08",
+  "created_at_utc": "2026-10-08T11:11:45Z",
+  "base_freeze_v12_sha256": "92fc628160297b9bdb3afa847a15ccb80afca62badb4669de8d21e914b82314c",
+  "freeze_is_self_hashed": false,
+  "files": [
+    {
+      "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v13.json",
+      "bytes": 4341,
+      "sha256": "01193167bc59ec4e6d59c12922ad7a9e09d9886deb520c255a5e963aaa9b772c"
+    },
+    {
+      "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v13.json",
+      "bytes": 16444,
+      "sha256": "d0dd402d2506d1b23d18de7daf6ab2a302e7ef1ca14e64861a8c70534feee536"
+    },
+    {
+      "path": "data/evaluation/final-benchmark/manifests/trajectory-scoring-proposal-v13.md",
+      "bytes": 3412,
+      "sha256": "1cf1be9a9dbe36fdd670c62547073a8ea284cb5af4c6bddcffa601044d7f62f2"
+    },
+    {
+      "path": "data/evaluation/final-benchmark/labels/human-annotation-worklist-v13.md",
+      "bytes": 2985,
+      "sha256": "94820681ab7745d20118f892e22a9baa1eefe4a34bddf4f11552c29ceed2bf33"
+    },
+    {
+      "path": "data/evaluation/final-benchmark/manifests/candidate-screen-v13.json",
+      "bytes": 3178,
+      "sha256": "1df49de8aeaf2d6edb8ad0053e195daa69b2f736027abeb66361eca3f8d25dcf"
+    },
+    {
+      "path": "data/evaluation/final-benchmark/manifests/candidate-status-v13.json",
+      "bytes": 2413,
+      "sha256": "603c9bb7850665bc4c6b6e4b613891492adfd3a3bf4cb94372e46040fde3aac3"
+    },
+    {
+      "path": "data/evaluation/final-benchmark/manifests/e-handoff-v13.json",
+      "bytes": 1698,
+      "sha256": "cc5a4d46d088dcb5bf0c46c9ab9bfcfe65bd34386dcc31d769c513c88db977b9"
+    }
+  ],
+  "notes": [
+    "Append-only supplement; v1-v12 source and freeze files remain unchanged.",
+    "Only cutoff input is on E predictor allowlist. Labels and later evidence stay isolated.",
+    "This freeze fixes local file bytes, not external-source completeness or formal eligibility."
+  ]
+}

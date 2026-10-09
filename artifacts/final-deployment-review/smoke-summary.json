@@ -1,0 +1,12 @@
+{
+  "recorded_at_local": "2026-10-09 00:51:33 +08:00",
+  "image_id": "sha256:fc534eac7b89f206ce81e045012fa4bb01f9cf781ec65ac91560b91c4890eea8",
+  "api_health_http": 200,
+  "api_health_status": "ok",
+  "api_readiness_http": 200,
+  "g3_v2_passed": false,
+  "g4_v2_passed": false,
+  "channel_status_http": 200,
+  "channel_status": "ok",
+  "web_http": 200
+}

@@ -1,0 +1,170 @@
+{
+  "package_id": "blackcat_zongan_17374386012_v2",
+  "version": "day1-v2-event-package-2026-10-02-visibility-audit",
+  "data_mode": "real_historical",
+  "package_status": "engineering_candidate_public_visibility_unverified",
+  "event": {
+    "event_id": "blackcat-17374386012",
+    "title": "众安保险理赔争议投诉及后续处理",
+    "scope": "一条涉及众安保险客服的理赔争议投诉；不代表该公司全渠道投诉或整体舆情趋势。",
+    "primary_subject": "众安保险客服",
+    "subject_basis": "黑猫投诉详情页明确列出投诉对象为众安保险客服，问题分类为拒绝理赔。",
+    "cutoff": "2024-07-11T22:21:00+08:00",
+    "cutoff_basis": "旧工程观察边界，早于详情页显示的 23:26:57 审核通过时间。22:20 的页头时间接近发起时间，不能证明匿名公众在 22:21 已看到原投诉；此 cutoff 已判定不具备 G1-V2 的公开可见性证据。",
+    "public_visibility_audit": {
+      "target_observer": "anonymous_public",
+      "status": "not_verified_before_outcome",
+      "first_verified_visible_at": null,
+      "qualified_cutoff": null,
+      "cutoff_rule": "first_verified_visible_at + 30 minutes",
+      "verified_platform_timeline": {
+        "submitted_at": "2024-07-11T22:20:40+08:00",
+        "review_approved_and_merchant_assigned_at": "2024-07-11T23:26:57+08:00",
+        "merchant_reply_at": "2024-07-12T19:31:41+08:00"
+      },
+      "evidence_url": "https://tousu.sina.com.cn/complaint/view/17374386012",
+      "evidence_limit": "当前详情页是事后状态；发起和审核通过时间均不能单独证明当时匿名公众可见。未找到首次商家回复前的独立公开快照或带时刻的引用。"
+    },
+    "input_source_ids": ["blackcat-17374386012-initial"],
+    "follow_up_source_ids": ["blackcat-17374386012-business-reply", "blackcat-17374386012-resolution"],
+    "case_outcome": "complaint_marked_complete",
+    "public_opinion_direction": "unknown",
+    "outcome_basis": "页面记录商家在投诉后回复，投诉者随后评价并确认完成；单条投诉结案不足以判断整体舆情平息。",
+    "formal_evaluation_eligible": false,
+    "evaluation_limitations": [
+      "只有一条投诉，不能代表独立舆情事件总体或趋势。",
+      "没有当时网页快照或独立公开引用，截止前可见性未证实；旧工程 cutoff 不可计入 G1-V2。",
+      "商家回复内容在本次读取文本中未显示，只能核实回复时间线及后续状态。",
+      "正式走势标签、观察窗及评测切分口径尚未冻结。"
+    ]
+  },
+  "authorization": {
+    "basis": "用户于 2026-10-01 确认：主办方已授权参赛人员爬取黑猫样本。",
+    "recorded_as": "user_confirmed_competition_authorization",
+    "scope_note": "本包只保留必要元数据及人工脱敏摘要；未保存投诉者账号、原文、精确金额或健康细节。"
+  },
+  "sources": [
+    {
+      "record_id": "blackcat-17374386012-initial",
+      "platform": "黑猫投诉",
+      "source_id": "17374386012",
+      "source_url": "https://tousu.sina.com.cn/complaint/view/17374386012",
+      "publisher": "黑猫投诉",
+      "title": "众安保险不履行保险合同约定。",
+      "content": "投诉者称其保险理赔申请过程中遇到联系及材料提交困难，要求众安保险客服处理。此为人工脱敏概括，不是原文。",
+      "content_kind": "human_redacted_summary",
+      "published_at": "2024-07-11T22:20:00+08:00",
+      "published_at_precision": "minute",
+      "published_time_evidence": "详情页显示发布于 2024-07-11 22:20；平台事件时间线显示发起于 07-11 22:20:40。",
+      "available_at": null,
+      "available_at_precision": "unknown_historical_public_visibility",
+      "available_at_note": "页头 22:20 对应发起时段，但详情页显示 23:26:57 才审核通过；没有首次商家回复前的独立匿名公开可见证据，不能再把发起时间回填为 available_at。",
+      "collected_at": "2026-10-01T15:54:45+08:00",
+      "acquisition_method": "public_web_page_manual_review",
+      "role": "cutoff_input_candidate",
+      "sensitivity_handling": "未保存投诉者账号、原文、精确涉诉金额及健康细节。",
+      "historical_integrity": "retrospective_unverified",
+      "sentiment_candidate": "negative",
+      "sentiment_label_status": "provisional_single_reviewer_not_formal"
+    },
+    {
+      "record_id": "blackcat-17374386012-business-reply",
+      "platform": "黑猫投诉",
+      "source_id": "17374386012",
+      "source_url": "https://tousu.sina.com.cn/complaint/view/17374386012",
+      "published_at": null,
+      "observed_time_text": "07-12 19:31:41",
+      "normalized_at": "2024-07-12T19:31:41+08:00",
+      "normalized_time_note": "页面仅显示月日时分秒；年份按投诉时间线推定为 2024，正式评测前需复核。",
+      "collected_at": "2026-10-01T15:54:45+08:00",
+      "content": "详情页时间线显示众安保险客服在投诉发起后回复；本次页面文本未显示回复正文。",
+      "content_kind": "status_timeline_observation",
+      "role": "post_cutoff_evidence",
+      "historical_integrity": "retrospective_unverified"
+    },
+    {
+      "record_id": "blackcat-17374386012-resolution",
+      "platform": "黑猫投诉",
+      "source_id": "17374386012",
+      "source_url": "https://tousu.sina.com.cn/complaint/view/17374386012",
+      "observed_time_text": "07-16 17:40:58",
+      "normalized_at": "2024-07-16T17:40:58+08:00",
+      "normalized_time_note": "页面仅显示月日时分秒；年份按投诉时间线推定为 2024，正式评测前需复核。",
+      "collected_at": "2026-10-01T15:54:45+08:00",
+      "content": "详情页记录投诉者在商家回复后评价并确认完成；页面显示投诉已完成。",
+      "content_kind": "status_timeline_observation",
+      "role": "post_cutoff_outcome_evidence",
+      "historical_integrity": "retrospective_unverified"
+    }
+  ],
+  "case_import_projection": {
+    "case_id": "blackcat_zongan_17374386012_v2_visibility_audit",
+    "title": "众安保险理赔争议投诉及后续处理",
+    "scope": "单条众安保险客服理赔争议投诉；不代表全渠道投诉量或总体舆情。",
+    "cutoff": "2024-07-11T22:21:00+08:00",
+    "cutoff_basis": "保留旧工程边界以供数据兼容检查；原投诉的历史公开可见时间未知，该 cutoff 不具备 G1-V2 可用输入资格，禁止当作正式回测真值。",
+    "data_mode": "real_historical",
+    "version": "blackcat-v2-2026-10-02-visibility-audit",
+    "records": [
+      {
+        "record_id": "blackcat-17374386012-initial",
+        "channel": "blackcat",
+        "source_url": "https://tousu.sina.com.cn/complaint/view/17374386012",
+        "publisher": "黑猫投诉",
+        "title": "众安保险不履行保险合同约定。",
+        "summary": "投诉者称其保险理赔申请过程中遇到联系及材料提交困难，要求众安保险客服处理。此为人工脱敏概括，不是原文。",
+        "content_kind": "human_summary",
+        "data_mode": "real_historical",
+        "published_at": "2024-07-11T22:20:00+08:00",
+        "available_at": null,
+        "collected_at": "2026-10-01T15:54:45+08:00",
+        "availability_basis": "详情页显示 22:20 发起时段、23:26:57 审核通过；未取得首次回复前的匿名公开快照或独立引用，故历史 available_at 未知。",
+        "historical_integrity": "retrospective_unverified",
+        "acquisition_method": "manual_web_review",
+        "role": "input_candidate",
+        "limitations": [
+          "人工脱敏摘要，不含投诉原文、账号、涉诉金额或健康细节。",
+          "历史匿名公开可见时间未知；不得把发起或审核通过时间当作 available_at。",
+          "只代表一条投诉个案，不代表商家全渠道投诉量。",
+          "后续回复与结案证据另存于事件包，不得回填到 cutoff 输入。"
+        ]
+      },
+      {
+        "record_id": "blackcat-17374386012-business-reply",
+        "channel": "blackcat",
+        "source_url": "https://tousu.sina.com.cn/complaint/view/17374386012",
+        "publisher": "黑猫投诉详情时间线",
+        "title": "众安保险客服回复时间线",
+        "summary": "详情页记录商家在投诉发起后回复；回复正文未在本次读取文本中显示。",
+        "content_kind": "human_summary",
+        "data_mode": "real_historical",
+        "published_at": "2024-07-12T19:31:41+08:00",
+        "available_at": "2024-07-12T19:31:41+08:00",
+        "collected_at": "2026-10-01T15:54:45+08:00",
+        "availability_basis": "页面月日时间线记录；年份根据同一投诉的时间顺序推定为 2024，未有历史快照。",
+        "historical_integrity": "retrospective_unverified",
+        "acquisition_method": "manual_web_review",
+        "role": "evaluation_only",
+        "limitations": ["回复年份为推定值，正式评测前需复核。", "详情页文本未显示商家回复正文。", "不得进入 cutoff 输入或 Agent 记忆。"]
+      },
+      {
+        "record_id": "blackcat-17374386012-resolution",
+        "channel": "blackcat",
+        "source_url": "https://tousu.sina.com.cn/complaint/view/17374386012",
+        "publisher": "黑猫投诉详情时间线",
+        "title": "投诉者确认完成时间线",
+        "summary": "详情页记录投诉者在商家回复后评价并确认完成，平台显示投诉已完成。",
+        "content_kind": "human_summary",
+        "data_mode": "real_historical",
+        "published_at": "2024-07-16T17:40:58+08:00",
+        "available_at": "2024-07-16T17:40:58+08:00",
+        "collected_at": "2026-10-01T15:54:45+08:00",
+        "availability_basis": "页面月日时间线记录；年份根据同一投诉的时间顺序推定为 2024，未有历史快照。",
+        "historical_integrity": "retrospective_unverified",
+        "acquisition_method": "manual_web_review",
+        "role": "evaluation_only",
+        "limitations": ["年份为推定值，正式评测前需复核。", "单条投诉完成不能推断整体舆情平息。", "不得进入 cutoff 输入或 Agent 记忆。"]
+      }
+    ]
+  }
+}

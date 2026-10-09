@@ -1,0 +1,7 @@
+{
+  "model_calls": 0,
+  "network_requests": 0,
+  "policy": "constant escalation for every event; independent of event text",
+  "seed": null,
+  "sentiment": "abstain; event summary is not a title-level sentiment unit"
+}

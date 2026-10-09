@@ -1,0 +1,16 @@
+Final package status: NOT GENERATED. E has not issued a frozen version; the shared worktree contains concurrent A/B/C/E changes.
+
+Freeze gate: before packaging, E must provide the exact freeze identifier and final file SHA-256 manifest; verify every included file against it. Do not package HEAD alone or copy a moving worktree. E's README/test report currently reference artifacts/final-integration-review/candidate-package-manifest.json, but that file is absent from the working tree at this review.
+
+Whitelist after freeze:
+- Root: README.md, Dockerfile, .dockerignore, compose.yaml, .env.example, .python-version, pyproject.toml, uv.lock.
+- Code: src/**, ui/**, tests/**.
+- Runtime inputs: data/public/unh_change_20240222_day2_multisource_event.json; data/research/channel_checks_v2.json.
+- Entry docs: docs/delivery/**; docs/records/final-deployment-review.md; docs/records/final-integration-review.md.
+- Synthetic demo output only: artifacts/day4-docker-acceptance/corrected-run/{prepared-run.json,run-summary.json,report.json,alert.json}.
+- Deployment evidence: artifacts/final-deployment-review/{version-manifest.json,case-closure-summary.json,restart-persistence-summary.json,smoke-summary.json,network-route-summary.json,stop-start-persistence-check.txt,final-file-sha256.txt,build.log}.
+- Include additional markdown targets referenced by the four delivery documents only after confirming they are in E's freeze manifest and safe for the package.
+
+Exclude: .env files except .env.example; virtual environments; caches; runtime-final and all databases; data/evaluation; research inputs other than channel_checks_v2.json; live model material; raw historical-case report/alert; logs other than the listed build evidence; unlisted generated artifacts.
+
+After the freeze gate is satisfied, run the PowerShell staging/ZIP/SHA-256 command in docs/records/final-deployment-review.md. Expected output path: artifacts/final-deployment-review/riskshield-minimum-demo.zip. No ZIP size or hash exists yet.

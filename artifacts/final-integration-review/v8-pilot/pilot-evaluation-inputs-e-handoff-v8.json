@@ -1,0 +1,262 @@
+{
+  "cases": [
+    {
+      "cutoff": "2023-11-23T14:29:55Z",
+      "cutoff_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+        "pointer": "/events/0/cutoff"
+      },
+      "data_mode": "real_historical",
+      "evaluation_id": "fnf_cyberattack_20231123_v5__direction__e-handoff-v8",
+      "event_id": "fnf_cyberattack_20231123",
+      "predictions": {
+        "direction": {
+          "execution_mode": "offline_constant_escalation_baseline_v1",
+          "label": "escalation",
+          "result_evidence_refs": [
+            {
+              "path": "artifacts/final-integration-review/v8-pilot/pilot-predictions-e-handoff-v8.json",
+              "pointer": "/predictions/0/direction"
+            }
+          ]
+        }
+      },
+      "source_version": "final-benchmark-evidence-pilot-v8-2026-10-08",
+      "sources": [
+        {
+          "available_at": "2023-11-23T13:59:55Z",
+          "available_at_evidence_url": "https://www.reddit.com/r/technology/comments/1821s44/",
+          "publisher": "Public Reddit post archived by Arctic Shift",
+          "record_id": "reddit_archived_post_1821s44",
+          "source_available_at_ref": {
+            "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+            "pointer": "/events/0/cutoff_sources/0/available_at"
+          },
+          "source_record_ref": {
+            "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+            "pointer": "/events/0/cutoff_sources/0/record_id"
+          },
+          "source_url": "https://www.reddit.com/r/technology/comments/1821s44/",
+          "source_version": "arctic-shift-title-snapshot-v1",
+          "source_version_ref": {
+            "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+            "pointer": "/events/0/cutoff_sources/0/source_version"
+          },
+          "visibility_evidence_ref": {
+            "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+            "pointer": "/events/0/cutoff_sources/0/available_at"
+          }
+        },
+        {
+          "available_at": "2023-11-21T22:06:23Z",
+          "available_at_evidence_url": "https://last10k.com/sec-filings/fnf/0001331875-23-000064.htm",
+          "publisher": "U.S. SEC EDGAR; filer Fidelity National Financial, Inc.",
+          "record_id": "fnf-sec-original-8k-20231121",
+          "source_available_at_ref": {
+            "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+            "pointer": "/events/0/cutoff_sources/1/available_at"
+          },
+          "source_record_ref": {
+            "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+            "pointer": "/events/0/cutoff_sources/1/record_id"
+          },
+          "source_url": "https://www.sec.gov/Archives/edgar/data/1331875/000133187523000064/fnf-20231119.htm",
+          "source_version": "Fixed SEC accession 0001331875-23-000064, original Form 8-K; not either later amendment.",
+          "source_version_ref": {
+            "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+            "pointer": "/events/0/cutoff_sources/1/source_version"
+          },
+          "visibility_evidence_ref": {
+            "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+            "pointer": "/events/0/cutoff_sources/1/available_at"
+          }
+        }
+      ],
+      "split": "holdout",
+      "target_record_id": "reddit_archived_post_1821s44",
+      "unit_id": "event_cutoff_summary"
+    },
+    {
+      "cutoff": "2024-02-06T23:08:11Z",
+      "cutoff_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+        "pointer": "/events/1/cutoff"
+      },
+      "data_mode": "real_historical",
+      "evaluation_id": "bcbs_louisiana_elevance_sale_20240206_v5__direction__e-handoff-v8",
+      "event_id": "bcbs_louisiana_elevance_sale_20240206",
+      "predictions": {
+        "direction": {
+          "execution_mode": "offline_constant_escalation_baseline_v1",
+          "label": "escalation",
+          "result_evidence_refs": [
+            {
+              "path": "artifacts/final-integration-review/v8-pilot/pilot-predictions-e-handoff-v8.json",
+              "pointer": "/predictions/1/direction"
+            }
+          ]
+        }
+      },
+      "source_version": "final-benchmark-evidence-pilot-v8-2026-10-08",
+      "sources": [
+        {
+          "available_at": "2024-02-06T22:38:11Z",
+          "available_at_evidence_url": "https://apnews.com/article/blue-cross-elevance-louisiana-health-insurance-sale-968df3fb5b53a1fb678c27afcebccbf1",
+          "publisher": "Associated Press",
+          "record_id": "ap-bcbsla-elevance-hearing-20240206",
+          "source_available_at_ref": {
+            "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+            "pointer": "/events/1/cutoff_sources/0/available_at"
+          },
+          "source_record_ref": {
+            "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+            "pointer": "/events/1/cutoff_sources/0/record_id"
+          },
+          "source_url": "https://apnews.com/article/blue-cross-elevance-louisiana-health-insurance-sale-968df3fb5b53a1fb678c27afcebccbf1",
+          "source_version": "AP story ID 968df3fb5b53a1fb678c27afcebccbf1; original report dated 2024-02-06",
+          "source_version_ref": {
+            "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+            "pointer": "/events/1/cutoff_sources/0/source_version"
+          },
+          "visibility_evidence_ref": {
+            "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+            "pointer": "/events/1/cutoff_sources/0/available_at"
+          }
+        }
+      ],
+      "split": "holdout_candidate",
+      "target_record_id": "ap-bcbsla-elevance-hearing-20240206",
+      "unit_id": "event_cutoff_summary"
+    },
+    {
+      "cutoff": "2025-06-20T13:16:30Z",
+      "cutoff_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+        "pointer": "/events/2/cutoff"
+      },
+      "data_mode": "real_historical",
+      "evaluation_id": "aflac_cybersecurity_incident_20250620_v6__direction__e-handoff-v8",
+      "event_id": "aflac_cybersecurity_incident_20250620",
+      "predictions": {
+        "direction": {
+          "execution_mode": "offline_constant_escalation_baseline_v1",
+          "label": "escalation",
+          "result_evidence_refs": [
+            {
+              "path": "artifacts/final-integration-review/v8-pilot/pilot-predictions-e-handoff-v8.json",
+              "pointer": "/predictions/2/direction"
+            }
+          ]
+        }
+      },
+      "source_version": "final-benchmark-evidence-pilot-v8-2026-10-08",
+      "sources": [
+        {
+          "available_at": "2025-06-20T12:01:13Z",
+          "available_at_evidence_url": "https://www.sec.gov/Archives/edgar/data/4977/000000497725000128/afl-20250620.htm",
+          "publisher": "U.S. SEC EDGAR; filer Aflac Incorporated",
+          "record_id": "aflac-sec-original-8k-20250620",
+          "source_available_at_ref": {
+            "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+            "pointer": "/events/2/cutoff_sources/0/available_at"
+          },
+          "source_record_ref": {
+            "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+            "pointer": "/events/2/cutoff_sources/0/record_id"
+          },
+          "source_url": "https://www.sec.gov/Archives/edgar/data/4977/000000497725000128/afl-20250620.htm",
+          "source_version": "Fixed original SEC accession 0000004977-25-000128, Form 8-K; no later company update included.",
+          "source_version_ref": {
+            "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+            "pointer": "/events/2/cutoff_sources/0/source_version"
+          },
+          "visibility_evidence_ref": {
+            "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+            "pointer": "/events/2/cutoff_sources/0/available_at"
+          }
+        },
+        {
+          "available_at": "2025-06-20T12:46:30Z",
+          "available_at_evidence_url": "https://www.reddit.com/r/cybersecurity/comments/1lg33ey/",
+          "publisher": "Public Reddit r/cybersecurity post archived by Arctic Shift",
+          "record_id": "reddit_archived_post_1lg33ey",
+          "source_available_at_ref": {
+            "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+            "pointer": "/events/2/cutoff_sources/1/available_at"
+          },
+          "source_record_ref": {
+            "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+            "pointer": "/events/2/cutoff_sources/1/record_id"
+          },
+          "source_url": "https://www.reddit.com/r/cybersecurity/comments/1lg33ey/",
+          "source_version": "arctic-shift-title-snapshot-v1",
+          "source_version_ref": {
+            "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+            "pointer": "/events/2/cutoff_sources/1/source_version"
+          },
+          "visibility_evidence_ref": {
+            "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+            "pointer": "/events/2/cutoff_sources/1/available_at"
+          }
+        }
+      ],
+      "split": "holdout",
+      "target_record_id": "aflac-sec-original-8k-20250620",
+      "unit_id": "event_cutoff_summary"
+    },
+    {
+      "cutoff": "2023-05-26T19:59:00Z",
+      "cutoff_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+        "pointer": "/events/3/cutoff"
+      },
+      "data_mode": "real_historical",
+      "evaluation_id": "state_farm_ca_new_business_pause_20230526_v8__direction__e-handoff-v8",
+      "event_id": "state_farm_ca_new_business_pause_20230526",
+      "predictions": {
+        "direction": {
+          "execution_mode": "offline_constant_escalation_baseline_v1",
+          "label": "escalation",
+          "result_evidence_refs": [
+            {
+              "path": "artifacts/final-integration-review/v8-pilot/pilot-predictions-e-handoff-v8.json",
+              "pointer": "/predictions/3/direction"
+            }
+          ]
+        }
+      },
+      "source_version": "final-benchmark-evidence-pilot-v8-2026-10-08",
+      "sources": [
+        {
+          "available_at": "2023-05-26T14:29:00-05:00",
+          "available_at_evidence_url": "https://newsroom.statefarm.com/state-farm-general-insurance-company-california-new-business-update/",
+          "publisher": "State Farm official newsroom",
+          "record_id": "statefarm-newsroom-ca-new-business-20230526",
+          "source_available_at_ref": {
+            "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+            "pointer": "/events/3/cutoff_sources/0/available_at"
+          },
+          "source_record_ref": {
+            "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+            "pointer": "/events/3/cutoff_sources/0/record_id"
+          },
+          "source_url": "https://newsroom.statefarm.com/state-farm-general-insurance-company-california-new-business-update/",
+          "source_version": "Official page identified by its article title and publication time; current public page queried 2026-10-08. No historical byte snapshot or revision history was retained; no updated marker was visible in the inspected page.",
+          "source_version_ref": {
+            "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+            "pointer": "/events/3/cutoff_sources/0/source_version"
+          },
+          "visibility_evidence_ref": {
+            "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+            "pointer": "/events/3/cutoff_sources/0/available_at"
+          }
+        }
+      ],
+      "split": "holdout_candidate",
+      "target_record_id": "statefarm-newsroom-ca-new-business-20230526",
+      "unit_id": "event_cutoff_summary"
+    }
+  ],
+  "dataset_version": "final-benchmark-evidence-pilot-v8-2026-10-08__offline_constant_escalation_baseline_v1",
+  "schema": "riskshield.day5.evaluation-inputs.v1"
+}

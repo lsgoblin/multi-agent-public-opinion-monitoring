@@ -1,0 +1,605 @@
+{
+  "schema": "riskshield.final_benchmark.candidate_events.v3",
+  "dataset_version": "final-benchmark-public-history-v3-2026-10-08",
+  "counting_unit": "one specific independently identified incident, policy controversy or lawsuit; a post/URL/source alone is not an event.",
+  "split_rule": "UNH remains development; 19 input rows remain holdout for predictor preparation only. Twelve complaint posts are auxiliary, excluded from independent trend count.",
+  "cutoff_rule": "Original v2 cutoff unchanged at archive witness +30 minutes; supplements never shift cutoffs.",
+  "statistics": {
+    "input_rows_with_original_historical_visibility_witness": 20,
+    "distinct_source_post_records_with_cutoff_witness": 20,
+    "independently_identified_event_identities_including_development": 8,
+    "independently_identified_holdout_event_identities": 7,
+    "personal_complaint_posts_retained_as_auxiliary": 12,
+    "complaint_posts_counted_as_independent_trend_events": 0,
+    "cutoff_content_sufficient_to_identify_issue_for_event_context": 8,
+    "cutoff_texts_sufficient_for_full_contextual_sentiment_truth": 0,
+    "events_with_comparable_baseline_and_later_trend_evidence": 0,
+    "strict_independent_human_sentiment_units_completed": 0,
+    "pending_holdout_sentiment_slots": 38,
+    "admitted_replacement_events": 0,
+    "remaining_gap_to_20_independent_holdout_events": 13,
+    "formal_score_ready_holdout_events": 0
+  },
+  "events": [
+    {
+      "event_id": "unh_change_cyberattack_20240222",
+      "split_v2": "development",
+      "event_type": "development_cyber_incident",
+      "source_record_id": "unh-sec-20240222-initial",
+      "original_source_post_id": null,
+      "cutoff": "2024-02-22T16:48:39-05:00",
+      "archived_visible_at": "2024-02-22T16:18:39-05:00",
+      "event_identity": "confirmed_single_event_multi_source",
+      "counts_as_independent_event_in_v3": true,
+      "identity_basis": "现有公司/具体议题或诉讼主体验证；跨来源不增加事件数。",
+      "cutoff_input_quality": "limited_but_sufficient_for_sec_disclosure_observation",
+      "cutoff_material_ref": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v3.json",
+        "pointer": "/events/0/cutoff_sources"
+      },
+      "cutoff_supplement_record_ids": [],
+      "public_complaint_post_exists": false,
+      "functional_demo_suitable": true,
+      "sentiment_suitability": "limited_source_text_only",
+      "trend_backtest_suitability": "not_sufficient",
+      "post_cutoff_trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/0"
+      },
+      "decision": "保留（开发集）",
+      "reason": "同一 Change Healthcare 事件有 SEC 与 Optum 两个来源，不重复计数。cutoff 是受限 SEC 披露观察点；已做开发探测，留在开发集。",
+      "future_direction_label": null
+    },
+    {
+      "event_id": "fnf_cyberattack_20231123",
+      "split_v2": "holdout",
+      "event_type": "corporate_incident",
+      "source_record_id": "reddit_archived_post_1821s44",
+      "original_source_post_id": "1821s44",
+      "cutoff": "2023-11-23T14:29:55Z",
+      "archived_visible_at": "2023-11-23T13:59:55Z",
+      "event_identity": "distinct_company_specific_incident_policy_or_lawsuit",
+      "counts_as_independent_event_in_v3": true,
+      "identity_basis": "现有公司/具体议题或诉讼主体验证；跨来源不增加事件数。",
+      "cutoff_input_quality": "sufficient_to_identify_issue_but_not_full_context",
+      "cutoff_material_ref": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v3.json",
+        "pointer": "/events/1/cutoff_sources"
+      },
+      "cutoff_supplement_record_ids": [],
+      "public_complaint_post_exists": false,
+      "functional_demo_suitable": true,
+      "sentiment_suitability": "headline_level_only",
+      "trend_backtest_suitability": "some_followup_sources_but_no_comparable_baseline",
+      "post_cutoff_trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/1"
+      },
+      "decision": "保留（走势候选，待补证）",
+      "reason": "独立的 FNF 网络事件；截止前 SEC 8-K 摘要补足初始事实。后续报道能证明事件进展，但没有相同来源覆盖口径的公众讨论基线/走势序列。",
+      "future_direction_label": null
+    },
+    {
+      "event_id": "aflac_cybersecurity_incident_20250620",
+      "split_v2": "holdout",
+      "event_type": "corporate_incident",
+      "source_record_id": "reddit_archived_post_1lg33ey",
+      "original_source_post_id": "1lg33ey",
+      "cutoff": "2025-06-20T13:16:30Z",
+      "archived_visible_at": "2025-06-20T12:46:30Z",
+      "event_identity": "distinct_company_specific_incident_policy_or_lawsuit",
+      "counts_as_independent_event_in_v3": true,
+      "identity_basis": "现有公司/具体议题或诉讼主体验证；跨来源不增加事件数。",
+      "cutoff_input_quality": "sufficient_to_identify_issue_but_not_full_context",
+      "cutoff_material_ref": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v3.json",
+        "pointer": "/events/2/cutoff_sources"
+      },
+      "cutoff_supplement_record_ids": [],
+      "public_complaint_post_exists": false,
+      "functional_demo_suitable": true,
+      "sentiment_suitability": "headline_level_only",
+      "trend_backtest_suitability": "some_followup_sources_but_no_comparable_baseline",
+      "post_cutoff_trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/2"
+      },
+      "decision": "保留（走势候选，待补证）",
+      "reason": "Aflac 自身的独立入侵事件，与 Allianz 属同类保险业网络攻击但不是同一次受害事件。截止前 AP 摘要补足初始事实，缺少可比较公众讨论基线。",
+      "future_direction_label": null
+    },
+    {
+      "event_id": "allianz_life_data_breach_20250727",
+      "split_v2": "holdout",
+      "event_type": "corporate_incident",
+      "source_record_id": "reddit_archived_post_1ma8wfj",
+      "original_source_post_id": "1ma8wfj",
+      "cutoff": "2025-07-27T01:07:54Z",
+      "archived_visible_at": "2025-07-27T00:37:54Z",
+      "event_identity": "distinct_company_specific_incident_policy_or_lawsuit",
+      "counts_as_independent_event_in_v3": true,
+      "identity_basis": "现有公司/具体议题或诉讼主体验证；跨来源不增加事件数。",
+      "cutoff_input_quality": "sufficient_to_identify_issue_but_not_full_context",
+      "cutoff_material_ref": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v3.json",
+        "pointer": "/events/3/cutoff_sources"
+      },
+      "cutoff_supplement_record_ids": [],
+      "public_complaint_post_exists": false,
+      "functional_demo_suitable": true,
+      "sentiment_suitability": "headline_level_only",
+      "trend_backtest_suitability": "some_followup_sources_but_no_comparable_baseline",
+      "post_cutoff_trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/3"
+      },
+      "decision": "保留（走势候选，待补证）",
+      "reason": "Allianz Life 自身独立泄露事件。截止前 AP 报道补足范围；消费者通知等业务进展不等于舆情平息，且没有可比较讨论序列。",
+      "future_direction_label": null
+    },
+    {
+      "event_id": "anthem_anesthesia_proposal_20241204",
+      "split_v2": "holdout",
+      "event_type": "corporate_policy_controversy",
+      "source_record_id": "reddit_archived_post_1h6mj0x",
+      "original_source_post_id": "1h6mj0x",
+      "cutoff": "2024-12-04T18:29:34Z",
+      "archived_visible_at": "2024-12-04T17:59:34Z",
+      "event_identity": "distinct_company_specific_incident_policy_or_lawsuit",
+      "counts_as_independent_event_in_v3": true,
+      "identity_basis": "现有公司/具体议题或诉讼主体验证；跨来源不增加事件数。",
+      "cutoff_input_quality": "sufficient_to_identify_issue_but_not_full_context",
+      "cutoff_material_ref": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v3.json",
+        "pointer": "/events/4/cutoff_sources"
+      },
+      "cutoff_supplement_record_ids": [],
+      "public_complaint_post_exists": false,
+      "functional_demo_suitable": true,
+      "sentiment_suitability": "headline_level_only",
+      "trend_backtest_suitability": "some_followup_sources_but_no_comparable_baseline",
+      "post_cutoff_trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/4"
+      },
+      "decision": "保留（走势候选，待补证）",
+      "reason": "Anthem 麻醉报销提案与撤回是同一事件。标题能识别争议；截止前完整提案正文没有冻结，后续报道不能代替可比基线。",
+      "future_direction_label": null
+    },
+    {
+      "event_id": "cigna_algorithm_denial_lawsuit_20230725",
+      "split_v2": "holdout",
+      "event_type": "corporate_litigation_controversy",
+      "source_record_id": "reddit_archived_post_159ce8g",
+      "original_source_post_id": "159ce8g",
+      "cutoff": "2023-07-25T16:23:54Z",
+      "archived_visible_at": "2023-07-25T15:53:54Z",
+      "event_identity": "distinct_company_specific_incident_policy_or_lawsuit",
+      "counts_as_independent_event_in_v3": true,
+      "identity_basis": "现有公司/具体议题或诉讼主体验证；跨来源不增加事件数。",
+      "cutoff_input_quality": "sufficient_to_identify_issue_but_not_full_context",
+      "cutoff_material_ref": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v3.json",
+        "pointer": "/events/5/cutoff_sources"
+      },
+      "cutoff_supplement_record_ids": [],
+      "public_complaint_post_exists": false,
+      "functional_demo_suitable": true,
+      "sentiment_suitability": "headline_level_only",
+      "trend_backtest_suitability": "some_followup_sources_but_no_comparable_baseline",
+      "post_cutoff_trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/5"
+      },
+      "decision": "保留（走势候选，待补证）",
+      "reason": "Cigna PxDx 诉讼是独立诉讼。截止前补入 Axios 的诉状主张摘要；须保持“诉讼指称”语气，缺少可比后续舆情测量。",
+      "future_direction_label": null
+    },
+    {
+      "event_id": "unitedhealth_algorithm_care_lawsuit_20231115",
+      "split_v2": "holdout",
+      "event_type": "corporate_litigation_controversy",
+      "source_record_id": "reddit_archived_post_17w461q",
+      "original_source_post_id": "17w461q",
+      "cutoff": "2023-11-15T21:52:18Z",
+      "archived_visible_at": "2023-11-15T21:22:18Z",
+      "event_identity": "distinct_company_specific_incident_policy_or_lawsuit",
+      "counts_as_independent_event_in_v3": true,
+      "identity_basis": "现有公司/具体议题或诉讼主体验证；跨来源不增加事件数。",
+      "cutoff_input_quality": "sufficient_to_identify_issue_but_not_full_context",
+      "cutoff_material_ref": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v3.json",
+        "pointer": "/events/6/cutoff_sources"
+      },
+      "cutoff_supplement_record_ids": [],
+      "public_complaint_post_exists": false,
+      "functional_demo_suitable": true,
+      "sentiment_suitability": "headline_level_only",
+      "trend_backtest_suitability": "some_followup_sources_but_no_comparable_baseline",
+      "post_cutoff_trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/6"
+      },
+      "decision": "保留（走势候选，待补证）",
+      "reason": "UnitedHealth/nH Predict 是一项特定诉讼。其他报道/转贴不另计；有后续讨论线索但无历史量值基线。",
+      "future_direction_label": null
+    },
+    {
+      "event_id": "humana_algorithm_care_lawsuit_20231214",
+      "split_v2": "holdout",
+      "event_type": "corporate_litigation_controversy",
+      "source_record_id": "reddit_archived_post_18i3k2f",
+      "original_source_post_id": "18i3k2f",
+      "cutoff": "2023-12-14T08:20:02Z",
+      "archived_visible_at": "2023-12-14T07:50:02Z",
+      "event_identity": "distinct_company_specific_incident_policy_or_lawsuit",
+      "counts_as_independent_event_in_v3": true,
+      "identity_basis": "现有公司/具体议题或诉讼主体验证；跨来源不增加事件数。",
+      "cutoff_input_quality": "sufficient_to_identify_issue_but_not_full_context",
+      "cutoff_material_ref": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v3.json",
+        "pointer": "/events/7/cutoff_sources"
+      },
+      "cutoff_supplement_record_ids": [],
+      "public_complaint_post_exists": false,
+      "functional_demo_suitable": true,
+      "sentiment_suitability": "headline_level_only",
+      "trend_backtest_suitability": "some_followup_sources_but_no_comparable_baseline",
+      "post_cutoff_trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/7"
+      },
+      "decision": "保留（走势候选，待补证）",
+      "reason": "Humana 案为另一被告和诉讼；与 UHC 案题材相近但不是同一诉讼。诉状主张和诉讼回应不能当作舆情平息。",
+      "future_direction_label": null
+    },
+    {
+      "event_id": "complaint_health_claim_review_20240818",
+      "split_v2": "holdout",
+      "event_type": "individual_complaint_episode",
+      "source_record_id": "reddit_archived_post_1evaapp",
+      "original_source_post_id": "1evaapp",
+      "cutoff": "2024-08-18T14:46:54Z",
+      "archived_visible_at": "2024-08-18T14:16:54Z",
+      "event_identity": "post_is_distinct_but_underlying_event_not_resolved",
+      "counts_as_independent_event_in_v3": false,
+      "identity_basis": "只确认原帖本身；底层舆情事件身份无法由保存材料判断。",
+      "cutoff_input_quality": "insufficient_for_distinct_event_context",
+      "cutoff_material_ref": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v3.json",
+        "pointer": "/events/8/cutoff_sources"
+      },
+      "cutoff_supplement_record_ids": [],
+      "public_complaint_post_exists": true,
+      "functional_demo_suitable": true,
+      "sentiment_suitability": "auxiliary_only_title_summary",
+      "trend_backtest_suitability": "not_sufficient",
+      "post_cutoff_trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/8"
+      },
+      "decision": "仅作辅助样本",
+      "reason": "已验证一条独立作者的公开投诉帖记录；但只有脱敏标题摘要，无法辨识具体公司/政策/地点/集体争议，也无正文、评论或后续观察。不能以作者不同推断独立舆情事件。",
+      "future_direction_label": null
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20241229",
+      "split_v2": "holdout",
+      "event_type": "individual_complaint_episode",
+      "source_record_id": "reddit_archived_post_1hp6wa2",
+      "original_source_post_id": "1hp6wa2",
+      "cutoff": "2024-12-29T22:22:11Z",
+      "archived_visible_at": "2024-12-29T21:52:11Z",
+      "event_identity": "post_is_distinct_but_underlying_event_not_resolved",
+      "counts_as_independent_event_in_v3": false,
+      "identity_basis": "只确认原帖本身；底层舆情事件身份无法由保存材料判断。",
+      "cutoff_input_quality": "insufficient_for_distinct_event_context",
+      "cutoff_material_ref": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v3.json",
+        "pointer": "/events/9/cutoff_sources"
+      },
+      "cutoff_supplement_record_ids": [],
+      "public_complaint_post_exists": true,
+      "functional_demo_suitable": true,
+      "sentiment_suitability": "auxiliary_only_title_summary",
+      "trend_backtest_suitability": "not_sufficient",
+      "post_cutoff_trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/9"
+      },
+      "decision": "仅作辅助样本",
+      "reason": "已验证一条独立作者的公开投诉帖记录；但只有脱敏标题摘要，无法辨识具体公司/政策/地点/集体争议，也无正文、评论或后续观察。不能以作者不同推断独立舆情事件。",
+      "future_direction_label": null
+    },
+    {
+      "event_id": "complaint_home_coverage_after_termination_20240430",
+      "split_v2": "holdout",
+      "event_type": "individual_complaint_episode",
+      "source_record_id": "reddit_archived_post_1ch6tu5",
+      "original_source_post_id": "1ch6tu5",
+      "cutoff": "2024-04-30T23:41:09Z",
+      "archived_visible_at": "2024-04-30T23:11:09Z",
+      "event_identity": "post_is_distinct_but_underlying_event_not_resolved",
+      "counts_as_independent_event_in_v3": false,
+      "identity_basis": "只确认原帖本身；底层舆情事件身份无法由保存材料判断。",
+      "cutoff_input_quality": "insufficient_for_distinct_event_context",
+      "cutoff_material_ref": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v3.json",
+        "pointer": "/events/10/cutoff_sources"
+      },
+      "cutoff_supplement_record_ids": [],
+      "public_complaint_post_exists": true,
+      "functional_demo_suitable": true,
+      "sentiment_suitability": "auxiliary_only_title_summary",
+      "trend_backtest_suitability": "not_sufficient",
+      "post_cutoff_trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/10"
+      },
+      "decision": "仅作辅助样本",
+      "reason": "已验证一条独立作者的公开投诉帖记录；但只有脱敏标题摘要，无法辨识具体公司/政策/地点/集体争议，也无正文、评论或后续观察。不能以作者不同推断独立舆情事件。",
+      "future_direction_label": null
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20231018",
+      "split_v2": "holdout",
+      "event_type": "individual_complaint_episode",
+      "source_record_id": "reddit_archived_post_17acu1c",
+      "original_source_post_id": "17acu1c",
+      "cutoff": "2023-10-18T00:35:59Z",
+      "archived_visible_at": "2023-10-18T00:05:59Z",
+      "event_identity": "post_is_distinct_but_underlying_event_not_resolved",
+      "counts_as_independent_event_in_v3": false,
+      "identity_basis": "只确认原帖本身；底层舆情事件身份无法由保存材料判断。",
+      "cutoff_input_quality": "insufficient_for_distinct_event_context",
+      "cutoff_material_ref": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v3.json",
+        "pointer": "/events/11/cutoff_sources"
+      },
+      "cutoff_supplement_record_ids": [],
+      "public_complaint_post_exists": true,
+      "functional_demo_suitable": true,
+      "sentiment_suitability": "auxiliary_only_title_summary",
+      "trend_backtest_suitability": "not_sufficient",
+      "post_cutoff_trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/11"
+      },
+      "decision": "仅作辅助样本",
+      "reason": "已验证一条独立作者的公开投诉帖记录；但只有脱敏标题摘要，无法辨识具体公司/政策/地点/集体争议，也无正文、评论或后续观察。不能以作者不同推断独立舆情事件。",
+      "future_direction_label": null
+    },
+    {
+      "event_id": "complaint_health_claim_rejections_20241211",
+      "split_v2": "holdout",
+      "event_type": "individual_complaint_episode",
+      "source_record_id": "reddit_archived_post_1hc1bcc",
+      "original_source_post_id": "1hc1bcc",
+      "cutoff": "2024-12-11T19:40:51Z",
+      "archived_visible_at": "2024-12-11T19:10:51Z",
+      "event_identity": "post_is_distinct_but_underlying_event_not_resolved",
+      "counts_as_independent_event_in_v3": false,
+      "identity_basis": "只确认原帖本身；底层舆情事件身份无法由保存材料判断。",
+      "cutoff_input_quality": "insufficient_for_distinct_event_context",
+      "cutoff_material_ref": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v3.json",
+        "pointer": "/events/12/cutoff_sources"
+      },
+      "cutoff_supplement_record_ids": [],
+      "public_complaint_post_exists": true,
+      "functional_demo_suitable": true,
+      "sentiment_suitability": "auxiliary_only_title_summary",
+      "trend_backtest_suitability": "not_sufficient",
+      "post_cutoff_trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/12"
+      },
+      "decision": "仅作辅助样本",
+      "reason": "已验证一条独立作者的公开投诉帖记录；但只有脱敏标题摘要，无法辨识具体公司/政策/地点/集体争议，也无正文、评论或后续观察。不能以作者不同推断独立舆情事件。",
+      "future_direction_label": null
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20240524",
+      "split_v2": "holdout",
+      "event_type": "individual_complaint_episode",
+      "source_record_id": "reddit_archived_post_1cznbtx",
+      "original_source_post_id": "1cznbtx",
+      "cutoff": "2024-05-24T15:53:22Z",
+      "archived_visible_at": "2024-05-24T15:23:22Z",
+      "event_identity": "post_is_distinct_but_underlying_event_not_resolved",
+      "counts_as_independent_event_in_v3": false,
+      "identity_basis": "只确认原帖本身；底层舆情事件身份无法由保存材料判断。",
+      "cutoff_input_quality": "insufficient_for_distinct_event_context",
+      "cutoff_material_ref": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v3.json",
+        "pointer": "/events/13/cutoff_sources"
+      },
+      "cutoff_supplement_record_ids": [],
+      "public_complaint_post_exists": true,
+      "functional_demo_suitable": true,
+      "sentiment_suitability": "auxiliary_only_title_summary",
+      "trend_backtest_suitability": "not_sufficient",
+      "post_cutoff_trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/13"
+      },
+      "decision": "仅作辅助样本",
+      "reason": "已验证一条独立作者的公开投诉帖记录；但只有脱敏标题摘要，无法辨识具体公司/政策/地点/集体争议，也无正文、评论或后续观察。不能以作者不同推断独立舆情事件。",
+      "future_direction_label": null
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20231010",
+      "split_v2": "holdout",
+      "event_type": "individual_complaint_episode",
+      "source_record_id": "reddit_archived_post_174m8f9",
+      "original_source_post_id": "174m8f9",
+      "cutoff": "2023-10-10T14:41:29Z",
+      "archived_visible_at": "2023-10-10T14:11:29Z",
+      "event_identity": "post_is_distinct_but_underlying_event_not_resolved",
+      "counts_as_independent_event_in_v3": false,
+      "identity_basis": "只确认原帖本身；底层舆情事件身份无法由保存材料判断。",
+      "cutoff_input_quality": "insufficient_for_distinct_event_context",
+      "cutoff_material_ref": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v3.json",
+        "pointer": "/events/14/cutoff_sources"
+      },
+      "cutoff_supplement_record_ids": [],
+      "public_complaint_post_exists": true,
+      "functional_demo_suitable": true,
+      "sentiment_suitability": "auxiliary_only_title_summary",
+      "trend_backtest_suitability": "not_sufficient",
+      "post_cutoff_trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/14"
+      },
+      "decision": "仅作辅助样本",
+      "reason": "已验证一条独立作者的公开投诉帖记录；但只有脱敏标题摘要，无法辨识具体公司/政策/地点/集体争议，也无正文、评论或后续观察。不能以作者不同推断独立舆情事件。",
+      "future_direction_label": null
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20240625",
+      "split_v2": "holdout",
+      "event_type": "individual_complaint_episode",
+      "source_record_id": "reddit_archived_post_1do5am8",
+      "original_source_post_id": "1do5am8",
+      "cutoff": "2024-06-25T13:24:24Z",
+      "archived_visible_at": "2024-06-25T12:54:24Z",
+      "event_identity": "post_is_distinct_but_underlying_event_not_resolved",
+      "counts_as_independent_event_in_v3": false,
+      "identity_basis": "只确认原帖本身；底层舆情事件身份无法由保存材料判断。",
+      "cutoff_input_quality": "insufficient_for_distinct_event_context",
+      "cutoff_material_ref": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v3.json",
+        "pointer": "/events/15/cutoff_sources"
+      },
+      "cutoff_supplement_record_ids": [],
+      "public_complaint_post_exists": true,
+      "functional_demo_suitable": true,
+      "sentiment_suitability": "auxiliary_only_title_summary",
+      "trend_backtest_suitability": "not_sufficient",
+      "post_cutoff_trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/15"
+      },
+      "decision": "仅作辅助样本",
+      "reason": "已验证一条独立作者的公开投诉帖记录；但只有脱敏标题摘要，无法辨识具体公司/政策/地点/集体争议，也无正文、评论或后续观察。不能以作者不同推断独立舆情事件。",
+      "future_direction_label": null
+    },
+    {
+      "event_id": "complaint_auto_claim_denial_20241116",
+      "split_v2": "holdout",
+      "event_type": "individual_complaint_episode",
+      "source_record_id": "reddit_archived_post_1gshw33",
+      "original_source_post_id": "1gshw33",
+      "cutoff": "2024-11-16T07:38:12Z",
+      "archived_visible_at": "2024-11-16T07:08:12Z",
+      "event_identity": "post_is_distinct_but_underlying_event_not_resolved",
+      "counts_as_independent_event_in_v3": false,
+      "identity_basis": "只确认原帖本身；底层舆情事件身份无法由保存材料判断。",
+      "cutoff_input_quality": "insufficient_for_distinct_event_context",
+      "cutoff_material_ref": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v3.json",
+        "pointer": "/events/16/cutoff_sources"
+      },
+      "cutoff_supplement_record_ids": [],
+      "public_complaint_post_exists": true,
+      "functional_demo_suitable": true,
+      "sentiment_suitability": "auxiliary_only_title_summary",
+      "trend_backtest_suitability": "not_sufficient",
+      "post_cutoff_trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/16"
+      },
+      "decision": "仅作辅助样本",
+      "reason": "已验证一条独立作者的公开投诉帖记录；但只有脱敏标题摘要，无法辨识具体公司/政策/地点/集体争议，也无正文、评论或后续观察。不能以作者不同推断独立舆情事件。",
+      "future_direction_label": null
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_inspection_20241011",
+      "split_v2": "holdout",
+      "event_type": "individual_complaint_episode",
+      "source_record_id": "reddit_archived_post_1g1kc9b",
+      "original_source_post_id": "1g1kc9b",
+      "cutoff": "2024-10-11T21:46:37Z",
+      "archived_visible_at": "2024-10-11T21:16:37Z",
+      "event_identity": "post_is_distinct_but_underlying_event_not_resolved",
+      "counts_as_independent_event_in_v3": false,
+      "identity_basis": "只确认原帖本身；底层舆情事件身份无法由保存材料判断。",
+      "cutoff_input_quality": "insufficient_for_distinct_event_context",
+      "cutoff_material_ref": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v3.json",
+        "pointer": "/events/17/cutoff_sources"
+      },
+      "cutoff_supplement_record_ids": [],
+      "public_complaint_post_exists": true,
+      "functional_demo_suitable": true,
+      "sentiment_suitability": "auxiliary_only_title_summary",
+      "trend_backtest_suitability": "not_sufficient",
+      "post_cutoff_trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/17"
+      },
+      "decision": "仅作辅助样本",
+      "reason": "已验证一条独立作者的公开投诉帖记录；但只有脱敏标题摘要，无法辨识具体公司/政策/地点/集体争议，也无正文、评论或后续观察。不能以作者不同推断独立舆情事件。",
+      "future_direction_label": null
+    },
+    {
+      "event_id": "complaint_home_policy_claim_20240113",
+      "split_v2": "holdout",
+      "event_type": "individual_complaint_episode",
+      "source_record_id": "reddit_archived_post_195twpp",
+      "original_source_post_id": "195twpp",
+      "cutoff": "2024-01-13T18:31:40Z",
+      "archived_visible_at": "2024-01-13T18:01:40Z",
+      "event_identity": "post_is_distinct_but_underlying_event_not_resolved",
+      "counts_as_independent_event_in_v3": false,
+      "identity_basis": "只确认原帖本身；底层舆情事件身份无法由保存材料判断。",
+      "cutoff_input_quality": "insufficient_for_distinct_event_context",
+      "cutoff_material_ref": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v3.json",
+        "pointer": "/events/18/cutoff_sources"
+      },
+      "cutoff_supplement_record_ids": [],
+      "public_complaint_post_exists": true,
+      "functional_demo_suitable": true,
+      "sentiment_suitability": "auxiliary_only_title_summary",
+      "trend_backtest_suitability": "not_sufficient",
+      "post_cutoff_trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/18"
+      },
+      "decision": "仅作辅助样本",
+      "reason": "已验证一条独立作者的公开投诉帖记录；但只有脱敏标题摘要，无法辨识具体公司/政策/地点/集体争议，也无正文、评论或后续观察。不能以作者不同推断独立舆情事件。",
+      "future_direction_label": null
+    },
+    {
+      "event_id": "complaint_auto_cancellation_notice_20241003",
+      "split_v2": "holdout",
+      "event_type": "individual_complaint_episode",
+      "source_record_id": "reddit_archived_post_1fvdpul",
+      "original_source_post_id": "1fvdpul",
+      "cutoff": "2024-10-03T18:21:23Z",
+      "archived_visible_at": "2024-10-03T17:51:23Z",
+      "event_identity": "post_is_distinct_but_underlying_event_not_resolved",
+      "counts_as_independent_event_in_v3": false,
+      "identity_basis": "只确认原帖本身；底层舆情事件身份无法由保存材料判断。",
+      "cutoff_input_quality": "insufficient_for_distinct_event_context",
+      "cutoff_material_ref": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v3.json",
+        "pointer": "/events/19/cutoff_sources"
+      },
+      "cutoff_supplement_record_ids": [],
+      "public_complaint_post_exists": true,
+      "functional_demo_suitable": true,
+      "sentiment_suitability": "auxiliary_only_title_summary",
+      "trend_backtest_suitability": "not_sufficient",
+      "post_cutoff_trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/19"
+      },
+      "decision": "仅作辅助样本",
+      "reason": "已验证一条独立作者的公开投诉帖记录；但只有脱敏标题摘要，无法辨识具体公司/政策/地点/集体争议，也无正文、评论或后续观察。不能以作者不同推断独立舆情事件。",
+      "future_direction_label": null
+    }
+  ]
+}

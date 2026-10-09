@@ -1,0 +1,30 @@
+{
+  "schema": "riskshield.final_benchmark.freeze.v14",
+  "dataset_version": "final-benchmark-evidence-v14-2026-10-08",
+  "created_at_utc": "2026-10-08T11:44:41Z",
+  "base_freeze_v13_sha256": "126f8ca57fddd498efcb4269ae5909972e8e485867afe1bf671dd8eb9982d3db",
+  "freeze_is_self_hashed": false,
+  "files": [
+    {
+      "path": "data/evaluation/final-benchmark/manifests/independent-source-screen-v14.json",
+      "bytes": 30410,
+      "sha256": "a5658500e648317a0126d655616dbe20b77ac05c7f97a03f8c087d040a2b042e"
+    },
+    {
+      "path": "data/evaluation/final-benchmark/manifests/candidate-status-v14.json",
+      "bytes": 5082,
+      "sha256": "817a244501bf10453e9f0b50baea9f3c4b15fffef914c6d76f24e0f09e71c8f9"
+    },
+    {
+      "path": "data/evaluation/final-benchmark/labels/human-annotation-queue-v14.md",
+      "bytes": 2472,
+      "sha256": "dc5ea148373658875f07e59da5ef4e39e650063277bc6715531bfc33e55b66a1"
+    }
+  ],
+  "notes": [
+    "Append-only evidence screen; v1-v13 input, label and freeze files remain unchanged.",
+    "No new cutoff-only input or E handoff was created because no new event qualified.",
+    "HN source responses are represented by hashes plus sanitized story metadata; raw author fields and response payloads were not retained.",
+    "The v14 records establish source screening and missingness only; they do not create trend labels or formal score-ready events."
+  ]
+}

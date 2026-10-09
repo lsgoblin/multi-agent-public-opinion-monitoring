@@ -1,0 +1,118 @@
+{
+  "schema": "riskshield.final_integration.test_results.v3",
+  "baseline_day4_api_tasks": {
+    "command": "uv run pytest -q tests/test_day4_api.py tests/test_day4_tasks.py",
+    "result": "2 failed, 9 passed, 1 warning",
+    "failures": [
+      "tests/test_day4_api.py::test_historical_api_runs_archived_case_end_to_end_with_offline_substitute",
+      "tests/test_day4_tasks.py::test_real_historical_case_runs_only_from_archived_cutoff_inputs"
+    ],
+    "cause": "Chinese report text replaced the English phrase; assertions were changed to preserve checks for offline-substitute mode and the limit on real-model claims."
+  },
+  "day4_fix_regression_from_prior_e_batch": {
+    "command": "uv run pytest -q tests/test_day4_api.py tests/test_day4_tasks.py tests/test_ui.py",
+    "result": "20 passed, 1 warning in 12.50s",
+    "scope": "API, persisted task state, stop/failure mapping, and Web compatibility."
+  },
+  "current_full_suite": {
+    "command": "uv run pytest -q",
+    "result": "181 passed, 1 warning in 50.11s",
+    "failures": [],
+    "warning": "Existing Starlette TestClient/httpx deprecation warning."
+  },
+  "sealed_v8_scoring_adapter_recheck": {
+    "command": "uv run python -I experiments/final_benchmark_score.py --root . --seal artifacts/final-integration-review/v8-pilot/pilot-seal-e-handoff-v8.json --out artifacts/final-integration-review/v8-pilot/current-evaluator-score-recheck-v2.json",
+    "result": "4 events; formal direction denominator 0; formal sentiment denominator 0",
+    "interpretation": "Engineering-only recheck of a previously sealed constant baseline; two holdout candidates excluded."
+  },
+  "latest_c_handoff_integrity": {
+    "command": "uv run python -I experiments/verify_final_benchmark_freezes.py --root .",
+    "result": "21 freeze manifests checked; member and parent hashes pass; latest complete handoff e-handoff-v13; formal score-ready events 0",
+    "artifact": "artifacts/final-integration-review/c-batch-integrity.json"
+  },
+  "historical_e_end_to_end": {
+    "command": "uv run python experiments/final_integration_probe.py",
+    "result": "10 agents x 3 rounds, 30/30 valid decisions, five report modules, two dry-run previews",
+    "artifact": "artifacts/final-integration-review/end-to-end-summary.json",
+    "execution_mode": "offline_dynamic_substitute"
+  },
+  "warning": "The only final-suite warning is the existing Starlette TestClient/httpx deprecation.",
+  "message_pair_reservation_contract": {
+    "command": "uv run pytest -q tests/test_day3_simulation_message_pair_run.py",
+    "contract_test": "tests/test_day3_simulation_message_pair_run.py::test_reservation_is_independently_bounded_by_serialized_input_and_max_output",
+    "fixture_input_upper_bound_tokens": 7046,
+    "route_input_max_tokens": 8192,
+    "route_max_output_tokens": 256,
+    "input_rate_cny_per_million": "0.15",
+    "cached_input_rate_cny_per_million": "0.03",
+    "output_rate_cny_per_million": "1.5",
+    "single_call_expected_reservation_cny": "0.0014409",
+    "four_call_expected_reservation_cny": "0.0057636",
+    "full_input_route_max_per_call_cny": "0.0016128",
+    "unknown_usage": "Uses the full bounded per-observation reservation, does not assume cache discount, no retry.",
+    "result": "covered by final focused regression; actual provider usage/charge not invoked or claimed"
+  },
+  "c_v6_string_reference_mapping": {
+    "command": "uv run pytest -q tests/test_final_benchmark_score_adapter.py",
+    "frozen_source": "data/evaluation/final-benchmark/labels/blind-sentiment-packet-v6.json",
+    "source_sha256": "e31e1a2962e40bbe4e2e06dbc7a8cbdd2c1198031398b4407a47923b81ec29fc",
+    "units_present": 5,
+    "units_mapped_by_event_and_text_hash": 5,
+    "annotation_slots_present": 0,
+    "human_annotations_created": 0,
+    "formal_score_denominator": 0,
+    "coverage": [
+      "string event_id_reference",
+      "object event_id_reference",
+      "event/unit identity",
+      "frozen original-text SHA-256",
+      "duplicate-case rejection",
+      "current freeze-v24 aggregate status count without reading label payloads"
+    ]
+  },
+  "current_focused_regression": {
+    "command": "uv run pytest -q tests/test_day3_simulation_message_pair_run.py tests/test_day5_evaluation.py tests/test_final_benchmark_predict_local.py tests/test_final_benchmark_score_adapter.py tests/test_day4_api.py tests/test_day4_tasks.py tests/test_day4_report.py tests/test_ui.py",
+    "result": "54 passed, 1 warning in 13.57s",
+    "scope": "message-pair pricing contract, scoring, current C aggregate audit, Day 4 API/tasks/report and Web/UI regression"
+  },
+  "latest_a_v4_batch": {
+    "artifact_directory": "artifacts/final-simulation-review/live-validation-20261008-v4",
+    "run_id": "run_c532286a08384534bc08",
+    "artifact_index_members": "13/13 size and SHA-256 matched",
+    "locked_source_hashes": "All current source/dependency hashes matched the execution lock.",
+    "status": "partial",
+    "valid_decisions": "3477/15000",
+    "failed_decisions": 1,
+    "completed_rounds": 6,
+    "input_to_partial_report_seconds": 591.2058463,
+    "evidence": "artifacts/final-integration-review/a-simulation-review.json"
+  },
+  "current_api_end_to_end": {
+    "command": "uv run python experiments/final_integration_probe.py --out artifacts/final-integration-review/end-to-end-summary-20261009-final.json",
+    "result": "30/30 valid decisions; 5 report modules; API readable; two dry-run previews",
+    "run_id": "run_02438ef960cf4850873d",
+    "execution_mode": "offline_dynamic_substitute",
+    "input_to_report_seconds": 0.259985,
+    "artifact": "artifacts/final-integration-review/end-to-end-summary-20261009-final.json"
+  },
+  "latest_c_batch_integrity": {
+    "command": "uv run python -I experiments/verify_final_benchmark_freezes.py --root .",
+    "result": "24 freeze manifests checked; all member sizes/hashes and parent hashes pass; latest complete handoff v13; formal score-ready events 0",
+    "latest_status_counts": {
+      "completed_independent_human_sentiment_double_label_units": 5,
+      "same_label_agreement_units": 5,
+      "sentiment_units_with_paired_E_prediction": 0,
+      "computed_sentiment_score_units": 0,
+      "trajectory_evidence_qualified_events": 0,
+      "independent_human_trajectory_labels": 0,
+      "formal_score_ready_holdout_events": 0
+    },
+    "artifact": "artifacts/final-integration-review/c-batch-integrity.json"
+  },
+  "updated_sealed_v8_score_recheck": {
+    "command": "uv run python -I experiments/final_benchmark_score.py --root . --seal artifacts/final-integration-review/v8-pilot/pilot-seal-e-handoff-v8.json --out artifacts/final-integration-review/v8-pilot/current-evaluator-score-recheck-20261009.json",
+    "result": "4 events; trend denominator 0; sentiment denominator 0; both not computable",
+    "execution_mode": "offline constant engineering baseline; no new prediction",
+    "artifact": "artifacts/final-integration-review/v8-pilot/current-evaluator-score-recheck-20261009.json"
+  }
+}

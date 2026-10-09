@@ -1,0 +1,286 @@
+{
+  "schema": "riskshield.final_benchmark.trajectory_evidence.v13",
+  "dataset_version": "final-benchmark-candidate-evidence-v13-2026-10-08",
+  "protocol_status": "Internal scoring proposal only; main-agent confirmation pending. This is evidence, not a human direction label.",
+  "events": [
+    {
+      "event_id": "windows_recall_privacy_controversy_20240607",
+      "split": "holdout_candidate",
+      "domain_scope": "cross-domain consumer technology; do not count toward the insurance-specific formal denominator until approved.",
+      "cutoff": "2024-06-07T19:30:27Z",
+      "baseline_window_utc": [
+        "2024-05-31T00:00:00Z",
+        "2024-06-07T00:00:00Z"
+      ],
+      "observation_window_utc": [
+        "2024-06-08T00:00:00Z",
+        "2024-06-15T00:00:00Z"
+      ],
+      "window_status": "internal proposal; D0 excluded; complete UTC dates.",
+      "event_deduplication": "One Windows Recall privacy/security controversy including the opt-in change and subsequent launch delay. Coverage articles and forum posts are evidence units, not new events.",
+      "same_basis_public_discussion_source": {
+        "source_family": "Hacker News",
+        "endpoint": "https://hn.algolia.com/api/v1/search_by_date",
+        "source_version": "HN Algolia live historical search; per-day JSON response hashes captured 2026-10-08. This hash freezes retrieved bytes, not provider completeness.",
+        "retrieved_at_utc": "2026-10-08T11:09:30Z",
+        "query": "Windows Recall",
+        "story_filter": "tags=story; same exact query for all days.",
+        "comment_filter": "tags=comment; same exact query for all days; count comments only when the returned story_id is in the manually screened event-related story-title set.",
+        "numeric_filter": "created_at_i >= UTC-day-start and created_at_i < next UTC-day-start; hitsPerPage=1000; one response per tag per day.",
+        "event_title_screen": "Title refers to the Windows Recall feature, its privacy/security issues, the opt-in change, or the June 14 rollout delay. Query hits with no event-relevant title are excluded.",
+        "raw_author_or_comment_text_retained": false,
+        "daily_series": {
+          "baseline": [
+            {
+              "date_utc": "2024-05-31",
+              "raw_query_story_hits": 1,
+              "screened_event_related_story_titles": 1,
+              "raw_query_comment_hits": 24,
+              "comments_matching_query_under_screened_event_story_ids": 3,
+              "stories_response_sha256": "4778af3e68e8edb9644abdb0504c0753d3a91d23aba68295873d6f0f4c7a097",
+              "comments_response_sha256": "61b6f0ce214e7cde36a8a4c456956febd84c58da924733b44ae08b06930323d9"
+            },
+            {
+              "date_utc": "2024-06-01",
+              "raw_query_story_hits": 4,
+              "screened_event_related_story_titles": 4,
+              "raw_query_comment_hits": 45,
+              "comments_matching_query_under_screened_event_story_ids": 1,
+              "stories_response_sha256": "c48f311b14da6b0fb2799df39febd97a83a8383c63c9f3aceb87c69b31905ac2",
+              "comments_response_sha256": "e78ae9e74feb32b4418981510d5976af938f2104349b312b7e1931ca3d312888"
+            },
+            {
+              "date_utc": "2024-06-02",
+              "raw_query_story_hits": 0,
+              "screened_event_related_story_titles": 0,
+              "raw_query_comment_hits": 20,
+              "comments_matching_query_under_screened_event_story_ids": 0,
+              "stories_response_sha256": "c4d103ebb532a32d349399b397c2e0a3c66b0c5467de705cf2f6eb4ea9514d54",
+              "comments_response_sha256": "d69ed16aa5d563ae141bcb020e309ad4b245c9499c06937f51bee4b74e88cc1f"
+            },
+            {
+              "date_utc": "2024-06-03",
+              "raw_query_story_hits": 4,
+              "screened_event_related_story_titles": 1,
+              "raw_query_comment_hits": 19,
+              "comments_matching_query_under_screened_event_story_ids": 0,
+              "stories_response_sha256": "e75407ed59704d31eb92301d9e72ae226723977e589ed50c244055c01b49bd08",
+              "comments_response_sha256": "003eff852020d1998f1192919d0b9c067855fc41427f6aa4e10a2d3f05d90711"
+            },
+            {
+              "date_utc": "2024-06-04",
+              "raw_query_story_hits": 6,
+              "screened_event_related_story_titles": 5,
+              "raw_query_comment_hits": 47,
+              "comments_matching_query_under_screened_event_story_ids": 18,
+              "stories_response_sha256": "a87483a025146c71867c08fd02624cba5640242f07edac5115b8f1020d813821",
+              "comments_response_sha256": "72686cd21b868c6f4581549255846a47002e66a7a1b0a389243974a84f50d408"
+            },
+            {
+              "date_utc": "2024-06-05",
+              "raw_query_story_hits": 3,
+              "screened_event_related_story_titles": 3,
+              "raw_query_comment_hits": 51,
+              "comments_matching_query_under_screened_event_story_ids": 6,
+              "stories_response_sha256": "dc646b29086f84afd134da4fd58e20940b73f443769c928bcfbaa00add02106e",
+              "comments_response_sha256": "d2d1d180345013dbb3a88e3a19117772f6356c76d528ef8a64183b09f65ab808"
+            },
+            {
+              "date_utc": "2024-06-06",
+              "raw_query_story_hits": 6,
+              "screened_event_related_story_titles": 6,
+              "raw_query_comment_hits": 51,
+              "comments_matching_query_under_screened_event_story_ids": 2,
+              "stories_response_sha256": "d0ed7288d16c90512009eb6a72e6e5eb6dbbf7cb3ba12065f66df4e0c00f4896",
+              "comments_response_sha256": "5f7946ad80146b5e337505caf66bc2cd8fb3334c7772953d1c2d4862e73e7610"
+            }
+          ],
+          "observation": [
+            {
+              "date_utc": "2024-06-08",
+              "raw_query_story_hits": 2,
+              "screened_event_related_story_titles": 1,
+              "raw_query_comment_hits": 16,
+              "comments_matching_query_under_screened_event_story_ids": 0,
+              "stories_response_sha256": "2e7f2624f26a8d44027e1373a283c5d9b0d445bc3bd9548d32ac935f1b5b2dfc",
+              "comments_response_sha256": "fd4771452df982bfca979e1b48b10733283a3149bb43714ef0509465a4c65f0d"
+            },
+            {
+              "date_utc": "2024-06-09",
+              "raw_query_story_hits": 1,
+              "screened_event_related_story_titles": 1,
+              "raw_query_comment_hits": 6,
+              "comments_matching_query_under_screened_event_story_ids": 0,
+              "stories_response_sha256": "e1120dc9a508db95d1e20820d44adc0a1583d8264d30276553f68a8c21f5d996",
+              "comments_response_sha256": "50f1e0e3963f84ee50a8d3c4d86c8ecf19bd6ce64b17fd267265dc13d2392e16"
+            },
+            {
+              "date_utc": "2024-06-10",
+              "raw_query_story_hits": 1,
+              "screened_event_related_story_titles": 1,
+              "raw_query_comment_hits": 34,
+              "comments_matching_query_under_screened_event_story_ids": 1,
+              "stories_response_sha256": "5535eacf343fc5e7587dea127eedaf79ccca31de02f2e7a006b8b2aadff44e09",
+              "comments_response_sha256": "b02acee38b1842298526eef93c4cf9685c1ad24cc7bc756963e9fe476a1c4417"
+            },
+            {
+              "date_utc": "2024-06-11",
+              "raw_query_story_hits": 0,
+              "screened_event_related_story_titles": 0,
+              "raw_query_comment_hits": 34,
+              "comments_matching_query_under_screened_event_story_ids": 0,
+              "stories_response_sha256": "7f63fb277a664fa501e2d540f21585715775b1643545c1c0ecbaf72ca79e3ea0",
+              "comments_response_sha256": "118ebaa920188fead83d35ea9ffcd6e37f85331a2873499834465ca4e199c650"
+            },
+            {
+              "date_utc": "2024-06-12",
+              "raw_query_story_hits": 1,
+              "screened_event_related_story_titles": 0,
+              "raw_query_comment_hits": 24,
+              "comments_matching_query_under_screened_event_story_ids": 0,
+              "stories_response_sha256": "628b97b85426d3c8fe072fcaa08124f27259b2e0a8ba666ad1e09a9b1348c005",
+              "comments_response_sha256": "6f480f78fdcdeb45f6ddd2fe889d5aec854486d4bb18784bbd8f804f595a68db"
+            },
+            {
+              "date_utc": "2024-06-13",
+              "raw_query_story_hits": 2,
+              "screened_event_related_story_titles": 0,
+              "raw_query_comment_hits": 28,
+              "comments_matching_query_under_screened_event_story_ids": 0,
+              "stories_response_sha256": "fdcd551d911fe1c1b75412e5cf9d8eaed93617da6e39043022d9d93098d01f77",
+              "comments_response_sha256": "a568a61c92dc759ed09a7ede219daebabd57bcbc1b8b68787b2fde72bf95bd9f"
+            },
+            {
+              "date_utc": "2024-06-14",
+              "raw_query_story_hits": 6,
+              "screened_event_related_story_titles": 6,
+              "raw_query_comment_hits": 35,
+              "comments_matching_query_under_screened_event_story_ids": 0,
+              "stories_response_sha256": "51a876f9d0bec639a33460f87aacb1738f988b6212ee285ef89230e44f257f96",
+              "comments_response_sha256": "a539c938203bedb2d648955166b8d31225d395be3045d8530dec26a8c273a928"
+            }
+          ]
+        },
+        "window_totals": {
+          "baseline": {
+            "days_queried_ok": 7,
+            "raw_story_hits": 24,
+            "screened_event_related_story_titles": 20,
+            "raw_comment_hits": 257,
+            "comments_under_screened_event_story_ids_matching_query": 30
+          },
+          "observation": {
+            "days_queried_ok": 7,
+            "raw_story_hits": 13,
+            "screened_event_related_story_titles": 9,
+            "raw_comment_hits": 177,
+            "comments_under_screened_event_story_ids_matching_query": 1
+          }
+        },
+        "notable_signal": "The observation window has 6 of 9 screened story titles on June 14; June 8-13 has only 3. The unit counts fall overall from baseline, then spike on the final day. This mixed temporal pattern is not auto-labelled as calming or escalation."
+      },
+      "independent_source_cross_checks": [
+        {
+          "source_family": "Reddit public threads",
+          "role": "corroborative examples only; not a comparable complete time series.",
+          "baseline_examples": [
+            {
+              "date": "2024-06-05",
+              "subreddit": "r/sysadmin",
+              "title": "Hacker tool extracts all data collected by Windows Recall",
+              "url": "https://www.reddit.com/r/sysadmin/comments/1d8s6wk/",
+              "time_precision": "day; search-index display",
+              "note": "No author, comment text or current vote count retained."
+            },
+            {
+              "date": "2024-06-05",
+              "subreddit": "r/Windows11",
+              "title": "Windows Recall demands an extraordinary level of trust that Microsoft has not earned",
+              "url": "https://www.reddit.com/r/Windows11/comments/1d8j1cs/",
+              "time_precision": "day; search-index display",
+              "note": "No author, comment text or current vote count retained."
+            }
+          ],
+          "observation_examples": [
+            {
+              "date": "2024-06-14",
+              "subreddit": "r/technology",
+              "title": "Microsoft is delaying Windows Recall after recent backlash",
+              "url": "https://www.reddit.com/r/technology/comments/1dfeh9f/",
+              "time_precision": "day; search-index display",
+              "note": "Post and comments are not exhaustively collected."
+            },
+            {
+              "date": "2024-06-14",
+              "subreddit": "r/Windows11",
+              "title": "Microsoft’s all-knowing Recall AI feature is being delayed",
+              "url": "https://www.reddit.com/r/Windows11/comments/1dfeywf/",
+              "time_precision": "day; search-index display",
+              "note": "Post and comments are not exhaustively collected."
+            },
+            {
+              "date": "2024-06-14",
+              "subreddit": "r/Surface",
+              "title": "Microsoft delays Recall AI feature for Copilot+ PCs to address privacy concerns",
+              "url": "https://www.reddit.com/r/Surface/comments/1dfpt0r/",
+              "time_precision": "day; search-index display",
+              "note": "Post and comments are not exhaustively collected."
+            }
+          ],
+          "coverage_rule": "Do not combine Reddit posts and Hacker News stories into one count. These Reddit examples only corroborate that discussion was visible on another platform; they do not satisfy the proposed comparable-source threshold."
+        },
+        {
+          "source_family": "AP/Axios reporting",
+          "role": "news propagation proxy and dated outcome evidence, not public-emotion truth.",
+          "examples": [
+            {
+              "date": "2024-06-14T16:09:58Z",
+              "title": "Microsoft delays controversial AI Recall feature on new Windows computers",
+              "url": "https://apnews.com/article/6ba8df3f22e9fca599d20f2d5770cd95",
+              "evidence": "AP page timestamp; the report describes the June 13 delay and privacy/security concerns."
+            },
+            {
+              "date": "2024-06-14T02:26:46Z",
+              "title": "Microsoft delays Recall rollout following security critiques",
+              "url": "https://www.axios.com/2024/06/14/microsoft-recall-delay-privacy",
+              "evidence": "Axios page timestamp; separate report of the rollout delay."
+            }
+          ],
+          "coverage_rule": "These articles confirm later public reporting but are not an article-count time series; do not treat a delay or product action as public sentiment calming."
+        }
+      ],
+      "source_access_failures": [
+        {
+          "source": "PullPush Reddit archive",
+          "query": "Windows Recall, full-window baseline and observation windows; submissions/comments",
+          "result": "Four window responses each returned exactly 100 rows in the prior screen; possible truncation, so no count accepted.",
+          "status": "censored_incomplete; not zero."
+        },
+        {
+          "source": "Arctic Shift Reddit archive",
+          "queries": "r/technology posts/comments and r/Windows11 post searches for recall windows",
+          "result": "HTTP 422 timeout responses on posts/aggregate; one r/technology comment search returned HTTP 200 but is not a full comparable series.",
+          "status": "unavailable_for_comparable_series; stopped."
+        },
+        {
+          "source": "PullPush Reddit archive",
+          "query": "CrowdStrike daily requests during an auxiliary cross-domain screen",
+          "result": "HTTP 429 observed; an automated day-by-day loop continued after the first 429, yielding no usable rows. No further calls will be made to this endpoint in this task.",
+          "status": "rate_limited; no data inferred."
+        }
+      ],
+      "baseline_and_observation_comparison": "HN title-screened story count 20 to 9; query-matched comments under screened story IDs 30 to 1. Six of nine later-window stories occur on June 14. Reddit examples and two dated news reports corroborate continued public attention, but neither provides comparable full-window counts.",
+      "human_direction_label": null,
+      "direction_label_status": "unknown_pending_protocol_and_blind_human_review",
+      "evidence_sufficiency": "One same-basis public-discussion family has a valid daily series. The second family is not quantitatively comparable; the event is cross-domain and the directional path includes a final-day spike. Not formally trend-eligible under current internal proposal.",
+      "prediction_status": "waiting for E cutoff-only prediction; no model prediction reviewed for selection.",
+      "input_ref": "data/evaluation/final-benchmark/inputs/qualified-inputs-v13.json",
+      "input_sha256": "01193167bc59ec4e6d59c12922ad7a9e09d9886deb520c255a5e963aaa9b772c"
+    }
+  ],
+  "notes": [
+    "Source-response hashes let a reviewer compare a later re-fetch but do not prove historical provider completeness.",
+    "No trend label or emotion score was generated by an Agent.",
+    "All post-cutoff sources are held only in this labels/evidence file and are forbidden in predictor input."
+  ]
+}

@@ -1,0 +1,664 @@
+{
+  "schema": "riskshield.final_benchmark.annotation_register.v3",
+  "label_version": "final-benchmark-labels-v3-2026-10-08",
+  "input_snapshot_sha256": "2da016be8f7fad54a4263f1d596a27d16a528f3d26a03401ad4a3b26d7344847",
+  "access": "independent scoring only; never Store, graph, retrieval, Agent memory or prediction context",
+  "human_truth_policy": "No Agent-generated suggestion is recorded as human truth. No real human submissions were received during this turn.",
+  "legacy_development_note": {
+    "event_id": "unh_change_cyberattack_20240222",
+    "existing_limited_annotations_ref": "data/evaluation/final-benchmark/labels/annotation-register-v2.json#/annotations/0",
+    "strict_double_blind_verified": false,
+    "status": "development_only_not_counted"
+  },
+  "events": [
+    {
+      "event_id": "unh_change_cyberattack_20240222",
+      "split": "development",
+      "sentiment_unit_id": "unh-sec-20240222-initial",
+      "sentiment_annotation_status": "previously_exposed_development_only_not_reannotated",
+      "annotator_slots": [],
+      "strict_independent_truth": false,
+      "trend_outcome": null,
+      "trend_status": "pending_main_agent_window_freeze_and_human_review",
+      "trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/0"
+      }
+    },
+    {
+      "event_id": "fnf_cyberattack_20231123",
+      "split": "holdout",
+      "sentiment_unit_id": "reddit_archived_post_1821s44",
+      "sentiment_annotation_status": "pending_two_independent_human_annotations",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        }
+      ],
+      "strict_independent_truth": false,
+      "trend_outcome": null,
+      "trend_status": "pending_main_agent_window_freeze_and_human_review",
+      "trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/1"
+      }
+    },
+    {
+      "event_id": "aflac_cybersecurity_incident_20250620",
+      "split": "holdout",
+      "sentiment_unit_id": "reddit_archived_post_1lg33ey",
+      "sentiment_annotation_status": "pending_two_independent_human_annotations",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        }
+      ],
+      "strict_independent_truth": false,
+      "trend_outcome": null,
+      "trend_status": "pending_main_agent_window_freeze_and_human_review",
+      "trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/2"
+      }
+    },
+    {
+      "event_id": "allianz_life_data_breach_20250727",
+      "split": "holdout",
+      "sentiment_unit_id": "reddit_archived_post_1ma8wfj",
+      "sentiment_annotation_status": "pending_two_independent_human_annotations",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        }
+      ],
+      "strict_independent_truth": false,
+      "trend_outcome": null,
+      "trend_status": "pending_main_agent_window_freeze_and_human_review",
+      "trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/3"
+      }
+    },
+    {
+      "event_id": "anthem_anesthesia_proposal_20241204",
+      "split": "holdout",
+      "sentiment_unit_id": "reddit_archived_post_1h6mj0x",
+      "sentiment_annotation_status": "pending_two_independent_human_annotations",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        }
+      ],
+      "strict_independent_truth": false,
+      "trend_outcome": null,
+      "trend_status": "pending_main_agent_window_freeze_and_human_review",
+      "trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/4"
+      }
+    },
+    {
+      "event_id": "cigna_algorithm_denial_lawsuit_20230725",
+      "split": "holdout",
+      "sentiment_unit_id": "reddit_archived_post_159ce8g",
+      "sentiment_annotation_status": "pending_two_independent_human_annotations",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        }
+      ],
+      "strict_independent_truth": false,
+      "trend_outcome": null,
+      "trend_status": "pending_main_agent_window_freeze_and_human_review",
+      "trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/5"
+      }
+    },
+    {
+      "event_id": "unitedhealth_algorithm_care_lawsuit_20231115",
+      "split": "holdout",
+      "sentiment_unit_id": "reddit_archived_post_17w461q",
+      "sentiment_annotation_status": "pending_two_independent_human_annotations",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        }
+      ],
+      "strict_independent_truth": false,
+      "trend_outcome": null,
+      "trend_status": "pending_main_agent_window_freeze_and_human_review",
+      "trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/6"
+      }
+    },
+    {
+      "event_id": "humana_algorithm_care_lawsuit_20231214",
+      "split": "holdout",
+      "sentiment_unit_id": "reddit_archived_post_18i3k2f",
+      "sentiment_annotation_status": "pending_two_independent_human_annotations",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        }
+      ],
+      "strict_independent_truth": false,
+      "trend_outcome": null,
+      "trend_status": "pending_main_agent_window_freeze_and_human_review",
+      "trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/7"
+      }
+    },
+    {
+      "event_id": "complaint_health_claim_review_20240818",
+      "split": "holdout",
+      "sentiment_unit_id": "reddit_archived_post_1evaapp",
+      "sentiment_annotation_status": "pending_two_independent_human_annotations",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        }
+      ],
+      "strict_independent_truth": false,
+      "trend_outcome": null,
+      "trend_status": "pending_main_agent_window_freeze_and_human_review",
+      "trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/8"
+      }
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20241229",
+      "split": "holdout",
+      "sentiment_unit_id": "reddit_archived_post_1hp6wa2",
+      "sentiment_annotation_status": "pending_two_independent_human_annotations",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        }
+      ],
+      "strict_independent_truth": false,
+      "trend_outcome": null,
+      "trend_status": "pending_main_agent_window_freeze_and_human_review",
+      "trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/9"
+      }
+    },
+    {
+      "event_id": "complaint_home_coverage_after_termination_20240430",
+      "split": "holdout",
+      "sentiment_unit_id": "reddit_archived_post_1ch6tu5",
+      "sentiment_annotation_status": "pending_two_independent_human_annotations",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        }
+      ],
+      "strict_independent_truth": false,
+      "trend_outcome": null,
+      "trend_status": "pending_main_agent_window_freeze_and_human_review",
+      "trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/10"
+      }
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20231018",
+      "split": "holdout",
+      "sentiment_unit_id": "reddit_archived_post_17acu1c",
+      "sentiment_annotation_status": "pending_two_independent_human_annotations",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        }
+      ],
+      "strict_independent_truth": false,
+      "trend_outcome": null,
+      "trend_status": "pending_main_agent_window_freeze_and_human_review",
+      "trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/11"
+      }
+    },
+    {
+      "event_id": "complaint_health_claim_rejections_20241211",
+      "split": "holdout",
+      "sentiment_unit_id": "reddit_archived_post_1hc1bcc",
+      "sentiment_annotation_status": "pending_two_independent_human_annotations",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        }
+      ],
+      "strict_independent_truth": false,
+      "trend_outcome": null,
+      "trend_status": "pending_main_agent_window_freeze_and_human_review",
+      "trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/12"
+      }
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20240524",
+      "split": "holdout",
+      "sentiment_unit_id": "reddit_archived_post_1cznbtx",
+      "sentiment_annotation_status": "pending_two_independent_human_annotations",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        }
+      ],
+      "strict_independent_truth": false,
+      "trend_outcome": null,
+      "trend_status": "pending_main_agent_window_freeze_and_human_review",
+      "trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/13"
+      }
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20231010",
+      "split": "holdout",
+      "sentiment_unit_id": "reddit_archived_post_174m8f9",
+      "sentiment_annotation_status": "pending_two_independent_human_annotations",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        }
+      ],
+      "strict_independent_truth": false,
+      "trend_outcome": null,
+      "trend_status": "pending_main_agent_window_freeze_and_human_review",
+      "trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/14"
+      }
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20240625",
+      "split": "holdout",
+      "sentiment_unit_id": "reddit_archived_post_1do5am8",
+      "sentiment_annotation_status": "pending_two_independent_human_annotations",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        }
+      ],
+      "strict_independent_truth": false,
+      "trend_outcome": null,
+      "trend_status": "pending_main_agent_window_freeze_and_human_review",
+      "trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/15"
+      }
+    },
+    {
+      "event_id": "complaint_auto_claim_denial_20241116",
+      "split": "holdout",
+      "sentiment_unit_id": "reddit_archived_post_1gshw33",
+      "sentiment_annotation_status": "pending_two_independent_human_annotations",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        }
+      ],
+      "strict_independent_truth": false,
+      "trend_outcome": null,
+      "trend_status": "pending_main_agent_window_freeze_and_human_review",
+      "trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/16"
+      }
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_inspection_20241011",
+      "split": "holdout",
+      "sentiment_unit_id": "reddit_archived_post_1g1kc9b",
+      "sentiment_annotation_status": "pending_two_independent_human_annotations",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        }
+      ],
+      "strict_independent_truth": false,
+      "trend_outcome": null,
+      "trend_status": "pending_main_agent_window_freeze_and_human_review",
+      "trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/17"
+      }
+    },
+    {
+      "event_id": "complaint_home_policy_claim_20240113",
+      "split": "holdout",
+      "sentiment_unit_id": "reddit_archived_post_195twpp",
+      "sentiment_annotation_status": "pending_two_independent_human_annotations",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        }
+      ],
+      "strict_independent_truth": false,
+      "trend_outcome": null,
+      "trend_status": "pending_main_agent_window_freeze_and_human_review",
+      "trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/18"
+      }
+    },
+    {
+      "event_id": "complaint_auto_cancellation_notice_20241003",
+      "split": "holdout",
+      "sentiment_unit_id": "reddit_archived_post_1fvdpul",
+      "sentiment_annotation_status": "pending_two_independent_human_annotations",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "label": null,
+          "reason": null,
+          "submitted_at": null,
+          "prediction_seen": null,
+          "other_annotator_answer_seen": null
+        }
+      ],
+      "strict_independent_truth": false,
+      "trend_outcome": null,
+      "trend_status": "pending_main_agent_window_freeze_and_human_review",
+      "trend_evidence_ref": {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v3.json",
+        "pointer": "/events/19"
+      }
+    }
+  ],
+  "statistics": {
+    "holdout_sentiment_units": 19,
+    "independent_human_labels_completed": 0,
+    "pending_sentiment_slots": 38,
+    "strict_double_blind_units_verified": 0,
+    "direction_labels_completed": 0,
+    "formal_score_ready_holdout_events": 0
+  }
+}

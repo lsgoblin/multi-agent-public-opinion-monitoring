@@ -1,0 +1,26 @@
+{
+  "schema": "riskshield.final_benchmark.freeze.v15",
+  "dataset_version": "final-benchmark-evidence-v15-2026-10-08",
+  "created_at_utc": "2026-10-08T11:55:08+00:00",
+  "base_freeze_v14_sha256": "c6f50253cd0cf6418202dca4bfca0b99d45218c24681e45a15462f5b8e58552b",
+  "freeze_is_self_hashed": false,
+  "files": [
+    {
+      "path": "data/evaluation/final-benchmark/manifests/identity-and-louisiana-screen-v15.json",
+      "bytes": 11700,
+      "sha256": "422e8185f451702df15d4c2e5f63d0b2f35533894868486e1d8a99cb4d544b1c"
+    },
+    {
+      "path": "data/evaluation/final-benchmark/manifests/candidate-status-v15.json",
+      "bytes": 5393,
+      "sha256": "7c80ca62cb5834ed9ca8269b44270f5e0b4025d75f6a1fdaf810bfaf1b930365"
+    }
+  ],
+  "notes": [
+    "Append-only identity and candidate screen; v1-v14 inputs, labels, screens and freezes remain unchanged.",
+    "No new cutoff-only input, human answer, trend direction or E handoff was created.",
+    "The zero HN query results do not establish absence of public discussion or calming.",
+    "Probabilistic June 2025 insurer-campaign attribution is recorded as an independence-review flag, not an automatic event merge.",
+    "A sentiment label mapping is presented as a proposal for main-agent confirmation; no human assignment was made."
+  ]
+}

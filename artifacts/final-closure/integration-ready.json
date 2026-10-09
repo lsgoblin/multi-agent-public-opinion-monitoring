@@ -1,0 +1,147 @@
+{
+  "schema": "riskshield.final_closure.integration_ready.v1",
+  "closure_id": "closure-20261009-functional-names-v1",
+  "created_at_local": "2026-10-09 02:15 +08:00",
+  "status": "ready_for_D_package_build_with_documented_limitations",
+  "ready_for_D_package_build": true,
+  "formal_acceptance_pass": false,
+  "candidate_package": {
+    "path": "artifacts/final-integration-review/candidate-package-manifest.json",
+    "sha256": "44a078a5b6154383b2cd55c20b5e3319becbe62dc79f6ab1e13439a3d99c9f74",
+    "member_count": 125,
+    "uncompressed_bytes": 1872029,
+    "all_member_hashes_match": true,
+    "no_credentials_or_evaluation_tree": true,
+    "required_doc_direct_links_checked": 93,
+    "all_direct_doc_links_present": true,
+    "excluded_large_fixture_bytes": 94711614
+  },
+  "version_manifest": {
+    "path": "artifacts/final-closure/version-manifest-closure-20261009-functional-names-v1.json",
+    "sha256": "ee61f6f6ceef75eef840175abb09d57a226aaf9ad38b25af98e998cc67ec4984"
+  },
+  "evidence": {
+    "candidate_manifest": {
+      "path": "artifacts/final-integration-review/candidate-package-manifest.json",
+      "sha256": "44a078a5b6154383b2cd55c20b5e3319becbe62dc79f6ab1e13439a3d99c9f74"
+    },
+    "version_manifest": {
+      "path": "artifacts/final-closure/version-manifest-closure-20261009-functional-names-v1.json",
+      "sha256": "ee61f6f6ceef75eef840175abb09d57a226aaf9ad38b25af98e998cc67ec4984"
+    },
+    "package_freeze_verification": {
+      "path": "artifacts/final-closure/package-freeze-verification.json",
+      "sha256": "04f78f0768ef80b91fefc73a80cef729e34cbe6b3f4a78289c8dea56c9306c25"
+    },
+    "test_results": {
+      "path": "artifacts/final-closure/test-results-functional-names-v1.json",
+      "sha256": "4b82a68daeaa6ff3a3f56beb1f3a7f7571eae726b4f06fe32215b0956b1935f5"
+    },
+    "end_to_end": {
+      "path": "artifacts/final-closure/end-to-end-20261009-functional-names-v1.json",
+      "sha256": "64f3c95d2a5c1d69bbeba94365b4e31f8564b8ded7857b964bf1cb8fd3d3ad30"
+    },
+    "handoff_verification": {
+      "path": "artifacts/final-closure/handoff-verification.json",
+      "sha256": "32b238bf386e1878c13a9af83e987250ac771bbe631b8329be767f4f79855b16"
+    },
+    "b_handoff": {
+      "path": "artifacts/final-closure/b-ready.json",
+      "sha256": "23b9bc1673bcd3241f52c31b4ae8fa605cce23ef6e263f0dfbe4e7557d36bca6"
+    },
+    "c_handoff": {
+      "path": "artifacts/final-closure/c-ready.json",
+      "sha256": "b8c45fd1248c794101ce80b380f5f96a4c7959c336c8696bd2c6049fe29f6637"
+    },
+    "d_prep_handoff": {
+      "path": "artifacts/final-closure/d-prep-ready.json",
+      "sha256": "b9ce4c840b6fa9c53a2d699cb9e1a315ebc6180365b6fba9d5e44344fa6f99a9"
+    },
+    "per_event_score_status": {
+      "path": "artifacts/final-integration-review/per-event-score-status-v24.json",
+      "sha256": "c8fb0af54d8f48e47fc69622a40c1d8ccd2e7138f0d36b35dfdb5994ba751743"
+    }
+  },
+  "test_gates": {
+    "full_suite": {
+      "command": "uv run pytest -q",
+      "result": "181 passed, 1 warning in 62.46s",
+      "exit_code": 0,
+      "warning": "Existing Starlette TestClient/httpx deprecation warning.",
+      "mode": "local offline tests; no new model calls or external notifications"
+    },
+    "package_subset": {
+      "command": "uv run pytest -q --ignore=tests/test_simulation_performance.py --ignore=tests/test_final_benchmark_score_adapter.py --ignore=tests/test_final_benchmark_predict_local.py -k \"not actual_500x30_ledger_reconstructs_on_temporary_copy\"",
+      "result": "170 passed, 1 deselected, 1 warning in 50.31s",
+      "exit_code": 0,
+      "warning": "Existing Starlette TestClient/httpx deprecation warning.",
+      "exclusions": [
+        "tests/test_simulation_performance.py (requires frozen ~90.3 MiB 500x30 fixture)",
+        "tests/test_final_benchmark_score_adapter.py (reads C restricted v6 labels)",
+        "tests/test_final_benchmark_predict_local.py (reads C evaluation handoff inputs)",
+        "test_reporting::test_actual_500x30_ledger_reconstructs_on_temporary_copy (requires frozen ~90.3 MiB 500x30 fixture)"
+      ],
+      "reason": "Package test subset avoids distributing restricted C evaluation materials and large locked performance-run data."
+    },
+    "compileall": "passed",
+    "canonical_and_compatibility_imports": "passed",
+    "git_diff_check": "passed with only LF/CRLF normalization notices",
+    "workspace_markdown_link_check": "93 links in 10 documents; 0 broken"
+  },
+  "end_to_end": {
+    "case_id": "unh_change_20240222_day2_multisource",
+    "graph_id": "936c73951d2ab46f8e0ee6bb",
+    "run_id": "run_7aff1ceff6934a1da13e",
+    "job_id": "job_02aa0aed4a594ebe995c",
+    "report_id": "report_26db8f02583eb98bde5f7490",
+    "alert_id": "alert_19fe8d54fd95ea0876eee8b6323fd0c4",
+    "execution_mode": "offline_dynamic_substitute",
+    "graph_build_mode": "offline_archived_record_projection",
+    "job_status": "complete",
+    "result_state": "success",
+    "completed_rounds": 3,
+    "target_rounds": 3,
+    "valid_decisions": 30,
+    "failed_decisions": 0,
+    "report_modules": [
+      "emotion_evolution",
+      "key_nodes",
+      "propagation",
+      "recommendations",
+      "risk"
+    ],
+    "input_to_report_seconds": 0.189624,
+    "input_to_report_readable_seconds": 0.203963,
+    "model_calls": 0,
+    "network_requests": 0,
+    "notification_previews": "wecom/email dry_run; sent_at=null"
+  },
+  "handoffs": {
+    "A": "Run v4 artifacts and execution lock verify; status is partial and its locked source hash is the pre-rename src/riskshield/day3.py snapshot.",
+    "B": {
+      "owned_file_hashes_match": true,
+      "status": "partial",
+      "ready": false,
+      "current_ui_screenshot_saved": false
+    },
+    "C": {
+      "report_outputs_match": true,
+      "formal_score_ready_events": 0,
+      "formal_metrics": "not_computable (0/0)"
+    },
+    "D": {
+      "owned_file_and_evidence_hashes_match": true,
+      "stop_writing_owned_files": true
+    }
+  },
+  "known_limitations": [
+    "B current-version screenshot evidence is missing; handoff remains partial/ready=false.",
+    "Web evidence query remains lexical matching; full natural-language answer and context are not implemented.",
+    "A 500x30 is partial at 3477/15000 valid decisions; no post-rename 500x30 rerun; G3 remains unpassed.",
+    "C v24 formal sentiment, negative-classification, and trajectory metrics are not computable; no new isolated model prediction was run.",
+    "No real notification delivery, 30-minute delivery SLA, complete Docker egress isolation, or domain deployment evidence. G4/G5 remain unpassed."
+  ],
+  "D_next_action": "Build the ZIP from candidate manifest exact whitelist, extract into a new directory, and run delivery-verification-plan.json. Preserve candidate members and write result only to the D verification destinations.",
+  "no_new_paid_calls_or_external_sends": true,
+  "self_hash_excluded": true
+}

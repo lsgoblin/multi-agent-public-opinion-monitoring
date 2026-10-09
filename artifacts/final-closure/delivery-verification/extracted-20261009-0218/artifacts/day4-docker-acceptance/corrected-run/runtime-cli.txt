@@ -1,0 +1,83 @@
+Day 4 Docker local acceptance, corrected image and fresh project
+captured_at=2026-10-08T01:20:37+08:00
+project=riskshieldaccept; host API=127.0.0.1:18000; host Web=127.0.0.1:18501
+
+$ docker compose -p riskshieldaccept ps -a
+NAME                               IMAGE                                                                     COMMAND                  SERVICE         CREATED         STATUS                   PORTS
+riskshieldaccept-api-1             sha256:3b548822d8b66783b687b8e6f33db3909a0225e82171f4a065b1b46dadd15ab5   "uvicorn riskshield.…"   api             4 minutes ago   Up 2 minutes (healthy)   8000/tcp, 8501/tcp
+riskshieldaccept-local_gateway-1   sha256:3b548822d8b66783b687b8e6f33db3909a0225e82171f4a065b1b46dadd15ab5   "python -u -c 'impor…"   local_gateway   4 minutes ago   Up 2 minutes             127.0.0.1:18000->8000/tcp, 127.0.0.1:18501->8501/tcp
+riskshieldaccept-web-1             sha256:3b548822d8b66783b687b8e6f33db3909a0225e82171f4a065b1b46dadd15ab5   "streamlit run ui/ap…"   web             4 minutes ago   Up 2 minutes             8000/tcp, 8501/tcp
+
+$ docker inspect corrected containers (ID, image, start time)
+/riskshieldaccept-api-1 84d7dbd174fb6cc65025c0dc217a01ecf3597951bca65fe1f4d2b00cbca04d88 sha256:3b548822d8b66783b687b8e6f33db3909a0225e82171f4a065b1b46dadd15ab5 2026-10-07T17:18:15.723917953Z
+/riskshieldaccept-web-1 e70b71711477baa7374af3c20fec4251b717e0cb403f234aa9fb76ad2f3fbe29 sha256:3b548822d8b66783b687b8e6f33db3909a0225e82171f4a065b1b46dadd15ab5 2026-10-07T17:18:16.035230824Z
+/riskshieldaccept-local_gateway-1 fb70131b778314b60e79039f3d077f6ede46c8eb44ea93e812b02db0035a65d3 sha256:3b548822d8b66783b687b8e6f33db3909a0225e82171f4a065b1b46dadd15ab5 2026-10-07T17:18:17.513465156Z
+
+$ docker network inspect riskshieldaccept_default --format {{.Internal}}
+true
+
+$ docker network inspect riskshieldaccept_host_ingress --format {{.Internal}}
+false
+
+$ docker volume inspect riskshieldaccept_riskshield_runtime
+riskshieldaccept_riskshield_runtime 2026-10-07T17:16:16Z
+
+$ api /proc/net/route and TCP connect_ex 1.1.1.1:443
+Iface	Destination	Gateway 	Flags	RefCnt	Use	Metric	Mask		MTU	Window	IRTT                                                       
+eth0	000014AC	00000000	0001	0	0	0	0000FFFF	0	0	0                                                                               
+
+connect_ex=101
+
+$ web /proc/net/route, TCP connect_ex 1.1.1.1:443, and api health
+Iface	Destination	Gateway 	Flags	RefCnt	Use	Metric	Mask		MTU	Window	IRTT                                                       
+eth0	000014AC	00000000	0001	0	0	0	0000FFFF	0	0	0                                                                               
+
+connect_ex=101
+web_to_api=200
+
+$ local_gateway /proc/net/route
+Iface	Destination	Gateway 	Flags	RefCnt	Use	Metric	Mask		MTU	Window	IRTT                                                       
+eth1	00000000	010015AC	0003	0	0	0	00000000	0	0	0                                                                               
+eth0	000014AC	00000000	0001	0	0	0	0000FFFF	0	0	0                                                                               
+eth1	000015AC	00000000	0001	0	0	0	0000FFFF	0	0	0
+
+$ GET /health, /readiness, /channels/status and Web root
+{
+  "health": {
+    "status": "ok",
+    "stage": "day4_v2",
+    "version": "0.5.0"
+  },
+  "g3_v2_passed": false,
+  "g4_v2_passed": false,
+  "channels_http_status": 200,
+  "web_http_status": 200
+}
+
+$ corrected-run/run-summary.json
+{
+  "started_at": "2026-10-08T01:17:15+08:00",
+  "completed_at": "2026-10-08T01:17:17+08:00",
+  "run_id": "run_f7df9bc466904c0c8461",
+  "job_id": "job_deee04f704c64fa7977f",
+  "report_id": "report_222f182315709db12836fb3b",
+  "alert_id": "alert_804cfcc0cf0a0d84da29e5adb1c876d5",
+  "status": "complete",
+  "completed_rounds": 3,
+  "model_calls": 0,
+  "network_requests": 0
+}
+
+$ corrected-run/restart-summary.json
+{
+  "checked_at": "2026-10-08T01:18:27+08:00",
+  "health": "ok",
+  "web_http_status": 200,
+  "run_id": "run_f7df9bc466904c0c8461",
+  "job_id": "job_deee04f704c64fa7977f",
+  "report_id": "report_222f182315709db12836fb3b",
+  "alert_id": "alert_804cfcc0cf0a0d84da29e5adb1c876d5",
+  "job_report_alert_content_equal": true,
+  "model_calls": 0,
+  "network_requests": 0
+}

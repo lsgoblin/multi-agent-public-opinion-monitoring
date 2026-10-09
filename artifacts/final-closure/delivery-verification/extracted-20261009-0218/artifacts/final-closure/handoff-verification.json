@@ -1,0 +1,436 @@
+{
+  "schema": "riskshield.final_closure.handoff_verification.v1",
+  "round_id": "closure-20261009-functional-names-v1",
+  "c_handoff": {
+    "path": "artifacts/final-closure/c-ready.json",
+    "sha256": "b8c45fd1248c794101ce80b380f5f96a4c7959c336c8696bd2c6049fe29f6637",
+    "matching_round_id": "closure-20261009-functional-names-v1",
+    "core_report_outputs_all_match": true,
+    "entries": [
+      {
+        "path": "artifacts/final-scoring-20261009/FINAL-DELIVERY-INDEX-v24.md",
+        "expected_sha256": "286bf3c7f666d2029a305df1673db5ad9ccf004c5d3cf16df430b3c01aad85ce",
+        "actual_sha256": "286bf3c7f666d2029a305df1673db5ad9ccf004c5d3cf16df430b3c01aad85ce",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-scoring-20261009/final-score-report-v24.md",
+        "expected_sha256": "3c812d7655e85d9f31723729cc8b17ac20eef913bcc94fc8b859638386325377",
+        "actual_sha256": "3c812d7655e85d9f31723729cc8b17ac20eef913bcc94fc8b859638386325377",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-scoring-20261009/final-score-report-v24.json",
+        "expected_sha256": "65edb6e8f218bf2cb96de88d777040c96647539802957541ba49f713cb421c52",
+        "actual_sha256": "65edb6e8f218bf2cb96de88d777040c96647539802957541ba49f713cb421c52",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-scoring-20261009/per-unit-results-v24.json",
+        "expected_sha256": "2b6093aebfd418f554d58153b47ea2f9208188a884f0f6a54626f22f1699f36f",
+        "actual_sha256": "2b6093aebfd418f554d58153b47ea2f9208188a884f0f6a54626f22f1699f36f",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-scoring-20261009/ai-annotations-final-v1.json",
+        "expected_sha256": "cc178d339607d23a65e0e166822461ad4089815d81c5d3c27ee22c15d3ac3fc6",
+        "actual_sha256": "cc178d339607d23a65e0e166822461ad4089815d81c5d3c27ee22c15d3ac3fc6",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-scoring-20261009/ai-reference-for-scorer.json",
+        "expected_sha256": "a42187bd2e5bb96d73e3517338b98e353d3cd8d299b4cf1fa0a1a9981581e731",
+        "actual_sha256": "a42187bd2e5bb96d73e3517338b98e353d3cd8d299b4cf1fa0a1a9981581e731",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-scoring-20261009/v8-scorer-output.json",
+        "expected_sha256": "66ad919519bc56e35ad02b2fe210148e6f3c3af1492984bd751d51af64301ca9",
+        "actual_sha256": "66ad919519bc56e35ad02b2fe210148e6f3c3af1492984bd751d51af64301ca9",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-scoring-20261009/v8-ai-reference-scorer-v2.json",
+        "expected_sha256": "d369ed7ce8df314ae8bc9ae83990aaf52fb3083c0896b69facba677ede9bcffb",
+        "actual_sha256": "d369ed7ce8df314ae8bc9ae83990aaf52fb3083c0896b69facba677ede9bcffb",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-scoring-20261009/v13-v24-evaluator-final-v2.json",
+        "expected_sha256": "c74d2a7a9b027f63d98380014b087983cc85254223d6895a29a1836ab6a56276",
+        "actual_sha256": "c74d2a7a9b027f63d98380014b087983cc85254223d6895a29a1836ab6a56276",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-scoring-20261009/score_v13_v24.py",
+        "expected_sha256": "05dc09e4c73405325e43bba75e30d412616dbb03335d0dc94eaaece0427f33fd",
+        "actual_sha256": "05dc09e4c73405325e43bba75e30d412616dbb03335d0dc94eaaece0427f33fd",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "experiments/final_benchmark_score.py",
+        "expected_sha256": "df245674a868967068ffc8044c338e58aae022278102d3174b2de8c5dc91cd33",
+        "actual_sha256": "ce172068f99f9d7307ad5f2f700008eb7ee75c944b34320b00f85e8208a14841",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "changed_after_handoff"
+      },
+      {
+        "path": "src/riskshield/day5_evaluation.py",
+        "expected_sha256": "e0c73f0f126894a465e49dcc37f9c408e61cc23ad8d573452adaf5e9178047bc",
+        "actual_sha256": "e5cd06c3691c9c5b1572a85f7641c0b044f28d0592478065c1498e446bfdf764",
+        "mapped_path": "src/riskshield/evaluation.py",
+        "mapped_sha256": "e0c73f0f126894a465e49dcc37f9c408e61cc23ad8d573452adaf5e9178047bc",
+        "status": "same_content_moved"
+      },
+      {
+        "path": "experiments/verify_final_benchmark_freezes.py",
+        "expected_sha256": "e316d25bdc94f7718bd275b54df12eb5e2acc9409c702cba691a6b257f502d5b",
+        "actual_sha256": "e316d25bdc94f7718bd275b54df12eb5e2acc9409c702cba691a6b257f502d5b",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "docs/records/final-scoring-protocol-v2.md",
+        "expected_sha256": "cb39c32c8ec2b4823a22fab8ee6e2c36bda047cea3f605a9a7a2fa0dec5e336a",
+        "actual_sha256": "cb39c32c8ec2b4823a22fab8ee6e2c36bda047cea3f605a9a7a2fa0dec5e336a",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "data/evaluation/final-benchmark/manifests/freeze-v24.json",
+        "expected_sha256": "f8e3c3dc812d96827d3ebd2d5ae95c4f4882493f18f07b9a270d16993f7ae246",
+        "actual_sha256": "f8e3c3dc812d96827d3ebd2d5ae95c4f4882493f18f07b9a270d16993f7ae246",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "data/evaluation/final-benchmark/manifests/final-reconciliation-v24.json",
+        "expected_sha256": "d8c69cb69300f49657ae01c862202974d050f04038b6537d37a0172c0158364d",
+        "actual_sha256": "d8c69cb69300f49657ae01c862202974d050f04038b6537d37a0172c0158364d",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "data/evaluation/final-benchmark/manifests/freeze-v8.json",
+        "expected_sha256": "9110a1c397ed94c790a493af6796b9df692615ec022eda67fd577ce717356aa7",
+        "actual_sha256": "9110a1c397ed94c790a493af6796b9df692615ec022eda67fd577ce717356aa7",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "data/evaluation/final-benchmark/manifests/e-handoff-v8.json",
+        "expected_sha256": "d554d5b1e415ea6ca51c51b6db7b1ee9bc14b3aeec34459c0dc3421916246477",
+        "actual_sha256": "d554d5b1e415ea6ca51c51b6db7b1ee9bc14b3aeec34459c0dc3421916246477",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "data/evaluation/final-benchmark/manifests/e-handoff-v13.json",
+        "expected_sha256": "cc5a4d46d088dcb5bf0c46c9ab9bfcfe65bd34386dcc31d769c513c88db977b9",
+        "actual_sha256": "cc5a4d46d088dcb5bf0c46c9ab9bfcfe65bd34386dcc31d769c513c88db977b9",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-integration-review/v8-pilot/pilot-seal-e-handoff-v8.json",
+        "expected_sha256": "0748b57d03acfd73120b77bf4ae8b1e8776394482272552656c11c37221a164f",
+        "actual_sha256": "0748b57d03acfd73120b77bf4ae8b1e8776394482272552656c11c37221a164f",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-integration-review/v8-pilot/pilot-predictions-e-handoff-v8.json",
+        "expected_sha256": "a1cfc23a9f1b16e7f4b8a32a3494181de4afac5619c8f93ca11936e3bac4d4d5",
+        "actual_sha256": "a1cfc23a9f1b16e7f4b8a32a3494181de4afac5619c8f93ca11936e3bac4d4d5",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-integration-review/v13-pilot/seal-v13.json",
+        "expected_sha256": "cef4a4252430afc190d5c83f3b4340a37263e50aa53e00a14c993997e5a2feb4",
+        "actual_sha256": "cef4a4252430afc190d5c83f3b4340a37263e50aa53e00a14c993997e5a2feb4",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-integration-review/v13-pilot/predictions-v13.json",
+        "expected_sha256": "39957cf8c485dfe6720ef2ab7f29598af6e553bc568c2b57f4955ca95e55bb3f",
+        "actual_sha256": "39957cf8c485dfe6720ef2ab7f29598af6e553bc568c2b57f4955ca95e55bb3f",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+        "expected_sha256": "c49df7870676303950b859729c65def50d5d0042a8ca363fb425bc53a2e2027a",
+        "actual_sha256": "c49df7870676303950b859729c65def50d5d0042a8ca363fb425bc53a2e2027a",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v13.json",
+        "expected_sha256": "01193167bc59ec4e6d59c12922ad7a9e09d9886deb520c255a5e963aaa9b772c",
+        "actual_sha256": "01193167bc59ec4e6d59c12922ad7a9e09d9886deb520c255a5e963aaa9b772c",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "data/evaluation/final-benchmark/labels/blind-sentiment-packet-v6.json",
+        "expected_sha256": "e31e1a2962e40bbe4e2e06dbc7a8cbdd2c1198031398b4407a47923b81ec29fc",
+        "actual_sha256": "e31e1a2962e40bbe4e2e06dbc7a8cbdd2c1198031398b4407a47923b81ec29fc",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v8.json",
+        "expected_sha256": "47a3b4191c826c53cc1005ed8960c9372a1934a3f4b87582f10118fe4457d058",
+        "actual_sha256": "47a3b4191c826c53cc1005ed8960c9372a1934a3f4b87582f10118fe4457d058",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v13.json",
+        "expected_sha256": "d0dd402d2506d1b23d18de7daf6ab2a302e7ef1ca14e64861a8c70534feee536",
+        "actual_sha256": "d0dd402d2506d1b23d18de7daf6ab2a302e7ef1ca14e64861a8c70534feee536",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "data/evaluation/final-benchmark/labels/blind-sentiment-reannotation-packet-v19.json",
+        "expected_sha256": "0f92c86092187ba936a48881eb98d8592e38a7bdcadb39a547c1f1d85697f565",
+        "actual_sha256": "0f92c86092187ba936a48881eb98d8592e38a7bdcadb39a547c1f1d85697f565",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "data/evaluation/final-benchmark/labels/verified-original-titles-v19.json",
+        "expected_sha256": "54a08c3543f29bd808e74b1b1998286771a26626caf9c4f68dd7f416fe0235e2",
+        "actual_sha256": "54a08c3543f29bd808e74b1b1998286771a26626caf9c4f68dd7f416fe0235e2",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v4.json",
+        "expected_sha256": "dee1d41bb77211ad828b58be3ef5311e5d48d3a9df360095600db2864cb41d5b",
+        "actual_sha256": "dee1d41bb77211ad828b58be3ef5311e5d48d3a9df360095600db2864cb41d5b",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      },
+      {
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v11.json",
+        "expected_sha256": "783d7310e98840ecd0a0810ec1995b8c6d9909b381c805fbb4cbd7d573fad9ed",
+        "actual_sha256": "783d7310e98840ecd0a0810ec1995b8c6d9909b381c805fbb4cbd7d573fad9ed",
+        "mapped_path": null,
+        "mapped_sha256": null,
+        "status": "match"
+      }
+    ],
+    "note": "C report and result outputs are hash-verified. The day5 metric engine content was moved intact to riskshield.evaluation.py. experiments/final_benchmark_score.py changed during namespace cleanup; the frozen C outputs remain unchanged and the v13 result was produced by the separate c-ready adapter."
+  },
+  "d_handoff": {
+    "path": "artifacts/final-closure/d-prep-ready.json",
+    "sha256": "b9ce4c840b6fa9c53a2d699cb9e1a315ebc6180365b6fba9d5e44344fa6f99a9",
+    "round_id": "closure-20261009-functional-names-v1",
+    "owned_files_and_evidence_all_match": true,
+    "stop_writing_owned_files": true,
+    "entries": [
+      {
+        "path": "Dockerfile",
+        "expected_sha256": "bcb9a757e87acf3251ca3df6f116168ef9cc16bf3d95db64edd563ca3ebed055",
+        "actual_sha256": "bcb9a757e87acf3251ca3df6f116168ef9cc16bf3d95db64edd563ca3ebed055",
+        "status": "match"
+      },
+      {
+        "path": ".dockerignore",
+        "expected_sha256": "af265ad8e42a141153145085f43a0132f8abc53af699e12ba081b39812f7878f",
+        "actual_sha256": "af265ad8e42a141153145085f43a0132f8abc53af699e12ba081b39812f7878f",
+        "status": "match"
+      },
+      {
+        "path": "compose.yaml",
+        "expected_sha256": "5639e1b6c7ea90016dbca4e511a4df12b6ea2c747ad90fd2f4a700a7cdf7833b",
+        "actual_sha256": "5639e1b6c7ea90016dbca4e511a4df12b6ea2c747ad90fd2f4a700a7cdf7833b",
+        "status": "match"
+      },
+      {
+        "path": "docs/delivery/deployment.md",
+        "expected_sha256": "97ba7e4ae9a739ddf9f9e3a03e99bece8f62be69ba553bcec44f519fb3fda6e7",
+        "actual_sha256": "97ba7e4ae9a739ddf9f9e3a03e99bece8f62be69ba553bcec44f519fb3fda6e7",
+        "status": "match"
+      },
+      {
+        "path": "docs/records/final-deployment-review.md",
+        "expected_sha256": "04c7be4fe7da1d5dbdebad4c7ac9845f86b6c85a2b9bac94cf2b5ff2223c6da8",
+        "actual_sha256": "04c7be4fe7da1d5dbdebad4c7ac9845f86b6c85a2b9bac94cf2b5ff2223c6da8",
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-deployment-review/closure-20261009-functional-names-v1/README.md",
+        "expected_sha256": "e9ba63baf5a1f61697a3db2e49f98a25a75700075adccea46ae26c3e55ba05d7",
+        "actual_sha256": "e9ba63baf5a1f61697a3db2e49f98a25a75700075adccea46ae26c3e55ba05d7",
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-deployment-review/closure-20261009-functional-names-v1/package-dependency-audit.json",
+        "expected_sha256": "c0bb5038e3b80efeb47a261210d68d7a3d879354b0b225bf460340e079e956df",
+        "actual_sha256": "c0bb5038e3b80efeb47a261210d68d7a3d879354b0b225bf460340e079e956df",
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-deployment-review/closure-20261009-functional-names-v1/package-inventory.txt",
+        "expected_sha256": "fadcceb4983a246c3c6a63909bb8eaf1ec282d1e07b55072088e33f24a07c904",
+        "actual_sha256": "fadcceb4983a246c3c6a63909bb8eaf1ec282d1e07b55072088e33f24a07c904",
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-deployment-review/closure-20261009-functional-names-v1/delivery-verification-plan.json",
+        "expected_sha256": "3fd673f45920e99d2e2168f5176a45119c7d662d96af82bb7c1927b271a26f7e",
+        "actual_sha256": "3fd673f45920e99d2e2168f5176a45119c7d662d96af82bb7c1927b271a26f7e",
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-deployment-review/version-manifest.json",
+        "expected_sha256": "e9cd74303df05c365bad3a25cfe548317ce30343f800ef48589c1017ac963496",
+        "actual_sha256": "e9cd74303df05c365bad3a25cfe548317ce30343f800ef48589c1017ac963496",
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-deployment-review/build.log",
+        "expected_sha256": "e98de8f652c2189111cc51ad75c9e70c6d442b05806d3d8b2504a5e296daca86",
+        "actual_sha256": "e98de8f652c2189111cc51ad75c9e70c6d442b05806d3d8b2504a5e296daca86",
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-deployment-review/case-closure-summary.json",
+        "expected_sha256": "d46626292f531d71e6d76c9d3efb598132673e50177e6c1100bf19fe42a3db76",
+        "actual_sha256": "d46626292f531d71e6d76c9d3efb598132673e50177e6c1100bf19fe42a3db76",
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-deployment-review/restart-persistence-summary.json",
+        "expected_sha256": "20911bf3e66798c81d22f187488f204586600686678c5d47291eaed273407ffe",
+        "actual_sha256": "20911bf3e66798c81d22f187488f204586600686678c5d47291eaed273407ffe",
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-deployment-review/stop-start-persistence-check.txt",
+        "expected_sha256": "fbec9fc2c51530d6e0acb673ab2ce705c0ac583f339cfdd2034a470e68aed893",
+        "actual_sha256": "fbec9fc2c51530d6e0acb673ab2ce705c0ac583f339cfdd2034a470e68aed893",
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-deployment-review/smoke-summary.json",
+        "expected_sha256": "525148051da5e21875616820ec23fa36cccdd7110fa203dc26a1f04e82982e14",
+        "actual_sha256": "525148051da5e21875616820ec23fa36cccdd7110fa203dc26a1f04e82982e14",
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-deployment-review/network-route-summary.json",
+        "expected_sha256": "4596fa4502d0de9fd0f60a88211c5e99559d0109f7dca6794a6103cec3b67ad6",
+        "actual_sha256": "4596fa4502d0de9fd0f60a88211c5e99559d0109f7dca6794a6103cec3b67ad6",
+        "status": "match"
+      }
+    ]
+  },
+  "b_handoff": {
+    "path": "artifacts/final-closure/b-ready.json",
+    "sha256": "23b9bc1673bcd3241f52c31b4ae8fa605cce23ef6e263f0dfbe4e7557d36bca6",
+    "round_id": "closure-20261009-functional-names-v1",
+    "status": "partial",
+    "ready": false,
+    "owned_files_all_match": true,
+    "entries": [
+      {
+        "path": "ui/app.py",
+        "expected_sha256": "F9F0173788817FBCB479C8C779EB1C58572BA7A235375D522536EF11D94DCD1D",
+        "actual_sha256": "f9f0173788817fbcb479c8c779eb1c58572ba7a235375d522536ef11d94dcd1d",
+        "status": "match"
+      },
+      {
+        "path": "tests/test_ui.py",
+        "expected_sha256": "2C5CA29500242D74E3009F72F1FE7CE09CABBA92C68A3E51D3C8A709E1BE9DC3",
+        "actual_sha256": "2c5ca29500242d74e3009f72f1fe7ce09cabba92c68a3e51d3c8a709e1be9dc3",
+        "status": "match"
+      },
+      {
+        "path": "docs/delivery/user-guide.md",
+        "expected_sha256": "996AEF38E2FFA83E051E09C1B4A019E2365BC814E822F4A31EDF36E77D767ACC",
+        "actual_sha256": "996aef38e2ffa83e051e09c1b4a019e2365bc814e822f4a31edf36e77d767acc",
+        "status": "match"
+      },
+      {
+        "path": "docs/records/final-report-web-review.md",
+        "expected_sha256": "740B5B44AE6AA5FA4D91B41F981053C42094DE440AA4609CC0C4C9EB7E71B48F",
+        "actual_sha256": "740b5b44ae6aa5fa4d91b41f981053c42094de440aa4609cc0c4c9eb7e71b48f",
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-report-web-review/2026-10-09-functional-names-v1/README.md",
+        "expected_sha256": "5168518ED934B9CDEEC5B75C33BCDD285FBEEC6A64C2D89E6436586B8C654A53",
+        "actual_sha256": "5168518ed934b9cdeec5b75c33bcdd285fbeec6a64c2d89e6436586b8c654a53",
+        "status": "match"
+      },
+      {
+        "path": "artifacts/final-report-web-review/2026-10-09-functional-names-v1/review-summary.json",
+        "expected_sha256": "B5B16F0BDDFF6B793369A2AE1A532DFE64CA5AF5B79E1844A0CEB5B6C439EBE6",
+        "actual_sha256": "b5b16f0bddff6b793369a2ae1a532dfe64ca5af5b79e1844a0ceb5b6c439ebe6",
+        "status": "match"
+      }
+    ],
+    "current_e2e_sha256": "64f3c95d2a5c1d69bbeba94365b4e31f8564b8ded7857b964bf1cb8fd3d3ad30",
+    "ui_source_hash_matches_e2e": true,
+    "screenshot_evidence": {
+      "current_version_saved": false,
+      "directory": "artifacts/final-report-web-review/2026-10-09-functional-names-v1/",
+      "saved_files": [],
+      "historical_screenshot_version": "artifacts/final-report-web-review/2026-10-09-v1/",
+      "historical_screenshots_are_current": false,
+      "blockers": [
+        "browser-client returned: privileged native pipe bridge is not available; browser-client is not trusted",
+        "Windows Computer Use stopped because it could not determine the current browser URL with enough confidence to enforce policy",
+        "Ubuntu Chromium rendered Chinese glyphs as boxes and was unsuitable for delivery screenshots"
+      ],
+      "main_agent_read_only_observation": "Main Agent reported normal Chinese rendering and verified task/report/alert bindings and displayed counters in its IAB review; no screenshot file or path was supplied."
+    },
+    "limitation": "B handoff remains partial and not ready. Current UI screenshot is absent; do not treat read-only observation or historical screenshots as current screenshot evidence."
+  }
+}

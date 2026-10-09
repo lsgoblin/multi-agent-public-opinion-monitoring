@@ -1,0 +1,99 @@
+{
+  "schema": "riskshield.final_benchmark.freeze.v4",
+  "dataset_version": "final-benchmark-public-history-v4-2026-10-08",
+  "created_at_utc": "2026-10-08T06:41:59Z",
+  "freeze_is_self_hashed": false,
+  "base_v2": {
+    "input_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+    "freeze_sha256": "803c12e7acf8578cfafbb0f67eba325723e0a5fb704051f43d9a7fb5d1b6a9aa",
+    "original_files_preserved": true
+  },
+  "supersedes_v3": {
+    "input_sha256": "2da016be8f7fad54a4263f1d596a27d16a528f3d26a03401ad4a3b26d7344847",
+    "freeze_sha256": "50a365f063853ad0a2dbc399f939b867286e23c522ce0ddb84a4ef58b27442c6",
+    "original_files_preserved": true
+  },
+  "counts": {
+    "input_rows_with_original_historical_visibility_witness": 20,
+    "distinct_source_post_records_with_cutoff_witness": 20,
+    "independently_identified_event_identities_including_development": 8,
+    "independently_identified_holdout_event_identities": 7,
+    "personal_complaint_posts_retained_as_auxiliary": 12,
+    "complaint_posts_counted_as_independent_trend_events": 0,
+    "cutoff_content_sufficient_to_identify_issue_for_event_context": 8,
+    "cutoff_texts_sufficient_for_full_contextual_sentiment_truth": 0,
+    "events_with_comparable_baseline_and_later_trend_evidence": 0,
+    "strict_independent_human_sentiment_units_completed": 0,
+    "pending_holdout_sentiment_slots": 38,
+    "admitted_replacement_events": 0,
+    "remaining_gap_to_20_independent_holdout_events": 13,
+    "formal_score_ready_holdout_events": 0,
+    "non_archived_cutoff_supplements_excluded_from_predictor_input": 6
+  },
+  "input_sha256": "07ca323bc55b0bf7c47eddbeb922c2ba4c4df41dfc88a0ee9ec40c7570aa21f6",
+  "input_event_count": 20,
+  "cutoff_witnessed_input_row_count": 20,
+  "strictly_counted_event_identity_count": 8,
+  "files": [
+    {
+      "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v4.json",
+      "sha256": "07ca323bc55b0bf7c47eddbeb922c2ba4c4df41dfc88a0ee9ec40c7570aa21f6",
+      "bytes": 52064
+    },
+    {
+      "path": "data/evaluation/final-benchmark/labels/annotation-protocol-v4.md",
+      "sha256": "c9add643081de7237186f4a4086bd3274b3089272972e8525ed230178bf0f683",
+      "bytes": 2556
+    },
+    {
+      "path": "data/evaluation/final-benchmark/labels/annotation-register-v4.json",
+      "sha256": "849b5892aa07dc37debd26fc97932066b205189040a7dfb2e08322e063ee01e4",
+      "bytes": 22332
+    },
+    {
+      "path": "data/evaluation/final-benchmark/labels/blind-sentiment-packet-v4.json",
+      "sha256": "fc91de78978552f0621f592b817a61e6597af6a52f254e100d5d757cca508c9d",
+      "bytes": 29788
+    },
+    {
+      "path": "data/evaluation/final-benchmark/labels/blind-trend-template-v4.json",
+      "sha256": "5e7f0d96d9327059432333ea137e810944b0259a9bce10fcacded5c4ccb39614",
+      "bytes": 4148
+    },
+    {
+      "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v4.json",
+      "sha256": "dee1d41bb77211ad828b58be3ef5311e5d48d3a9df360095600db2864cb41d5b",
+      "bytes": 24048
+    },
+    {
+      "path": "data/evaluation/final-benchmark/labels/trend-window-proposal-v4.md",
+      "sha256": "703719794db5f3764a1822bc576f320c8ed224876b58494b5664350a92ee2881",
+      "bytes": 1055
+    },
+    {
+      "path": "data/evaluation/final-benchmark/manifests/candidate-events-v4.json",
+      "sha256": "e4cdc3423ef1966ecbefbbdf2b2c3fe8ac030716d4ca87e9d9e16ca6a2e036d9",
+      "bytes": 33047
+    },
+    {
+      "path": "data/evaluation/final-benchmark/manifests/e-handoff-v4.json",
+      "sha256": "4645451f230d539bcd102fa2e0869cdce3dac3ef79db59f8bf9dade3ccc8d478",
+      "bytes": 2687
+    },
+    {
+      "path": "data/evaluation/final-benchmark/manifests/event-audit-v4.json",
+      "sha256": "9cef4a5479d83058e5608b67d7407920efa351f5f26bb15c8f828fcfaec3609b",
+      "bytes": 33136
+    },
+    {
+      "path": "data/evaluation/final-benchmark/manifests/public-research-log-v4.json",
+      "sha256": "f2a8fac0c00b33132124fb9e5d84b7c93d0538cd3b726cf575c0f594cc9651f2",
+      "bytes": 15347
+    },
+    {
+      "path": "data/evaluation/final-benchmark/manifests/replacement-leads-v4.json",
+      "sha256": "1184a62d02234c6b2b2461b42ffb6c47238ccd57317b09abbf8637583e2af7ec",
+      "bytes": 17714
+    }
+  ]
+}

@@ -1,0 +1,114 @@
+{
+  "review_date": "2026-10-09",
+  "screenshot_version": "2026-10-09-v1",
+  "database": "D:\\temp\\riskshield-final-report-web-review-20261009.sqlite3",
+  "source_package": {
+    "path": "data/public/unh_change_20240222_day2_multisource_event.json",
+    "version": "unh-day2-multisource-2026-10-04-v1",
+    "cutoff": "2024-02-23T05:48:39+08:00"
+  },
+  "binding": {
+    "case_id": "unh_change_20240222_day2_multisource",
+    "graph_id": "936c73951d2ab46f8e0ee6bb",
+    "run_id": "run_56e64807a5814fc78929",
+    "job_id": "job_52805c6e43c54905a6c1",
+    "report_id": "report_a220a1e7578935249fc000a4",
+    "alert_id": "alert_358fb540de828536fb2fe21111ca83d1",
+    "all_module_bindings_verified": true,
+    "report_modules": [
+      "propagation",
+      "emotion_evolution",
+      "key_nodes",
+      "risk",
+      "recommendations"
+    ]
+  },
+  "modes": {
+    "data_mode": "real_historical",
+    "execution_mode": "offline_dynamic_substitute",
+    "source_graph_build_mode": "offline_archived_record_projection"
+  },
+  "run": {
+    "status": "complete",
+    "result_state": "success",
+    "completed_rounds": 3,
+    "target_rounds": 3,
+    "valid_decisions": 30,
+    "failed_decisions": 0,
+    "elapsed_seconds": 0.148635,
+    "model_calls": 0,
+    "network_requests": 0,
+    "cost_estimate_cny": 0
+  },
+  "evidence": {
+    "source_record_ids": [
+      "optum-status-20240221-cyber-update",
+      "unh-sec-20240222-initial"
+    ],
+    "source_graph_nodes": 7,
+    "source_graph_edges": 6,
+    "simulated_messages": 60,
+    "simulated_sender_recipient_relations": 30,
+    "emotion_series": [
+      {"round": 1, "agent_count": 10, "mean": 0.01222, "min": -0.2186, "max": 0.161},
+      {"round": 2, "agent_count": 10, "mean": -0.01419, "min": -0.2542, "max": 0.163},
+      {"round": 3, "agent_count": 10, "mean": -0.06317, "min": -0.2998, "max": 0.117}
+    ],
+    "risk_level": "blue",
+    "risk_status": "provisional_offline_assessment"
+  },
+  "lexical_query": {
+    "endpoint": "POST /graphs/{graph_id}/query",
+    "query": "Change Healthcare 网络中断",
+    "hits": [
+      {"record_id": "optum-status-20240221-cyber-update", "match_score": 3},
+      {"record_id": "unh-sec-20240222-initial", "match_score": 2}
+    ],
+    "natural_language_answering": "not_implemented"
+  },
+  "notification_preview": {
+    "preview_id": "preview_d7efe267551a46708d80",
+    "channel": "wecom",
+    "delivery_status": "dry_run",
+    "previewed_at": "2026-10-09T00:41:06.293473+08:00",
+    "discovery_to_preview_ms": 459711.686,
+    "latency_basis": "local_rule_assessment_to_preview_generation",
+    "sent_at": null,
+    "recipient": null,
+    "network_requests": 0
+  },
+  "validation": {
+    "command": "uv run pytest -q tests/test_day4_report.py tests/test_ui.py",
+    "result": "15 passed, 1 Starlette/httpx deprecation warning in 11.83s",
+    "failure_empty_and_citation_paths": "covered by isolated automated tests; browser run was successful"
+  },
+  "limitations": [
+    "Real historical archived material was processed by an offline dynamic substitute; this is not real-model reasoning evidence.",
+    "Simulated actions/messages do not represent real platform activity or actual complaint volume.",
+    "Lexical search returns cited source matches but does not answer complete natural-language questions.",
+    "Source links were verified in the local UI but not opened externally.",
+    "Notification delivery and the 30-minute alert SLA were not exercised.",
+    "This review does not establish G3 or G4 acceptance."
+  ],
+  "source_file_sha256": {
+    "src/riskshield/day4_report.py": "4BFC52367FBC81B77DBCD65D0A3D175F4DC04A177C146EA0AD510677307E1B3D",
+    "ui/app.py": "BF3B0974150504513C3EAC8132976BCD11F9B4B1514AF0F05B6FC98AE11D4F97",
+    "tests/test_day4_report.py": "AF3D115CDDEC8E1EC889FDD52706596CD0B6E1C4F33FBC2B92C24272615FACBC",
+    "tests/test_ui.py": "E795064D05742EA745E8F0ABC911C597F5BA2730B98A051398D6944BDC77888F"
+  },
+  "screenshots": [
+    "task-detail.png",
+    "task-linked-actions.png",
+    "report-overview.png",
+    "report-citations.png",
+    "simulated-propagation.png",
+    "report-emotion-activity.png",
+    "business-guidance.png",
+    "technical-limitations.png",
+    "source-graph-and-query.png",
+    "cited-query-results.png",
+    "linked-alert.png",
+    "alert-limitations.png",
+    "alert-preview.png"
+  ]
+}

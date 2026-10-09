@@ -1,0 +1,350 @@
+{
+  "schema": "riskshield.final_benchmark.candidate_screen.v9",
+  "dataset_version": "final-benchmark-candidate-screen-v9-2026-10-08",
+  "base_input_version": "final-benchmark-evidence-pilot-v8-2026-10-08",
+  "base_freeze_v8_sha256": "9110a1c397ed94c790a493af6796b9df692615ec022eda67fd577ce717356aa7",
+  "screen_only": true,
+  "predictor_input_changed": false,
+  "retrieval_recorded_at_utc": "2026-10-08T10:07:08Z",
+  "raw_user_text_author_names_and_item_ids_retained": false,
+  "rule": "Apply the same D0-excluded, seven-full-UTC-day pre/post windows for triage only. Do not admit a candidate based on volume alone; assess event identity, query precision, source-version evidence, response caps and confounds. These window thresholds remain an internal proposal, not a frozen formal rule.",
+  "screens": [
+    {
+      "candidate_id": "replacement_state_farm_ca_nonrenewals_2024",
+      "event_summary": "State Farm General announcement to nonrenew approximately 30,000 residential/property and 42,000 commercial apartment policies in California, distinct in action and date from its May 2023 new-application pause but potentially part of the same broader California market-exit controversy.",
+      "cutoff_source_candidate": {
+        "publisher": "Associated Press",
+        "source_url": "https://apnews.com/article/149da2ade4546404a8bd02c08416833b",
+        "source_version": "AP story ID 149da2ade4546404a8bd02c08416833b",
+        "published_at": "2024-03-22T02:32:48Z",
+        "published_at_precision": "second",
+        "note": "This is a later dated reporting point; the company release was already public on March 20, so it is not the event’s first public appearance."
+      },
+      "later_records": [
+        "https://www.latimes.com/california/story/2024-03-23/state-farm-wont-renew-72-000-insurance-policies-in-california-worsening-the-states-insurance-crisis",
+        "https://abc7.com/post/california-insurance-commissioner-ricardo-lara-speaks-out-after-state-farm-announces-it-will-not-renew-thousands-of-policies/14559707/",
+        "https://www.insurancejournal.com/news/west/2024/03/20/765883.htm"
+      ],
+      "queries": [
+        {
+          "source": "PullPush Reddit archive search",
+          "query": "State Farm California",
+          "window": "baseline 2024-03-15 through 2024-03-21 UTC; observation 2024-03-23 through 2024-03-29 UTC; D0=2024-03-22 excluded",
+          "baseline": {
+            "submissions": {
+              "api_rows": 20,
+              "unique_items": 20,
+              "duplicate_rows": 0,
+              "days_with_results": 7,
+              "daily_rows": [
+                5,
+                5,
+                1,
+                1,
+                1,
+                2,
+                5
+              ]
+            },
+            "comments": {
+              "api_rows": 64,
+              "unique_items": 64,
+              "duplicate_rows": 0,
+              "days_with_results": 7,
+              "daily_rows": [
+                13,
+                7,
+                6,
+                6,
+                10,
+                5,
+                17
+              ]
+            }
+          },
+          "observation": {
+            "submissions": {
+              "api_rows": 40,
+              "unique_items": 36,
+              "duplicate_rows": 4,
+              "days_with_results": 7,
+              "daily_rows": [
+                10,
+                9,
+                8,
+                2,
+                2,
+                3,
+                6
+              ]
+            },
+            "comments": {
+              "api_rows": 99,
+              "unique_items": 98,
+              "duplicate_rows": 1,
+              "days_with_results": 7,
+              "daily_rows": [
+                18,
+                14,
+                10,
+                20,
+                14,
+                5,
+                18
+              ]
+            }
+          },
+          "assessment": "Complete returned-result day coverage and under-100 responses, but entity/geography query is broad and may capture the earlier 2023 State Farm pause or broader California market discussion. The baseline contains the March 20 announcement; no event-specific item coding. Not admitted as a new independent trend event."
+        },
+        {
+          "source": "PullPush Reddit archive search",
+          "query": "State Farm 72000",
+          "window": "same D0-excluded windows",
+          "baseline": {
+            "submissions": {
+              "api_rows": 0,
+              "unique_items": 0,
+              "days_with_results": 0
+            },
+            "comments": {
+              "api_rows": 1,
+              "unique_items": 1,
+              "days_with_results": 1,
+              "daily_rows": [
+                {
+                  "date": "2024-03-21",
+                  "rows": 1
+                }
+              ]
+            }
+          },
+          "observation": {
+            "submissions": {
+              "api_rows": 0,
+              "unique_items": 0,
+              "days_with_results": 0
+            },
+            "comments": {
+              "api_rows": 3,
+              "unique_items": 3,
+              "days_with_results": 2,
+              "daily_rows": [
+                {
+                  "date": "2024-03-23",
+                  "rows": 2
+                },
+                {
+                  "date": "2024-03-24",
+                  "rows": 1
+                }
+              ]
+            }
+          },
+          "assessment": "More event-specific lexical query is sparse and misses alternate number formatting; query recall unknown. Does not support a stable event-specific series."
+        }
+      ],
+      "disposition": "retain as research lead; do not count as an independent qualified event until the shared market-controversy identity and query precision are resolved.",
+      "prediction_exposure": "No model prediction inspected."
+    },
+    {
+      "candidate_id": "citizens_hurricane_debby_claims_77pct_20241018",
+      "event_summary": "October 18 report that Citizens closed 77% of Hurricane Debby claims without payment; later Citizens explanations distinguish claim denials from claims closed without payment.",
+      "cutoff_source_candidate": {
+        "publisher": "NOTUS article now served via Washington Sun",
+        "source_url": "https://www.washingtonsun.com/florida/citizens-hurricane-debby-claims",
+        "source_version": "Article identity/title; page displays October 18, 2024 05:41 p.m.; timezone not shown in inspected page",
+        "published_at": "2024-10-18 05:41 p.m. local as displayed; timezone unknown",
+        "published_at_precision": "minute text with timezone unknown",
+        "note": "No exact UTC cutoff can be asserted from this display."
+      },
+      "later_records": [
+        "https://www.news4jax.com/news/local/2024/10/23/citizens-property-insurance-denied-77-of-florida-homeowners-claims-from-hurricane-debby-new-data-shows/",
+        "https://www.citizensfla.com/documents/20702/31300530/20241204%2BFINAL%2BBOG%2BM%E2%80%8Cinutes%2B12.04.24.pdf/434cd2c6-81fc-139b-f0b1-e5ba9e54c1fd?t=1752782525055"
+      ],
+      "queries": [
+        {
+          "source": "PullPush Reddit archive search",
+          "query": "Citizens Hurricane Debby",
+          "window": "D0=2024-10-18 triage windows; 2024-10-11 to 2024-10-17 baseline, 2024-10-19 to 2024-10-25 observation (UTC full days)",
+          "baseline": {
+            "submissions": {
+              "api_rows": 0,
+              "unique_items": 0,
+              "days_with_results": 0
+            },
+            "comments": {
+              "api_rows": 2,
+              "unique_items": 2,
+              "days_with_results": 2,
+              "daily_rows": [
+                {
+                  "date": "2024-10-13",
+                  "rows": 1
+                },
+                {
+                  "date": "2024-10-16",
+                  "rows": 1
+                }
+              ]
+            }
+          },
+          "observation": {
+            "submissions": {
+              "api_rows": 2,
+              "unique_items": 2,
+              "days_with_results": 2,
+              "daily_rows": [
+                {
+                  "date": "2024-10-20",
+                  "rows": 1
+                },
+                {
+                  "date": "2024-10-22",
+                  "rows": 1
+                }
+              ]
+            },
+            "comments": {
+              "api_rows": 5,
+              "unique_items": 5,
+              "days_with_results": 4,
+              "daily_rows": [
+                {
+                  "date": "2024-10-20",
+                  "rows": 1
+                },
+                {
+                  "date": "2024-10-22",
+                  "rows": 2
+                },
+                {
+                  "date": "2024-10-23",
+                  "rows": 1
+                },
+                {
+                  "date": "2024-10-25",
+                  "rows": 1
+                }
+              ]
+            }
+          },
+          "assessment": "Too sparse for a comparable trend series; October 18 page timezone unknown; Helene/Milton and broader Florida claims reporting are confounds. Keep as complaint/controversy research lead only."
+        }
+      ],
+      "disposition": "not admitted; insufficient archive series and precise time-zone evidence for cutoff.",
+      "prediction_exposure": "No model prediction inspected."
+    },
+    {
+      "candidate_id": "anthem_anesthesia_policy_reversal_20241205",
+      "event_summary": "Anthem reversed its anesthesia billing time-limit policy after public backlash; contemporaneous coverage also centered on the December 4 UnitedHealthcare CEO killing.",
+      "cutoff_source_candidate": {
+        "publisher": "Associated Press",
+        "source_url": "https://apnews.com/article/c8233db68f76342c4e794320f151a926",
+        "source_version": "AP story ID c8233db68f76342c4e794320f151a926",
+        "published_at": "2024-12-05T21:38:35Z",
+        "published_at_precision": "second"
+      },
+      "queries": [
+        {
+          "source": "PullPush Reddit archive search",
+          "query": "Anthem anesthesia",
+          "window": "D0=2024-12-05 excluded; baseline 2024-11-28 to 2024-12-04; observation 2024-12-06 to 2024-12-12 UTC",
+          "baseline": {
+            "submissions": {
+              "api_rows": 46,
+              "unique_items": 37,
+              "duplicate_rows": 9,
+              "days_with_results": 2,
+              "daily_rows": [
+                {
+                  "date": "2024-12-02",
+                  "rows": 1
+                },
+                {
+                  "date": "2024-12-04",
+                  "rows": 45
+                }
+              ]
+            },
+            "comments": {
+              "api_rows": 71,
+              "unique_items": 69,
+              "duplicate_rows": 2,
+              "days_with_results": 1,
+              "daily_rows": [
+                {
+                  "date": "2024-12-04",
+                  "rows": 71
+                }
+              ]
+            }
+          },
+          "observation": {
+            "submissions": {
+              "api_rows": 100,
+              "unique_items": 97,
+              "duplicate_rows": 3,
+              "days_with_results_in_returned_rows": 5,
+              "daily_rows_lower_bound": [
+                {
+                  "date": "2024-12-06",
+                  "rows": 78
+                },
+                {
+                  "date": "2024-12-07",
+                  "rows": 10
+                },
+                {
+                  "date": "2024-12-08",
+                  "rows": 4
+                },
+                {
+                  "date": "2024-12-09",
+                  "rows": 7
+                },
+                {
+                  "date": "2024-12-10",
+                  "rows": 1
+                }
+              ],
+              "response_cap_100_reached": true
+            },
+            "comments": {
+              "api_rows": 100,
+              "unique_items": 97,
+              "duplicate_rows": 3,
+              "days_with_results_in_returned_rows": 1,
+              "daily_rows_lower_bound": [
+                {
+                  "date": "2024-12-06",
+                  "rows": 100
+                }
+              ],
+              "response_cap_100_reached": true
+            }
+          },
+          "assessment": "Baseline coverage is sparse and the observation query is truncated by the 100-row response limit. The UHC CEO killing on Dec 4 is a major confound identified by contemporaneous AP reporting. Direction unknown; do not admit."
+        }
+      ],
+      "later_records": [
+        "https://www.apnews.com/article/c8233db68f76342c4e794320f151a926",
+        "https://www.axios.com/2024/12/05/blue-cross-blue-shield-anesthesia-anthem-connecticut-new-york"
+      ],
+      "disposition": "not admitted as a trend event; retain only as an excluded high-volume/confounded lead.",
+      "prediction_exposure": "No model prediction inspected."
+    }
+  ],
+  "aggregate": {
+    "candidates_screened": 3,
+    "new_formal_score_ready_events": 0,
+    "new_input_events": 0,
+    "new_independent_trend_evidence_events": 0,
+    "formal_score_ready_total_unchanged": 0,
+    "human_labels_received": 0
+  },
+  "limitations": [
+    "All counts are one public Reddit archive/search proxy, not complete platform coverage or sentiment truth.",
+    "Candidate screens do not alter the E input allowlist; labels and future evidence stay score-side.",
+    "The v8 event input and v1-v8 freeze manifests remain unchanged."
+  ]
+}

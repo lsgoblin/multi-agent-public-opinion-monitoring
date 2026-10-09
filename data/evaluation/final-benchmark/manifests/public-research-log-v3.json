@@ -1,0 +1,277 @@
+{
+  "schema": "riskshield.final_benchmark.public_research_log.v3",
+  "dataset_version": "final-benchmark-public-history-v3-2026-10-08",
+  "retrieved_at_utc": "2026-10-08T06:21:39Z",
+  "scope": "Public pages and historical archives under current authorization; no login/access restriction bypass, paid calls, external transfer or notifications.",
+  "access_attempts": [
+    {
+      "resource": "Arctic Shift comments/tree for a v2 public post id, metadata only",
+      "result": "HTTP 403",
+      "interpretation": "No comment content retrieved; no retry or bypass."
+    },
+    {
+      "resource": "Four public Reddit post pages for complaint ids",
+      "result": "browser fetch timed out",
+      "interpretation": "No page content retained; failure is not evidence of no discussion."
+    },
+    {
+      "resource": "Exact-ID public web search for complaint ids",
+      "result": "no results",
+      "interpretation": "Not evidence of no later discussion."
+    },
+    {
+      "resource": "Wayback CDX for a public article",
+      "result": "read timeout",
+      "interpretation": "No contemporaneous archived snapshot verified; no retry."
+    }
+  ],
+  "cutoff_supplements": [
+    {
+      "record_id": "fnf-sec-8k-20231121",
+      "publisher": "Fidelity National Financial via SEC EDGAR",
+      "source_url": "https://www.investor.fnf.com/static-files/c76988f7-929f-4fdb-99dc-2048586391e7",
+      "published_at": "2023-11-21",
+      "published_at_precision": "date",
+      "source_version": "issuer-8k-filed-2023-11-21-summary-capture-v3",
+      "time_evidence": "Issuer filing page identifies the Form 8-K filing date as 2023-11-21, before the fixed cutoff; historical bytes are not retained.",
+      "summary_at_cutoff": "The company reported a cybersecurity incident affecting systems, said it had begun investigating and taking containment steps, and described operational disruption. This is the issuer’s contemporaneous statement, not a later impact assessment.",
+      "summary_sha256": "8d83d2ea03cb05159bf06e5f7b19284db1bf9307abfbd04815b5ced524f9be66",
+      "role": "cutoff_context_supplement",
+      "future_result": false,
+      "byte_snapshot_retained": false
+    },
+    {
+      "record_id": "ap-aflac-cyber-20250620-initial",
+      "publisher": "Associated Press",
+      "source_url": "https://apnews.com/article/fac4b3b978c616d82c575080853f095f",
+      "published_at": "2025-06-20T13:06:20Z",
+      "published_at_precision": "second",
+      "source_version": "ap-initial-report-summary-capture-v3-2026-10-08",
+      "time_evidence": "Page timestamp precedes cutoff 2025-06-20T13:16:30Z by 10m10s; historical bytes are unavailable.",
+      "summary_at_cutoff": "Aflac said it detected suspicious U.S. network activity, stopped the intrusion within hours, remained operational, and could not yet estimate the number of affected people.",
+      "summary_sha256": "0d194b8160e93b652cb5f09c81f91f09159384d58a858be2e70784e4db629c6e",
+      "role": "cutoff_context_supplement",
+      "future_result": false,
+      "byte_snapshot_retained": false
+    },
+    {
+      "record_id": "ap-allianz-life-breach-20250726-initial",
+      "publisher": "Associated Press",
+      "source_url": "https://apnews.com/article/12b991a141c24d3a060642c0d173e0be",
+      "published_at": "2025-07-26T20:46:03Z",
+      "published_at_precision": "second",
+      "source_version": "ap-initial-report-summary-capture-v3-2026-10-08",
+      "time_evidence": "Page timestamp precedes cutoff 2025-07-27T01:07:54Z by 4h21m51s; historical bytes are unavailable.",
+      "summary_at_cutoff": "Allianz Life said a third-party cloud CRM breach affected personal information for most of its roughly 1.4 million U.S. customers and other groups; investigation and notifications were beginning.",
+      "summary_sha256": "a8215399e88998dd9a4f8ccb1c454fc95c2da0f7dfadfd5e6296b1df2d5dac9d",
+      "role": "cutoff_context_supplement",
+      "future_result": false,
+      "byte_snapshot_retained": false
+    },
+    {
+      "record_id": "axios-cigna-pxdx-lawsuit-20230725",
+      "publisher": "Axios",
+      "source_url": "https://www.axios.com/2023/07/25/ai-lawsuits-health-cigna-algorithm-payment-denial",
+      "published_at": "2023-07-25T09:45:00Z",
+      "published_at_precision": "second",
+      "source_version": "axios-initial-report-summary-capture-v3-2026-10-08",
+      "time_evidence": "Article timestamp precedes cutoff 2023-07-25T16:23:54Z by 6h38m54s; historical bytes are unavailable.",
+      "summary_at_cutoff": "The article described a federal lawsuit alleging Cigna used PxDx to reject claims in batches with minimal individual review; these allegations were not independently adjudicated at cutoff.",
+      "summary_sha256": "3b064274ddb57a7e03e939152a5b3a54d0343c41b3b741948cf4e0bbd128cb43",
+      "role": "cutoff_context_supplement",
+      "future_result": false,
+      "byte_snapshot_retained": false
+    },
+    {
+      "record_id": "bloomberglaw-unitedhealth-nhpredict-20231114",
+      "publisher": "Bloomberg Law",
+      "source_url": "https://news.bloomberglaw.com/health-law-and-business/unitedhealthcare-accused-of-using-ai-to-wrongfully-deny-claims/",
+      "published_at": "2023-11-14T21:56:00Z",
+      "published_at_precision": "minute",
+      "source_version": "bloomberglaw-initial-report-summary-capture-v3-2026-10-08",
+      "time_evidence": "Article timestamp precedes cutoff 2023-11-15T21:52:18Z by nearly 24 hours; historical bytes are unavailable.",
+      "summary_at_cutoff": "A filed class-action complaint alleged that UnitedHealthcare used nH Predict in post-acute care coverage decisions and overrode treating-provider recommendations. These are allegations, not findings.",
+      "summary_sha256": "2f5ade409a6600d1ff771bb6b9a00d80111b3d68548b07a6ad057bd1c987ef92",
+      "role": "cutoff_context_supplement",
+      "future_result": false,
+      "byte_snapshot_retained": false
+    },
+    {
+      "record_id": "stat-humana-nhpredict-lawsuit-20231212",
+      "publisher": "STAT News",
+      "source_url": "https://www.statnews.com/2023/12/12/humana-algorithm-medicare-advantage-patients-lawsuit/",
+      "published_at": "2023-12-12",
+      "published_at_precision": "date",
+      "source_version": "stat-initial-report-summary-capture-v3-2026-10-08",
+      "time_evidence": "Article is dated 2023-12-12, before cutoff 2023-12-14T08:20:02Z; later versions and responses are excluded, historical bytes are unavailable.",
+      "summary_at_cutoff": "The article reported Medicare Advantage beneficiaries had filed a class-action lawsuit alleging Humana used nH Predict to end payment for rehabilitation care prematurely. The allegations were unresolved at cutoff.",
+      "summary_sha256": "57421ba9ec094bcd67292578ae3db11f42ee60942ec70055384c4707671ad33c",
+      "role": "cutoff_context_supplement",
+      "future_result": false,
+      "byte_snapshot_retained": false
+    }
+  ],
+  "post_cutoff_sources": [
+    {
+      "event_id": "fnf_cyberattack_20231123",
+      "observations": [
+        {
+          "observed_at": "2023-11-30T16:55:00Z",
+          "publisher": "TechCrunch",
+          "url": "https://techcrunch.com/2023/11/30/after-a-week-long-outage-fidelity-national-financial-confirms-cyberattack-is-now-contained/",
+          "version": "currently indexed article; publication timestamp 2023-11-30 8:55 AM PST",
+          "summary": "FNF reported the incident contained and described disruption. The article was about 2h25m after the provisional seven-day end; it is operational status, not a public sentiment measure.",
+          "window_relation": "after"
+        },
+        {
+          "observed_at": "2023-12-07",
+          "publisher": "Cybersecurity Dive",
+          "url": "https://www.cybersecuritydive.com/news/fidelity-national-financial-cyberattack-insurance/701888/",
+          "version": "article publication date",
+          "summary": "Follow-up reporting said FNF was still assessing impact; operational reporting is not evidence of calming.",
+          "window_relation": "after"
+        }
+      ]
+    },
+    {
+      "event_id": "aflac_cybersecurity_incident_20250620",
+      "observations": [
+        {
+          "observed_at": "2025-06-24",
+          "publisher": "Aflac",
+          "url": "https://www.aflac.com/docs/aflac-cyber-incident-6-24-2025.pdf",
+          "version": "issuer PDF date in title; exact time unavailable",
+          "summary": "Aflac posted an incident update; this is an operational/data statement, not a comparable public-opinion signal.",
+          "window_relation": "inside_date_only_time_unverified"
+        },
+        {
+          "observed_at": "2025-12-19",
+          "publisher": "Aflac",
+          "url": "https://newsroom.aflac.com/2025-12-19-Aflac-updates-June-2025-security-incident",
+          "version": "issuer release date",
+          "summary": "Aflac later reported about 22.65 million people’s personal information was involved; this is outside the provisional seven-day window and not a sentiment label.",
+          "window_relation": "after"
+        }
+      ]
+    },
+    {
+      "event_id": "allianz_life_data_breach_20250727",
+      "observations": [
+        {
+          "observed_at": "2025-07-30T18:00:00Z",
+          "publisher": "TechCrunch",
+          "url": "https://techcrunch.com/2025/07/30/hackers-stole-social-security-numbers-during-allianz-life-cyberattack/",
+          "version": "article timestamp 11:00 AM PDT, 2025-07-30",
+          "summary": "Follow-up reporting described personal information involved; no public discussion baseline was measured.",
+          "window_relation": "inside"
+        },
+        {
+          "observed_at": "2025-08-01",
+          "publisher": "Maine Attorney General",
+          "url": "https://www.maine.gov/agviewer/content/ag/985235c7-cb95-4be2-8792-a1252b4f8318/2487e6eb-7f07-4b52-94cf-dc553d410fdb.html",
+          "version": "state notice lists consumer notification date 2025-08-01",
+          "summary": "Consumer notifications and monitoring are business response, not public-opinion calming.",
+          "window_relation": "inside_date_only_time_unverified"
+        }
+      ]
+    },
+    {
+      "event_id": "anthem_anesthesia_proposal_20241204",
+      "observations": [
+        {
+          "observed_at": "2024-12-05T21:01:58Z",
+          "publisher": "Axios",
+          "url": "https://www.axios.com/2024/12/05/blue-cross-blue-shield-anesthesia-anthem-connecticut-new-york",
+          "version": "article publication timestamp",
+          "summary": "Reported Anthem reversal after public and official pressure; policy change alone does not prove public attention or negative sentiment declined.",
+          "window_relation": "inside"
+        },
+        {
+          "observed_at": "2024-12-05T21:38:35Z",
+          "publisher": "Associated Press",
+          "url": "https://apnews.com/article/c8233db68f76342c4e794320f151a926",
+          "version": "article publication timestamp",
+          "summary": "Reported reversal and public concern; no comparable baseline volume or sampled sentiment distribution was preserved.",
+          "window_relation": "inside"
+        },
+        {
+          "observed_at": "2024-12-10",
+          "publisher": "U.S. Senate offices",
+          "url": "https://www.blumenthal.senate.gov/newsroom/press/release/blumenthal-and-hawley-demand-answers-regarding-anthems-draconian-policy-capping-anesthesia-coverage-for-patients",
+          "version": "press release date",
+          "summary": "Senators sought assurances; continued issue attention is not a complete trajectory series.",
+          "window_relation": "inside_date_only_time_unverified"
+        }
+      ]
+    },
+    {
+      "event_id": "cigna_algorithm_denial_lawsuit_20230725",
+      "observations": [
+        {
+          "observed_at": "2023-07-26T16:17:00Z",
+          "publisher": "CBS News",
+          "url": "https://www.cbsnews.com/amp/news/cigna-algorithm-patient-claims-lawsuit/",
+          "version": "page timestamp July 26, 12:17 PM EDT",
+          "summary": "CBS repeated lawsuit allegations; a second news point is not a comparable public-discussion baseline.",
+          "window_relation": "inside"
+        },
+        {
+          "observed_at": "2023-08-21",
+          "publisher": "Legal review referencing court filing",
+          "url": "https://www.grsm.com/Templates/media/files/pdf/Healthcare%20Class%20Action%20Trends%20and%20Strategies%20Manuscript_LHDE%202024.pdf",
+          "version": "secondary review cites filing date",
+          "summary": "Additional related complaints were filed later; they are legal developments and do not add independent events or measure public opinion.",
+          "window_relation": "after"
+        }
+      ]
+    },
+    {
+      "event_id": "unitedhealth_algorithm_care_lawsuit_20231115",
+      "observations": [
+        {
+          "observed_at": "2023-11-17",
+          "publisher": "Public Reddit thread indexed by search",
+          "url": "https://www.reddit.com/r/technology/comments/17x6wak/",
+          "version": "indexed post date; current vote totals excluded",
+          "summary": "A later discussion thread about the same lawsuit was indexed; no historical vote snapshot or baseline is retained.",
+          "window_relation": "inside_date_only_time_unverified"
+        },
+        {
+          "observed_at": "2025-02-13",
+          "publisher": "U.S. District Court docket copy via GovInfo",
+          "url": "https://www.govinfo.gov/content/pkg/USCOURTS-mnd-0_23-cv-03514/pdf/USCOURTS-mnd-0_23-cv-03514-1.pdf",
+          "version": "court filing date",
+          "summary": "Later court order addressed claims in the same lawsuit; litigation status is not public-opinion calming evidence.",
+          "window_relation": "after"
+        }
+      ]
+    },
+    {
+      "event_id": "humana_algorithm_care_lawsuit_20231214",
+      "observations": [
+        {
+          "observed_at": "2023-12-18T19:32:00Z",
+          "publisher": "CBS News",
+          "url": "https://www.cbsnews.com/news/health-insurance-humana-united-health-ai-algorithm/",
+          "version": "article timestamp Dec. 18, 2:32 PM EST",
+          "summary": "Reported on related lawsuits and coverage context; not a comparable opinion time series.",
+          "window_relation": "inside"
+        },
+        {
+          "observed_at": "2024-03-22",
+          "publisher": "Becker’s Payer Issues",
+          "url": "https://www.beckerspayer.com/payer/humana-wants-medicare-advantage-ai-lawsuit-thrown-out/",
+          "version": "article date",
+          "summary": "Humana sought dismissal and disputed allegations; litigation response is not an opinion trend label.",
+          "window_relation": "after"
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Publisher timestamp does not preserve historical page bytes.",
+    "Votes/current comment totals, business recovery and legal outcomes were not used to infer public-opinion direction.",
+    "Search snippets are discovery evidence, not independent human truth.",
+    "Raw author identifiers, user bodies and comment text were not retained."
+  ]
+}

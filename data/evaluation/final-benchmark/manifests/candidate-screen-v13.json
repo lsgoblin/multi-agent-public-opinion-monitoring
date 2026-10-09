@@ -1,0 +1,41 @@
+{
+  "schema": "riskshield.final_benchmark.candidate_screen.v13",
+  "dataset_version": "final-benchmark-candidate-evidence-v13-2026-10-08",
+  "retrieved_at_utc": "2026-10-08T11:09:30Z",
+  "selection_rule": "Select only by event identity, cutoff-version evidence and comparable later discussion evidence; no model outputs used. Retain weak candidates and reasons.",
+  "screened_candidates": [
+    {
+      "event_id": "windows_recall_privacy_controversy_20240607",
+      "new_event_identity": true,
+      "status": "cutoff_input_prepared_for_E_pilot; trend unknown; formal count 0",
+      "identity": "One Windows Recall privacy/security and rollout controversy.",
+      "cutoff_input": "Fixed Axios Wayback snapshot 2024-06-07T19:00:27Z; cutoff 19:30:27Z.",
+      "evidence": "HN same query, full 7-day baseline and 7-day observation; 20 to 9 title-screened stories; 30 to 1 query-matched comments under screened HN event story IDs; June 14 late-window burst of 6 stories. Reddit has only dated examples, not a comparable series.",
+      "decision": "Retain as cross-domain score candidate pending main-agent scope and method approval; do not count as formal score-ready."
+    },
+    {
+      "event_id": "state_farm_ca_new_business_pause_20230526",
+      "new_event_identity": false,
+      "status": "existing v8 candidate; no new formal event",
+      "identity": "One State Farm General decision to pause new California property/casualty applications; distinct from March 2024 nonrenewals.",
+      "evidence": "Existing v8 Reddit query State Farm California has 16 to 157 submissions and 82 to 235 comments, but query results were not individually event-coded. New HN screen: baseline 1 raw story and 139 raw matching comments, none of 1 stories title-screened as this event; observation 15 raw stories, 9 event-related titles and 23 query-matched comments under those titles.",
+      "decision": "Do not infer second-source trend agreement: HN baseline event-specific volume is zero and broad Reddit relevance is not individually coded. Keep unknown and existing identity only."
+    },
+    {
+      "event_id": "crowdstrike_global_it_outage_20240719",
+      "new_event_identity": true,
+      "status": "cross-domain auxiliary screen only; no insurance formal count",
+      "identity": "One CrowdStrike Falcon update/Windows outage incident.",
+      "evidence": "HN query has zero event-related story titles and zero event-parent matching comments in the seven pre-event baseline days, then 78 screened story titles and 385 matching comments in the seven post-event observation days. Reddit archive returned HTTP 429 in an auxiliary query attempt; no usable series.",
+      "decision": "Do not admit into insurance denominator without domain approval; zero baseline and one quantitative source mean trajectory unknown."
+    }
+  ],
+  "counts": {
+    "candidate_dossiers_screened_this_pass": 3,
+    "new_cutoff_inputs_prepared": 1,
+    "new_independent_identities_admitted_to_formal_set": 0,
+    "new_qualifying_trajectory_evidence_events": 0,
+    "formal_score_ready_events_added": 0
+  },
+  "selection_exposure": "No E output/model prediction was reviewed during these screens."
+}

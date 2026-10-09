@@ -1,0 +1,42 @@
+{
+  "schema": "riskshield.final_benchmark.candidate_status.v16",
+  "dataset_version": "final-benchmark-evidence-v16-2026-10-08",
+  "base_freeze_v15_sha256": "12fed14c1680f2b3308f3ae17f1dccbe48e4de362028ee0d60b7f7aee086b9f7",
+  "schedule": {
+    "batch_freeze_beijing": "2026-10-09T10:00:00+08:00",
+    "project_deadline_beijing": "2026-10-09T12:00:00+08:00"
+  },
+  "human_sentiment_annotation": {
+    "submission_file": "data/evaluation/final-benchmark/labels/human-sentiment-submissions-v16.json",
+    "annotator_id": "leos",
+    "submitted_at": "2026-10-08T22:09:36+08:00",
+    "units_submitted_once": 5,
+    "human_label_submissions_received": 5,
+    "units_with_two_independent_answers": 0,
+    "second_rater_slots_missing": 5,
+    "adjudicated_units": 0,
+    "prediction_exposure_attested": false,
+    "other_annotator_answer_exposure_attested": false,
+    "label_values_used": ["neutral", "negative"],
+    "label_value_validation": "Both values are in the frozen v6 allowed_labels list. No label was inferred or changed.",
+    "remaining_protocol_note": "The v6 definitions conflict for mixed/unclear/uncertain labels. This submission used only neutral and negative; freeze the remaining mapping before future labels that need those categories."
+  },
+  "trajectory_and_formal_scoring": {
+    "independent_human_trajectory_labels_received": 0,
+    "new_formal_score_ready_events_this_pass": 0,
+    "formal_score_ready_holdout_total": 0,
+    "gap_to_interim_10": 10,
+    "gap_to_target_20": 20,
+    "reason": "No new event acquired qualified cutoff input plus two-source trajectory evidence; title-level sentiment submissions do not qualify a trajectory event."
+  },
+  "predictor_handoff": {
+    "new_handoff_created": false,
+    "reason": "No new eligible cutoff-only prediction input was created. Keep these human submissions isolated from E until prediction input/output sealing is complete."
+  },
+  "integration_requirements": [
+    "Keep the five original answers unchanged.",
+    "Obtain a second independent blind human pass for the same five frozen titles; do not show this submission to that annotator.",
+    "Retain both responses and route disagreement for independent adjudication after the second pass.",
+    "Main Agent decides the remaining label mapping before assigning ambiguous mixed/unclear cases."
+  ]
+}

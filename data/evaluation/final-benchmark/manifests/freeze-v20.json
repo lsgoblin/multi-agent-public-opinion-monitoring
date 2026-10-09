@@ -1,0 +1,24 @@
+{
+  "schema": "riskshield.final_benchmark.freeze.v20",
+  "dataset_version": "final-benchmark-deadline-audit-v20-2026-10-08",
+  "created_at_utc": "2026-10-08T15:28:47+00:00",
+  "base_freeze_v19_sha256": "7eeab73a8b72abccb54a6f10b7ddd76d529c6a5f66aa900a1477e9b9a5d29854",
+  "freeze_is_self_hashed": false,
+  "files": [
+    {
+      "path": "data/evaluation/final-benchmark/labels/agent-sentiment-suggestions-v20.json",
+      "bytes": 8682,
+      "sha256": "137f31c620ecf462285fe41f8de2abbb6fd8d0ca98761312572239ca3b380c81"
+    },
+    {
+      "path": "data/evaluation/final-benchmark/manifests/candidate-status-v20.json",
+      "bytes": 5020,
+      "sha256": "aedbbc4c073ece890fe9bff6e0a27516fab73da4cf5c01ab94cb22a40ad30551"
+    }
+  ],
+  "notes": [
+    "Append-only deadline audit and independent AI sentiment suggestions; v1-v19 originals unchanged.",
+    "14 original titles are referenced by source SHA-256; two AI agents agree on 11 and differ on 3.",
+    "AI suggestions are not human annotations or gold truth; trend evidence and trend labels remain zero; formal score-ready events remain zero."
+  ]
+}

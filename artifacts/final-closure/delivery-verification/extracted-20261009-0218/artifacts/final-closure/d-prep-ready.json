@@ -1,0 +1,88 @@
+{
+  "schema": "riskshield.deployment_preparation_handoff.v1",
+  "round_id": "closure-20261009-functional-names-v1",
+  "status": "ready",
+  "created_at_local": "2026-10-09 01:47:46 +08:00",
+  "owned_files": [
+    {
+      "path": "Dockerfile",
+      "sha256": "bcb9a757e87acf3251ca3df6f116168ef9cc16bf3d95db64edd563ca3ebed055"
+    },
+    {
+      "path": ".dockerignore",
+      "sha256": "af265ad8e42a141153145085f43a0132f8abc53af699e12ba081b39812f7878f"
+    },
+    {
+      "path": "compose.yaml",
+      "sha256": "5639e1b6c7ea90016dbca4e511a4df12b6ea2c747ad90fd2f4a700a7cdf7833b"
+    },
+    {
+      "path": "docs/delivery/deployment.md",
+      "sha256": "97ba7e4ae9a739ddf9f9e3a03e99bece8f62be69ba553bcec44f519fb3fda6e7"
+    },
+    {
+      "path": "docs/records/final-deployment-review.md",
+      "sha256": "04c7be4fe7da1d5dbdebad4c7ac9845f86b6c85a2b9bac94cf2b5ff2223c6da8"
+    },
+    {
+      "path": "artifacts/final-deployment-review/closure-20261009-functional-names-v1/README.md",
+      "sha256": "e9ba63baf5a1f61697a3db2e49f98a25a75700075adccea46ae26c3e55ba05d7"
+    },
+    {
+      "path": "artifacts/final-deployment-review/closure-20261009-functional-names-v1/package-dependency-audit.json",
+      "sha256": "c0bb5038e3b80efeb47a261210d68d7a3d879354b0b225bf460340e079e956df"
+    },
+    {
+      "path": "artifacts/final-deployment-review/closure-20261009-functional-names-v1/package-inventory.txt",
+      "sha256": "fadcceb4983a246c3c6a63909bb8eaf1ec282d1e07b55072088e33f24a07c904"
+    },
+    {
+      "path": "artifacts/final-deployment-review/closure-20261009-functional-names-v1/delivery-verification-plan.json",
+      "sha256": "3fd673f45920e99d2e2168f5176a45119c7d662d96af82bb7c1927b271a26f7e"
+    }
+  ],
+  "evidence_references": [
+    {
+      "path": "artifacts/final-deployment-review/version-manifest.json",
+      "sha256": "e9cd74303df05c365bad3a25cfe548317ce30343f800ef48589c1017ac963496"
+    },
+    {
+      "path": "artifacts/final-deployment-review/build.log",
+      "sha256": "e98de8f652c2189111cc51ad75c9e70c6d442b05806d3d8b2504a5e296daca86"
+    },
+    {
+      "path": "artifacts/final-deployment-review/case-closure-summary.json",
+      "sha256": "d46626292f531d71e6d76c9d3efb598132673e50177e6c1100bf19fe42a3db76"
+    },
+    {
+      "path": "artifacts/final-deployment-review/restart-persistence-summary.json",
+      "sha256": "20911bf3e66798c81d22f187488f204586600686678c5d47291eaed273407ffe"
+    },
+    {
+      "path": "artifacts/final-deployment-review/stop-start-persistence-check.txt",
+      "sha256": "fbec9fc2c51530d6e0acb673ab2ce705c0ac583f339cfdd2034a470e68aed893"
+    },
+    {
+      "path": "artifacts/final-deployment-review/smoke-summary.json",
+      "sha256": "525148051da5e21875616820ec23fa36cccdd7110fa203dc26a1f04e82982e14"
+    },
+    {
+      "path": "artifacts/final-deployment-review/network-route-summary.json",
+      "sha256": "4596fa4502d0de9fd0f60a88211c5e99559d0109f7dca6794a6103cec3b67ad6"
+    }
+  ],
+  "package_target": "artifacts/final-deployment-review/riskshield-local-demo-20261009.zip",
+  "freeze_gate": [
+    "matching artifacts/final-closure/integration-ready.json and artifacts/final-integration-review/candidate-package-manifest.json",
+    "E records current full-suite pass",
+    "all frozen member SHA-256 values match"
+  ],
+  "stop_writing_owned_files": true,
+  "notes": [
+    "No final ZIP created in preparation phase.",
+    "The existing running acceptance project remains available on 127.0.0.1:28002 and 127.0.0.1:28503.",
+    "Candidate inventory includes exact experiment/script dependencies found in current docs/tests; E final manifest remains authoritative and must use post-rename paths.",
+    "Do not bundle restricted C v6 labels. Decide on the 90.3 MiB synthetic performance fixtures only if the frozen package test subset requires them.",
+    "After this file is written, D will not modify owned_files. Any frozen package defect is reported as needs_revision in d-delivery-ready.json."
+  ]
+}

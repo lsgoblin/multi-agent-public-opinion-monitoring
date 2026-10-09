@@ -1,0 +1,122 @@
+{
+  "schema": "riskshield.final_benchmark.human_review_of_ai_suggestions.v22",
+  "dataset_version": "final-benchmark-human-review-v22-2026-10-09",
+  "base_freeze_v21_sha256": "d12dfa1ac18f4d745394a641cebc189eb4fc42d0b49261718d2a7d4f6579dd7a",
+  "reviewer": "Leo",
+  "review_date_beijing": "2026-10-09",
+  "review_time_beijing": null,
+  "review_source": "User-provided decisions in the task chat.",
+  "material_reviewed": "data/evaluation/final-benchmark/labels/agent-sentiment-suggestions-v20.json",
+  "units": [
+    {
+      "unit_id": "allianz_life_data_breach_20250727",
+      "final_human_review_label": "negative",
+      "review_type": "human_acceptance_of_consensus_AI_reference_suggestion",
+      "human_rationale": null,
+      "note": "Reviewer stated all independent judgments passed; recorded as AI-reference review only, not blind human annotation."
+    },
+    {
+      "unit_id": "unitedhealth_algorithm_care_lawsuit_20231115",
+      "final_human_review_label": "negative",
+      "review_type": "human_acceptance_of_consensus_AI_reference_suggestion",
+      "human_rationale": null,
+      "note": "Reviewer stated all independent judgments passed; recorded as AI-reference review only, not blind human annotation."
+    },
+    {
+      "unit_id": "complaint_health_claim_review_20240818",
+      "final_human_review_label": "negative",
+      "review_type": "human_acceptance_of_consensus_AI_reference_suggestion",
+      "human_rationale": null,
+      "note": "Reviewer stated all independent judgments passed; recorded as AI-reference review only, not blind human annotation."
+    },
+    {
+      "unit_id": "complaint_home_nonrenewal_20241229",
+      "final_human_review_label": "neutral",
+      "review_type": "adjudication_after_exposure_to_both_AI_suggestions",
+      "human_rationale": null,
+      "note": "Reviewer selected neutral in chat; no rationale or confidence supplied."
+    },
+    {
+      "unit_id": "complaint_home_coverage_after_termination_20240430",
+      "final_human_review_label": "negative",
+      "review_type": "human_acceptance_of_consensus_AI_reference_suggestion",
+      "human_rationale": null,
+      "note": "Reviewer stated all independent judgments passed; recorded as AI-reference review only, not blind human annotation."
+    },
+    {
+      "unit_id": "complaint_home_nonrenewal_20231018",
+      "final_human_review_label": "neutral",
+      "review_type": "adjudication_after_exposure_to_both_AI_suggestions",
+      "human_rationale": null,
+      "note": "Reviewer selected neutral in chat; no rationale or confidence supplied."
+    },
+    {
+      "unit_id": "complaint_health_claim_rejections_20241211",
+      "final_human_review_label": "negative",
+      "review_type": "human_acceptance_of_consensus_AI_reference_suggestion",
+      "human_rationale": null,
+      "note": "Reviewer stated all independent judgments passed; recorded as AI-reference review only, not blind human annotation."
+    },
+    {
+      "unit_id": "complaint_home_nonrenewal_20240524",
+      "final_human_review_label": "negative",
+      "review_type": "human_acceptance_of_consensus_AI_reference_suggestion",
+      "human_rationale": null,
+      "note": "Reviewer stated all independent judgments passed; recorded as AI-reference review only, not blind human annotation."
+    },
+    {
+      "unit_id": "complaint_home_nonrenewal_20231010",
+      "final_human_review_label": "neutral",
+      "review_type": "adjudication_after_exposure_to_both_AI_suggestions",
+      "human_rationale": null,
+      "note": "Reviewer selected neutral in chat; no rationale or confidence supplied."
+    },
+    {
+      "unit_id": "complaint_home_nonrenewal_20240625",
+      "final_human_review_label": "negative",
+      "review_type": "human_acceptance_of_consensus_AI_reference_suggestion",
+      "human_rationale": null,
+      "note": "Reviewer stated all independent judgments passed; recorded as AI-reference review only, not blind human annotation."
+    },
+    {
+      "unit_id": "complaint_auto_claim_denial_20241116",
+      "final_human_review_label": "negative",
+      "review_type": "human_acceptance_of_consensus_AI_reference_suggestion",
+      "human_rationale": null,
+      "note": "Reviewer stated all independent judgments passed; recorded as AI-reference review only, not blind human annotation."
+    },
+    {
+      "unit_id": "complaint_home_nonrenewal_inspection_20241011",
+      "final_human_review_label": "negative",
+      "review_type": "human_acceptance_of_consensus_AI_reference_suggestion",
+      "human_rationale": null,
+      "note": "Reviewer stated all independent judgments passed; recorded as AI-reference review only, not blind human annotation."
+    },
+    {
+      "unit_id": "complaint_home_policy_claim_20240113",
+      "final_human_review_label": "negative",
+      "review_type": "human_acceptance_of_consensus_AI_reference_suggestion",
+      "human_rationale": null,
+      "note": "Reviewer stated all independent judgments passed; recorded as AI-reference review only, not blind human annotation."
+    },
+    {
+      "unit_id": "complaint_auto_cancellation_notice_20241003",
+      "final_human_review_label": "negative",
+      "review_type": "human_acceptance_of_consensus_AI_reference_suggestion",
+      "human_rationale": null,
+      "note": "Reviewer stated all independent judgments passed; recorded as AI-reference review only, not blind human annotation."
+    }
+  ],
+  "review_limitations": [
+    "Reviewer saw both AI suggestions; these decisions are not blind independent annotations.",
+    "No rationale or confidence was provided for the three disagreement adjudications.",
+    "This record does not satisfy the frozen formal sentiment requirement for two independent, agreeing, blind human labels.",
+    "No trend direction label was assigned."
+  ],
+  "protocol_decision": {
+    "keep_state_farm_forum_evidence_as": "supplementary_only",
+    "state_farm_direction": "unknown",
+    "state_farm_formal_scoring_eligible": false,
+    "formal_scoring_protocol": "final-scoring-protocol-v2 retained without relaxation"
+  }
+}

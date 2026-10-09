@@ -1,0 +1,63 @@
+{
+  "review_version": "2026-10-08-v2",
+  "reviewed_at": "2026-10-08 Asia/Shanghai",
+  "case_id": "unh_change_20240222_day2_multisource",
+  "case_title": "UnitedHealth Group / Change Healthcare 网络事件：SEC 与 Optum 状态页",
+  "data_mode": "real_historical",
+  "execution_mode": "offline_dynamic_substitute",
+  "source_package_version": "unh-day2-multisource-2026-10-04-v1",
+  "cutoff": "2024-02-23T05:48:39+08:00",
+  "graph_id": "936c73951d2ab46f8e0ee6bb",
+  "run_id": "run_acc82554ca0743be9d1b",
+  "job_id": "job_956a680447b84ae49413",
+  "report_id": "report_ca8cdf424dc01ef3658bf6fc",
+  "alert_id": "alert_e68a3acf9c2a6b6c0ce37f46759c9de7",
+  "status": "complete",
+  "configured_rounds": 3,
+  "completed_rounds": 3,
+  "valid_decisions": 30,
+  "failed_decisions": 0,
+  "simulated_messages": 60,
+  "source_graph_nodes": 7,
+  "source_graph_edges": 6,
+  "cutoff_eligible_source_records": [
+    "optum-status-20240221-cyber-update",
+    "unh-sec-20240222-initial"
+  ],
+  "risk_level": "blue",
+  "risk_status": "provisional_offline_assessment",
+  "model_calls": 0,
+  "external_network_requests": 0,
+  "displayed_local_cost_estimate_cny": 0,
+  "billing_reconciled": false,
+  "elapsed_seconds": 0.077642,
+  "evidence_query_kind": "lexical_graph_neighborhood_with_source_citations",
+  "evidence_query_hits": [
+    "optum-status-20240221-cyber-update",
+    "unh-sec-20240222-initial"
+  ],
+  "full_natural_language_follow_up": "not_implemented",
+  "tests": {
+    "command": "uv run pytest -q tests/test_day4_report.py tests/test_ui.py",
+    "result": "15 passed, 1 Starlette/httpx deprecation warning"
+  },
+  "screenshots": [
+    "2026-10-08-v2/01-task-complete.png",
+    "2026-10-08-v2/02-task-progress.png",
+    "2026-10-08-v2/03-report-overview.png",
+    "2026-10-08-v2/04-simulated-propagation.png",
+    "2026-10-08-v2/05-emotion-and-ranking.png",
+    "2026-10-08-v2/06-business-actions-evidence.png",
+    "2026-10-08-v2/07-technical-checks.png",
+    "2026-10-08-v2/08-lexical-citations-query.png",
+    "2026-10-08-v2/09-linked-alert.png",
+    "2026-10-08-v2/10-alert-limitations.png"
+  ],
+  "sha256": {
+    "src/riskshield/day4_report.py": "4BFC52367FBC81B77DBCD65D0A3D175F4DC04A177C146EA0AD510677307E1B3D",
+    "ui/app.py": "6F166986D64C834A587F64C15FEE41FBF3B5A9D233297D0BF233EA449335B4E2",
+    "tests/test_day4_report.py": "AF3D115CDDEC8E1EC889FDD52706596CD0B6E1C4F33FBC2B92C24272615FACBC",
+    "tests/test_ui.py": "E795064D05742EA745E8F0ABC911C597F5BA2730B98A051398D6944BDC77888F"
+  },
+  "gate_status": "not_determined_by_this_review"
+}

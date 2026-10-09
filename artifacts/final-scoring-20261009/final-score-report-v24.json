@@ -1,0 +1,244 @@
+{
+  "ai_annotations_path": "artifacts/final-scoring-20261009/ai-annotations-final-v1.json",
+  "ai_annotations_sha256": "cc178d339607d23a65e0e166822461ad4089815d81c5d3c27ee22c15d3ac3fc6",
+  "ai_reference_input_path": "artifacts/final-scoring-20261009/ai-reference-for-scorer.json",
+  "ai_reference_input_sha256": "a42187bd2e5bb96d73e3517338b98e353d3cd8d299b4cf1fa0a1a9981581e731",
+  "created_at_beijing": "2026-10-09T01:05:06+08:00",
+  "event_target_remaining": {
+    "additional_distinct_event_identities_needed_to_reach_20_identity_count_only": 13,
+    "formal_gap": 20,
+    "formal_score_ready_holdout_events": 0,
+    "target": 20
+  },
+  "formal_metrics": {
+    "AI_sentiment_reference_agreement": {
+      "AI_annotations_total": 18,
+      "confusion_matrix_ai_reference_by_prediction": {
+        "negative": {
+          "negative": 0,
+          "neutral": 0,
+          "positive": 0
+        },
+        "neutral": {
+          "negative": 0,
+          "neutral": 0,
+          "positive": 0
+        },
+        "positive": {
+          "negative": 0,
+          "neutral": 0,
+          "positive": 0
+        }
+      },
+      "denominator": 0,
+      "exclusion_reasons_from_v8_scorer": {
+        "ai_reference_needs_review": 3,
+        "ai_reference_unit_missing_from_prediction_inputs": 18,
+        "missing_or_invalid_ai_reference_label": 3
+      },
+      "explanation": "The E outputs contain no title-level sentiment prediction to pair; all AI annotations are excluded from formal human truth.",
+      "numerator": 0,
+      "status": "uncomputable",
+      "valid_three_class_AI_labels": 15,
+      "value": null
+    },
+    "AI_trend_reference_agreement": {
+      "AI_trend_labels_total": 11,
+      "confusion_matrix_AI_reference_by_prediction": {
+        "calming": {
+          "calming": 0,
+          "escalation": 0
+        },
+        "escalation": {
+          "calming": 0,
+          "escalation": 0
+        }
+      },
+      "denominator": 0,
+      "explanation": "All evidence-based AI trend labels are unknown and are excluded from the escalation/calming denominator.",
+      "numerator": 0,
+      "status": "uncomputable",
+      "unknown_AI_trend_labels": 11,
+      "value": null
+    },
+    "formal_negative_identification": {
+      "FN": 0,
+      "FP": 0,
+      "TN": 0,
+      "TP": 0,
+      "binary_accuracy": null,
+      "confusion_matrix": {
+        "actual_negative": {
+          "predicted_negative": 0,
+          "predicted_nonnegative": 0
+        },
+        "actual_nonnegative": {
+          "predicted_negative": 0,
+          "predicted_nonnegative": 0
+        }
+      },
+      "explanation": "Zero paired E title predictions; zero denominator. No negative detection percentage is reported.",
+      "precision": null,
+      "recall": null,
+      "status": "uncomputable"
+    },
+    "formal_sentiment_three_class": {
+      "confusion_matrix_actual_by_predicted": {
+        "negative": {
+          "negative": 0,
+          "neutral": 0,
+          "positive": 0
+        },
+        "neutral": {
+          "negative": 0,
+          "neutral": 0,
+          "positive": 0
+        },
+        "positive": {
+          "negative": 0,
+          "neutral": 0,
+          "positive": 0
+        }
+      },
+      "denominator": 0,
+      "explanation": "No exact original-title E sentiment prediction is paired with the five frozen human gold units; v13 sentiment is null and event-level.",
+      "human_gold_units_unpaired": 5,
+      "numerator": 0,
+      "status": "uncomputable",
+      "value": null
+    },
+    "formal_trend_agreement": {
+      "confusion_matrix_actual_by_predicted": {
+        "calming": {
+          "calming": 0,
+          "escalation": 0
+        },
+        "escalation": {
+          "calming": 0,
+          "escalation": 0
+        }
+      },
+      "denominator": 0,
+      "explanation": "v24 contains zero trajectory-qualified holdout events and zero independent human trend labels; latest v13 is one holdout_candidate with constant baseline only.",
+      "numerator": 0,
+      "status": "uncomputable",
+      "value": null
+    }
+  },
+  "formal_status": "no formal model score is computable; official denominators remain zero; AI labels are exploratory only.",
+  "freeze_integrity_verified": true,
+  "freeze_v24_path": "data/evaluation/final-benchmark/manifests/freeze-v24.json",
+  "freeze_v24_sha256": "f8e3c3dc812d96827d3ebd2d5ae95c4f4882493f18f07b9a270d16993f7ae246",
+  "freeze_verification_scope": "verify_final_benchmark_freezes.verify returned all_freeze_members_and_parent_hashes_ok=true across v1-v24.",
+  "frozen_dataset_counts": {
+    "additional_distinct_event_identities_needed_to_reach_20_identity_count_only": 13,
+    "auxiliary_individual_complaint_posts": 12,
+    "completed_independent_human_sentiment_double_label_units": 5,
+    "computed_sentiment_score_units": 0,
+    "development_event_identities": 1,
+    "disagreement_units": 0,
+    "formal_event_gap": 20,
+    "formal_event_target": 20,
+    "formal_score_ready_holdout_events": 0,
+    "holdout_event_identities": 7,
+    "identifiable_event_identities": 8,
+    "independent_human_trajectory_labels": 0,
+    "same_label_agreement_units": 5,
+    "sentiment_units_with_paired_E_prediction": 0,
+    "trajectory_evidence_qualified_events": 0,
+    "v4_source_records": 20
+  },
+  "limits": [
+    "AI labels are marked AI, exposed to sealed prediction artifacts, unverified and ineligible as human gold.",
+    "No model prediction exists for title-level sentiment; constant escalation baselines do not count as formal model forecasts.",
+    "Zero-denominator metrics are null/uncomputable, not 0%."
+  ],
+  "per_unit_results_path": "artifacts/final-scoring-20261009/per-unit-results-v24.json",
+  "per_unit_results_sha256": "2b6093aebfd418f554d58153b47ea2f9208188a884f0f6a54626f22f1699f36f",
+  "prediction_runs": {
+    "latest_v13": {
+      "case_count": 1,
+      "classification": "offline constant baseline; not a formal model forecast",
+      "execution_mode": "offline_constant_escalation_baseline_v13",
+      "formal_score_ready": false,
+      "input_sha256": "01193167bc59ec4e6d59c12922ad7a9e09d9886deb520c255a5e963aaa9b772c",
+      "model_calls": 0,
+      "network_requests": 0,
+      "prediction_sha256": "39957cf8c485dfe6720ef2ab7f29598af6e553bc568c2b57f4955ca95e55bb3f",
+      "seal_path": "artifacts/final-integration-review/v13-pilot/seal-v13.json",
+      "seal_sha256": "cef4a4252430afc190d5c83f3b4340a37263e50aa53e00a14c993997e5a2feb4"
+    },
+    "v8_prior_pilot": {
+      "case_count": 4,
+      "classification": "legacy offline constant engineering baseline; not combined with v13 or counted as model forecast",
+      "execution_mode": "offline_constant_escalation_baseline_v1",
+      "formal_score_ready": false,
+      "model_calls": 0,
+      "network_requests": 0,
+      "prediction_sha256": "a1cfc23a9f1b16e7f4b8a32a3494181de4afac5619c8f93ca11936e3bac4d4d5",
+      "seal_path": "artifacts/final-integration-review/v8-pilot/pilot-seal-e-handoff-v8.json",
+      "seal_sha256": "0748b57d03acfd73120b77bf4ae8b1e8776394482272552656c11c37221a164f"
+    }
+  },
+  "protocol_path": "docs/records/final-scoring-protocol-v2.md",
+  "protocol_sha256": "cb39c32c8ec2b4823a22fab8ee6e2c36bda047cea3f605a9a7a2fa0dec5e336a",
+  "reconciliation_path": "data/evaluation/final-benchmark/manifests/final-reconciliation-v24.json",
+  "reconciliation_sha256": "d8c69cb69300f49657ae01c862202974d050f04038b6537d37a0172c0158364d",
+  "schema": "riskshield.final_scoring_report.v24",
+  "scorer_runs": [
+    {
+      "command": "$env:PYTHONPATH='src'; python experiments/final_benchmark_score.py --root . --seal artifacts/final-integration-review/v8-pilot/pilot-seal-e-handoff-v8.json --out artifacts/final-scoring-20261009/v8-scorer-output.json",
+      "direction_denominator": 0,
+      "events": 4,
+      "output_path": "artifacts/final-scoring-20261009/v8-scorer-output.json",
+      "sentiment_denominator": 0,
+      "status": "completed"
+    },
+    {
+      "AI_reference_denominator": 0,
+      "command": "$env:PYTHONPATH='src'; python experiments/final_benchmark_score.py --root . --seal artifacts/final-integration-review/v8-pilot/pilot-seal-e-handoff-v8.json --out artifacts/final-scoring-20261009/v8-ai-reference-scorer-output.json --ai-reference artifacts/final-scoring-20261009/ai-reference-for-scorer.json",
+      "events": 4,
+      "output_path": "artifacts/final-scoring-20261009/v8-ai-reference-scorer-output.json",
+      "status": "completed"
+    },
+    {
+      "command": "$env:PYTHONPATH='src'; python experiments/final_benchmark_score.py --root . --seal artifacts/final-integration-review/v13-pilot/seal-v13.json --out artifacts/final-scoring-20261009/v13-scorer-output.json",
+      "error": "NameError: _score_v13_against_v24 is not defined",
+      "note": "The existing scorer dispatches to this missing v13/v24 function. Existing script left unchanged to preserve other-agent work.",
+      "status": "failed_before_scoring"
+    },
+    {
+      "all_freeze_members_and_parent_hashes_ok": true,
+      "command": "$env:PYTHONPATH='src'; python -c \"from experiments.verify_final_benchmark_freezes import verify; print(verify(Path('.').resolve()))\"",
+      "status": "completed"
+    },
+    {
+      "AI_reference_denominator": 0,
+      "command": "$env:PYTHONPATH='src'; python artifacts/final-scoring-20261009/score_v13_v24.py",
+      "direction_denominator": 0,
+      "note": "The final_benchmark_score.py v13 wrapper is missing its dispatch function; a local adapter normalized the sealed v13 case and invoked existing evaluate_documents without altering source code or treating AI labels as human truth.",
+      "output_path": "artifacts/final-scoring-20261009/v13-v24-evaluator-final-v2.json",
+      "sentiment_denominator": 0,
+      "status": "completed_via_existing_day5_metric_engine"
+    }
+  ],
+  "unfilled_label_counts": {
+    "human_double_labeled_units_without_E_sentiment_prediction": 5,
+    "independent_human_trend_labels_remaining_for_v24_holdouts": 7,
+    "v19_exact_title_AI_labels_added": 14,
+    "v19_independent_human_slots_remaining": 27
+  },
+  "v13_v24_metric_engine_output": {
+    "AI_reference_denominator": 0,
+    "adapter_script": "artifacts/final-scoring-20261009/score_v13_v24.py",
+    "adapter_script_sha256": "05dc09e4c73405325e43bba75e30d412616dbb03335d0dc94eaaece0427f33fd",
+    "command": "$env:PYTHONPATH='src'; python artifacts/final-scoring-20261009/score_v13_v24.py",
+    "direction_denominator": 0,
+    "path": "artifacts/final-scoring-20261009/v13-v24-evaluator-final-v2.json",
+    "sentiment_denominator": 0,
+    "sha256": "c74d2a7a9b027f63d98380014b087983cc85254223d6895a29a1836ab6a56276",
+    "status": "completed"
+  },
+  "v8_ai_reference_scorer_output_path": "artifacts/final-scoring-20261009/v8-ai-reference-scorer-v2.json",
+  "v8_ai_reference_scorer_output_sha256": "d369ed7ce8df314ae8bc9ae83990aaf52fb3083c0896b69facba677ede9bcffb"
+}

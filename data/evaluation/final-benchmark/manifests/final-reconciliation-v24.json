@@ -1,0 +1,209 @@
+{
+  "schema": "riskshield.final_benchmark.final_reconciliation.v24",
+  "dataset_version": "final-benchmark-final-reconciliation-v24-2026-10-09",
+  "created_at_utc": "2026-10-08T16:24:13+00:00",
+  "scope": "Reconcile existing frozen evidence only; no new candidates or evidence collection.",
+  "base_freeze_v23_sha256": "f9eab15a9cd76887bc5156f4ea2ee6549ca5710baadea6946645e1dbb73be213",
+  "final_scoring_protocol": {
+    "path": "docs/records/final-scoring-protocol-v2.md",
+    "sha256": "cb39c32c8ec2b4823a22fab8ee6e2c36bda047cea3f605a9a7a2fa0dec5e336a",
+    "status": "user-confirmed frozen protocol; unchanged"
+  },
+  "counts": {
+    "v4_source_records": 20,
+    "identifiable_event_identities": 8,
+    "development_event_identities": 1,
+    "holdout_event_identities": 7,
+    "auxiliary_individual_complaint_posts": 12,
+    "completed_independent_human_sentiment_double_label_units": 5,
+    "same_label_agreement_units": 5,
+    "disagreement_units": 0,
+    "sentiment_units_with_paired_E_prediction": 0,
+    "computed_sentiment_score_units": 0,
+    "trajectory_evidence_qualified_events": 0,
+    "independent_human_trajectory_labels": 0,
+    "formal_score_ready_holdout_events": 0,
+    "formal_event_target": 20,
+    "formal_event_gap": 20,
+    "additional_distinct_event_identities_needed_to_reach_20_identity_count_only": 13
+  },
+  "sentiment_double_labels": {
+    "packet": {
+      "path": "data/evaluation/final-benchmark/labels/blind-sentiment-packet-v6.json",
+      "sha256": "e31e1a2962e40bbe4e2e06dbc7a8cbdd2c1198031398b4407a47923b81ec29fc"
+    },
+    "first_submissions": {
+      "path": "data/evaluation/final-benchmark/labels/human-sentiment-submissions-v16.json",
+      "sha256": "5a083a6f545bfc6c75749e97db5b17a1362a8c32f22ee4a5825180bf1ac79060"
+    },
+    "second_submissions": {
+      "path": "data/evaluation/final-benchmark/labels/human-sentiment-submissions-v18.json",
+      "sha256": "5f96fb51c90a007698ae4e6424987078d5075fddc8c7cb6d610f8c225739dd20"
+    },
+    "archive_source_evidence": {
+      "path": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+      "sha256": "9138f77b253c223363a0132cb2d0295fdf14ff8d28acfda8dd67facf66d39e22"
+    },
+    "units": [
+      {
+        "unit_id": "sent-aflac-1lg33ey",
+        "event_id": "aflac_cybersecurity_incident_20250620",
+        "frozen_text_sha256": "8ce432e8b2a589f46d1dcfc7fc6a1951498f5e54cf2ddc08942e4969d3cb600e",
+        "source_title_sha256_match": true,
+        "source_evidence": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+        "label": "negative",
+        "annotators": [
+          "leos",
+          "Dick"
+        ],
+        "submissions": [
+          "data/evaluation/final-benchmark/labels/human-sentiment-submissions-v16.json",
+          "data/evaluation/final-benchmark/labels/human-sentiment-submissions-v18.json"
+        ],
+        "labels_agree": true,
+        "prediction_exposure_declared": [
+          false,
+          false
+        ],
+        "other_annotator_answer_exposure_declared": [
+          false,
+          false
+        ],
+        "status": "human_gold_ready_for_sentiment_pairing; no E sentiment prediction paired"
+      },
+      {
+        "unit_id": "sent-anthem-1h6mj0x",
+        "event_id": "anthem_anesthesia_proposal_20241204",
+        "frozen_text_sha256": "05631e620cf05f3ad7d8b4d9431039f7f4da3792a7ad3d5b3732514bd8c3e87f",
+        "source_title_sha256_match": true,
+        "source_evidence": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+        "label": "negative",
+        "annotators": [
+          "leos",
+          "Dick"
+        ],
+        "submissions": [
+          "data/evaluation/final-benchmark/labels/human-sentiment-submissions-v16.json",
+          "data/evaluation/final-benchmark/labels/human-sentiment-submissions-v18.json"
+        ],
+        "labels_agree": true,
+        "prediction_exposure_declared": [
+          false,
+          false
+        ],
+        "other_annotator_answer_exposure_declared": [
+          false,
+          false
+        ],
+        "status": "human_gold_ready_for_sentiment_pairing; no E sentiment prediction paired"
+      },
+      {
+        "unit_id": "sent-cigna-159ce8g",
+        "event_id": "cigna_algorithm_denial_lawsuit_20230725",
+        "frozen_text_sha256": "66070ca63cdad118aeeb2167308aeddca3cf0c0af5463de53bfa669230504705",
+        "source_title_sha256_match": true,
+        "source_evidence": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+        "label": "neutral",
+        "annotators": [
+          "leos",
+          "Dick"
+        ],
+        "submissions": [
+          "data/evaluation/final-benchmark/labels/human-sentiment-submissions-v16.json",
+          "data/evaluation/final-benchmark/labels/human-sentiment-submissions-v18.json"
+        ],
+        "labels_agree": true,
+        "prediction_exposure_declared": [
+          false,
+          false
+        ],
+        "other_annotator_answer_exposure_declared": [
+          false,
+          false
+        ],
+        "status": "human_gold_ready_for_sentiment_pairing; no E sentiment prediction paired"
+      },
+      {
+        "unit_id": "sent-fnf-1821s44",
+        "event_id": "fnf_cyberattack_20231123",
+        "frozen_text_sha256": "68eca0236762cf36ec86ce01cc53a78fd8c1f2a5a3575938aba24561d31fa27c",
+        "source_title_sha256_match": true,
+        "source_evidence": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+        "label": "neutral",
+        "annotators": [
+          "leos",
+          "Dick"
+        ],
+        "submissions": [
+          "data/evaluation/final-benchmark/labels/human-sentiment-submissions-v16.json",
+          "data/evaluation/final-benchmark/labels/human-sentiment-submissions-v18.json"
+        ],
+        "labels_agree": true,
+        "prediction_exposure_declared": [
+          false,
+          false
+        ],
+        "other_annotator_answer_exposure_declared": [
+          false,
+          false
+        ],
+        "status": "human_gold_ready_for_sentiment_pairing; no E sentiment prediction paired"
+      },
+      {
+        "unit_id": "sent-humana-ars-20231213",
+        "event_id": "humana_algorithm_care_lawsuit_20231214",
+        "frozen_text_sha256": "7986833675ecf2dbe19b00c2d9da8e3d82597457a7ed7600c908380d8faf43b8",
+        "source_title_sha256_match": true,
+        "source_evidence": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+        "label": "neutral",
+        "annotators": [
+          "leos",
+          "Dick"
+        ],
+        "submissions": [
+          "data/evaluation/final-benchmark/labels/human-sentiment-submissions-v16.json",
+          "data/evaluation/final-benchmark/labels/human-sentiment-submissions-v18.json"
+        ],
+        "labels_agree": true,
+        "prediction_exposure_declared": [
+          false,
+          false
+        ],
+        "other_annotator_answer_exposure_declared": [
+          false,
+          false
+        ],
+        "status": "human_gold_ready_for_sentiment_pairing; no E sentiment prediction paired"
+      }
+    ],
+    "independence_and_blindness_basis": "Two different annotator IDs; each submission declares no prediction exposure and no exposure to the other answer. The declarations are recorded, not independently auditable.",
+    "interpretation": "Five completed human double-annotation units are available. They are not counted as formally eligible sentiment scoring units until the pending V2-Q03 label/statistics mapping is frozen and a corresponding sealed E sentiment prediction on the same frozen title hashes exists."
+  },
+  "other_sentiment_material": {
+    "v19_original_title_units": 14,
+    "v19_title_hash_matches": 14,
+    "v19_title_hash_mismatches": 0,
+    "v19_packet_double_labeled_units": 0,
+    "v19_independent_slots_remaining": 27,
+    "v22_AI_suggestion_review_units": 14,
+    "v22_review_eligible_as_blind_independent_gold_units": 0,
+    "reason": "Leo reviewed the AI suggestions before accepting/adjudicating labels; v22 is not a blind two-rater submission."
+  },
+  "prediction_pairing": {
+    "pilot_prediction_path": "artifacts/final-integration-review/v8-pilot/pilot-predictions-e-handoff-v8.json",
+    "pilot_prediction_sha256": "a1cfc23a9f1b16e7f4b8a32a3494181de4afac5619c8f93ca11936e3bac4d4d5",
+    "pilot_score_path": "artifacts/final-integration-review/v8-pilot/pilot-score.json",
+    "pilot_score_sha256": "485e174f9bad6d079869e37eb05dbc24168f296f060301db73686a0fe9b60e69",
+    "execution_mode": "offline_constant_escalation_baseline_v1",
+    "sentiment_predictions_in_pilot": 0,
+    "sentiment_score_sample_size": 0,
+    "interpretation": "The pilot is an offline constant engineering baseline; its predictions contain sentiment=null. No E sentiment prediction is paired to the five frozen title units."
+  },
+  "trajectory_disposition": {
+    "formal_protocol_relaxed": false,
+    "state_farm_2023_forum": "supplementary only; direction unknown; excluded, per user decision",
+    "all_other_current_holdout_candidates": "no event meets the frozen v2 trajectory evidence and human-label requirements",
+    "formal_score_ready_holdout_events": 0
+  },
+  "decision": "Human sentiment double annotation is complete for five exact-title units, with 5/5 agreement and matching source-title hashes; formal sentiment scoring remains 0 because V2-Q03 mapping is not frozen and no paired E sentiment prediction exists. Formal trajectory scoring remains not achieved: 0/20 qualified holdout events."
+}

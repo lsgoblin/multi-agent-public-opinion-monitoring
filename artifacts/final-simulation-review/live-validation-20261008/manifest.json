@@ -1,0 +1,257 @@
+{
+  "schema_version": "day3-live-validation-manifest-v1",
+  "created_at": "2026-10-08T17:25:33.636146+08:00",
+  "batch_id": "live-validation-20261008",
+  "authorization": {
+    "basis": "current user authorization in this conversation on 2026-10-08",
+    "data": "fictional Northstar synthetic case and graph only",
+    "models": [
+      "qwen-turbo",
+      "qwen-flash"
+    ],
+    "purpose": "sequential concurrency 4/8 pilot, then conditional 500 Agent x 30 round validation connected to Day 4 five-module report",
+    "call_ceiling": 15100,
+    "task_total_cost_ceiling_cny": "30.00",
+    "pilot_per_arm_budget_ceiling_cny": "0.10",
+    "retries": 0
+  },
+  "git_head": "17495e6400d8352c84722a4cb374200d8f12b02f",
+  "source_manifest": {
+    "git_head": "17495e6400d8352c84722a4cb374200d8f12b02f",
+    "source_sha256": {
+      "experiments/day3_bailian_synthetic_run.py": "9632c387af65914affd9779a0659ab08f906277606d96aa5f02d54ad3ee91b96",
+      "experiments/day3_bailian_synthetic_backend.py": "bd1622f0528ad8849f1cad8cf3b632adb361848329c06cc2ee066e1bca64645b",
+      "src/riskshield/day3.py": "4a8d64b96045bb89d0d5b5311c46ca07ad039dd6bb850135d2e8f1ca49742b3e",
+      "src/riskshield/day4_alerts.py": "62a13dca72506be591c2f086298afaec77681cb7d23ea812c6022c92ec08d874",
+      "src/riskshield/day4_report.py": "4bfc52367fbc81b77dbcd65d0a3d175f4dc04a177c146ea0ad510677307e1b3d",
+      "src/riskshield/schemas.py": "8d90cbd605475ce0cd3c891a8b0df250b6ff252e3967303dac83f169ef4d67e5",
+      "src/riskshield/store.py": "88ff4349ce8b527c82b7352b4e479d59aa7147e648fed7244eccc4361ee216b9",
+      "tests/fixtures/day3_synthetic_case.py": "8845dab1e7590f8404b3a04ddb484a4c5f01dc45c0138c63be942e22aee1fc9b",
+      "pyproject.toml": "47cb0450cbbc5fe7416fac2930e5bcd3820ee97f2c2ded126ec92c0adf40ed28",
+      "uv.lock": "0e6e5d30e5c81e80fc0f104b870490c1e34575180b565f3ec3c661552a42996c"
+    },
+    "system_prompt_sha256": "de3bca9b162a8106771e95c0f107ef40cd38e5ff26d8cf2533d6f1a6b5915e8c",
+    "python_version": "3.12.4"
+  },
+  "backend_routes_sanitized": {
+    "type": "BailianBackend",
+    "provider": "alibaba-cloud-bailian",
+    "region": "cn-beijing",
+    "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    "thinking": "disabled",
+    "role_models": {
+      "netizen": "qwen-turbo",
+      "customer": "qwen-turbo",
+      "media": "qwen-flash",
+      "kol": "qwen-flash",
+      "regulator": "qwen-flash"
+    },
+    "routes": {
+      "qwen-turbo": {
+        "price_version": "official-docs-2026-10-06-beijing",
+        "input_cny_per_million": "0.3",
+        "cached_input_cny_per_million": "0.06",
+        "output_cny_per_million": "0.6",
+        "max_input_tokens": 8192,
+        "max_output_tokens": 160,
+        "input_bound_method": "utf8_bytes_plus_protocol_allowance",
+        "reservation_cny": "0.0025536"
+      },
+      "qwen-flash": {
+        "price_version": "official-docs-2026-10-06-beijing",
+        "input_cny_per_million": "0.15",
+        "cached_input_cny_per_million": "0.03",
+        "output_cny_per_million": "1.5",
+        "max_input_tokens": 8192,
+        "max_output_tokens": 256,
+        "input_bound_method": "utf8_bytes_plus_protocol_allowance",
+        "reservation_cny": "0.0016128"
+      }
+    }
+  },
+  "official_price_check": {
+    "checked_at": "2026-10-08T17:25:33.636146+08:00",
+    "region": "华北2（北京）",
+    "price_type": "official on-demand list prices; console promotions excluded",
+    "qwen_turbo_cny_per_million": {
+      "input": "0.30",
+      "output": "0.60",
+      "cached_input": "0.06"
+    },
+    "qwen_flash_cny_per_million": {
+      "input": "0.15",
+      "output": "1.50",
+      "cached_input": "0.03"
+    },
+    "configured_uncached_rates_match": true,
+    "sources": [
+      "https://help.aliyun.com/zh/model-studio/qwen-turbo",
+      "https://help.aliyun.com/zh/model-studio/qwen-flash",
+      "https://help.aliyun.com/zh/model-studio/model-pricing"
+    ]
+  },
+  "input": {
+    "case_version": "day3-synthetic-v1",
+    "case_metadata_sha256": "fa0a6bc6f1c198dcc1131000aa7f3998f8a84dd21124b409303816de1aa0518e",
+    "graph_body_sha256": "ce423df6f23383735d2f21bc49eb9877de55b054724a266947107fe4dad79752",
+    "fixture_source_sha256": "8845dab1e7590f8404b3a04ddb484a4c5f01dc45c0138c63be942e22aee1fc9b",
+    "seed": 1,
+    "role_offset": 0,
+    "common_fixed_variables": [
+      "case",
+      "graph",
+      "agent roles",
+      "seed",
+      "model routes",
+      "prompt",
+      "memory rules",
+      "output token limits"
+    ],
+    "arm_variable": "concurrency only"
+  },
+  "pilot": {
+    "agents": 25,
+    "rounds": 2,
+    "calls_ceiling_per_arm": 50,
+    "concurrency_candidates": [
+      4,
+      8
+    ],
+    "route": {
+      "netizen": "qwen-turbo",
+      "customer": "qwen-turbo",
+      "media": "qwen-flash",
+      "kol": "qwen-flash",
+      "regulator": "qwen-flash"
+    },
+    "preflight_by_arm": {
+      "preflight_status": "configuration_passed",
+      "budget_status": "within_limit",
+      "network_requests": 0,
+      "model_calls": 0,
+      "region": "cn-beijing",
+      "dedicated_key_configured": true,
+      "agent_count": 25,
+      "rounds": 2,
+      "role_offset": 0,
+      "decision_opportunities": 50,
+      "agents_by_model": {
+        "qwen-turbo": 10,
+        "qwen-flash": 15
+      },
+      "opportunities_by_model": {
+        "qwen-turbo": 20,
+        "qwen-flash": 30
+      },
+      "reservation_cny_by_model": {
+        "qwen-turbo": "0.0510720",
+        "qwen-flash": "0.0483840"
+      },
+      "configured_prices_cny_per_million": {
+        "qwen-turbo": {
+          "input": "0.3",
+          "cached_input": "0.06",
+          "output": "0.6",
+          "max_input_tokens": 8192,
+          "max_output_tokens": 160,
+          "local_price_version_label_configured": true
+        },
+        "qwen-flash": {
+          "input": "0.15",
+          "cached_input": "0.03",
+          "output": "1.5",
+          "max_input_tokens": 8192,
+          "max_output_tokens": 256,
+          "local_price_version_label_configured": true
+        }
+      },
+      "total_conservative_reservation_cny": "0.0994560",
+      "task_budget_cny": "0.10",
+      "remaining_budget_cny": "0.0005440",
+      "price_labels_present": [
+        "qwen-flash",
+        "qwen-turbo"
+      ],
+      "price_verification": "pending_manual_comparison_with_current_official_Beijing_prices; local price version labels are not proof of official verification",
+      "live_authorized": false,
+      "g3_passed": false
+    },
+    "timeout_seconds_per_arm": 1200,
+    "stop_on_first_failed_decision": true,
+    "no_auto_retry": true
+  },
+  "full_scale": {
+    "agents": 500,
+    "rounds": 30,
+    "calls_ceiling": 15000,
+    "preflight_at_full_30_budget": {
+      "preflight_status": "configuration_passed",
+      "budget_status": "within_limit",
+      "network_requests": 0,
+      "model_calls": 0,
+      "region": "cn-beijing",
+      "dedicated_key_configured": true,
+      "agent_count": 500,
+      "rounds": 30,
+      "role_offset": 0,
+      "decision_opportunities": 15000,
+      "agents_by_model": {
+        "qwen-turbo": 200,
+        "qwen-flash": 300
+      },
+      "opportunities_by_model": {
+        "qwen-turbo": 6000,
+        "qwen-flash": 9000
+      },
+      "reservation_cny_by_model": {
+        "qwen-turbo": "15.3216000",
+        "qwen-flash": "14.5152000"
+      },
+      "configured_prices_cny_per_million": {
+        "qwen-turbo": {
+          "input": "0.3",
+          "cached_input": "0.06",
+          "output": "0.6",
+          "max_input_tokens": 8192,
+          "max_output_tokens": 160,
+          "local_price_version_label_configured": true
+        },
+        "qwen-flash": {
+          "input": "0.15",
+          "cached_input": "0.03",
+          "output": "1.5",
+          "max_input_tokens": 8192,
+          "max_output_tokens": 256,
+          "local_price_version_label_configured": true
+        }
+      },
+      "total_conservative_reservation_cny": "29.8368000",
+      "task_budget_cny": "30",
+      "remaining_budget_cny": "0.1632000",
+      "price_labels_present": [
+        "qwen-flash",
+        "qwen-turbo"
+      ],
+      "price_verification": "pending_manual_comparison_with_current_official_Beijing_prices; local price version labels are not proof of official verification",
+      "live_authorized": false,
+      "g3_passed": false
+    },
+    "reservation_cny_at_current_config": "29.8368000",
+    "budget_rule": "full-run budget = 30.00 CNY minus pilot estimated costs including reservation for unknown-usage calls; per-round reservation gate remains enabled",
+    "time_limit_seconds": 36000,
+    "stop_on_first_failed_decision": true,
+    "no_auto_retry": true
+  },
+  "timing_scope": {
+    "simulation": "immediately before Day3Simulation.advance through its returned summary after request and round persistence",
+    "event_input_to_report": "immediately before loading/preparing fixed synthetic case/graph through five-module report artifact write",
+    "wall_clock": "local timezone-aware ISO timestamps",
+    "durations": "time.perf_counter monotonic clock"
+  },
+  "privacy": {
+    "credential_values_read_or_written_to_artifacts": false,
+    "request_bodies_recorded": false,
+    "message_body_recorded": false
+  },
+  "manifest_sha256": "33d0f7f015215d50924a1adebf9815515a606e6d5ee60d458dae75062b28d73f"
+}

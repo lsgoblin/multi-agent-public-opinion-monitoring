@@ -1,0 +1,59 @@
+{
+  "stage": "day4_v2",
+  "g1_passed": true,
+  "g1_v2_passed": true,
+  "g2_v2_passed": true,
+  "g2_v2_status": "internal_restricted_passed",
+  "g3_v2_passed": false,
+  "g4_v2_passed": false,
+  "engineering_scaffold": "available",
+  "historical_cases": 0,
+  "available_event_packages": 2,
+  "legacy_daily_complaint_contract": {
+    "available": true,
+    "required_for_v2": false
+  },
+  "historical_probe_evidence": {
+    "status": "passed_once_synthetic",
+    "current_configuration": {
+      "status": "not_configured",
+      "missing": [
+        "RISKSHIELD_MODEL_BASE_URL",
+        "RISKSHIELD_MODEL_NAME",
+        "RISKSHIELD_MODEL_API_KEY"
+      ],
+      "probe_enabled": false,
+      "live_probe_passed": null,
+      "note": "配置存在不等于调用成功；本状态不表示动态仿真已实现。"
+    }
+  },
+  "capabilities": {
+    "historical_import": true,
+    "cutoff_snapshot": true,
+    "restricted_source_collection": true,
+    "sentiment_label_submission": true,
+    "evidence_graph_retrieval": true,
+    "sentiment_analysis": false,
+    "graph_rag": false,
+    "long_term_memory": true,
+    "dynamic_simulation_engine": true,
+    "real_model_simulation_verified": false,
+    "synthetic_500x30_real_model_attempt_recorded": true,
+    "offline_five_module_report": true,
+    "provisional_four_level_alert": true,
+    "offline_notification_preview": true,
+    "offline_dynamic_task_execution": true,
+    "direction_evaluation": false,
+    "realtime_collection": false,
+    "forecast": false
+  },
+  "blockers": [
+    "尚无五类来源的在线采集、覆盖与延迟证据",
+    "当前仅有 SEC 与同期帖子存档的受限采集，未建立生产级多平台采集",
+    "情感三分类模型及独立复核标签尚未完成",
+    "新版情感/走势正式评测集及观察窗口径尚未冻结",
+    "真实来源与完整规模仿真尚未在同一案例贯通；消息动作因果尚未证实",
+    "真实通知发送、送达与红警时效尚未验证",
+    "域内模型、嵌入和图服务资源尚未核实"
+  ]
+}

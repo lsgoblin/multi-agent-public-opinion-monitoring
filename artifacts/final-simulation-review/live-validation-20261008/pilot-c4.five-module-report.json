@@ -1,0 +1,472 @@
+{
+  "run_id": "run_acee3ed808a04d2dabf3",
+  "case_id": "fictional_northstar_service_day3",
+  "graph_id": "fictional_northstar_graph_v1",
+  "cutoff": "2026-01-01T10:30:00+08:00",
+  "source_version": "day3-synthetic-v1",
+  "data_mode": "synthetic",
+  "execution_mode": "BailianBackend",
+  "graph_build_mode": "day2_cutoff_evidence_graph",
+  "run_status": "complete",
+  "completed_rounds": 2,
+  "configured_rounds": 2,
+  "overview": {
+    "event_title": "Fictional Northstar Insurance test service interruption",
+    "event_summary": "Synthetic Day 3 model validation only",
+    "risk_level": "blue",
+    "risk_status": "provisional_offline_assessment",
+    "main_basis": {
+      "latest_round_failed_decisions": 0,
+      "latest_round_simulated_messages": 0,
+      "latest_round_valid_decisions": 25,
+      "round": 2,
+      "run_failed_decisions": 0,
+      "run_status": "complete",
+      "simulated_complaint_intent_decisions": 0,
+      "simulated_complaint_intent_share": 0.0,
+      "thresholds": {
+        "orange": 0.2,
+        "red": 0.4,
+        "yellow": 0.05
+      }
+    },
+    "source_basis": [
+      {
+        "record_id": "fictional-service-notice",
+        "title": "Fictional test service is temporarily unavailable",
+        "summary": "In a fictional exercise, Northstar Insurance reports a temporary test-service interruption and says technicians are investigating.",
+        "source_url": "https://example.com/fictional-northstar-status",
+        "published_at": "2026-01-01T10:00:00+08:00",
+        "available_at": "2026-01-01T10:00:00+08:00"
+      }
+    ],
+    "recommended_action": "在将本次历史推演用于业务处置前，复核截止前来源与当前业务问题的可核验关联；关联未确认时，保留为历史研判材料，不据此向客户或外部渠道发布结论。",
+    "data_mode": "synthetic",
+    "execution_mode": "BailianBackend",
+    "run_integrity": {
+      "status": "complete",
+      "completed_rounds": 2,
+      "configured_rounds": 2,
+      "requested_decisions": 50,
+      "valid_decisions": 50,
+      "failed_decisions": 0,
+      "message_count": 0,
+      "integrity_label": "账本完整（不代表结果真实或关口通过）"
+    }
+  },
+  "binding": {
+    "run_id": "run_acee3ed808a04d2dabf3",
+    "case_id": "fictional_northstar_service_day3",
+    "graph_id": "fictional_northstar_graph_v1"
+  },
+  "modules": {
+    "propagation": {
+      "kind": "simulated_runtime_messages",
+      "edges": [],
+      "total_messages": 0,
+      "source_record_ids": [
+        "fictional-service-notice"
+      ],
+      "run_id": "run_acee3ed808a04d2dabf3",
+      "case_id": "fictional_northstar_service_day3",
+      "graph_id": "fictional_northstar_graph_v1"
+    },
+    "emotion_evolution": {
+      "kind": "reconstructed_simulated_emotion_v1",
+      "rule_version": "day3_state_transition_v1",
+      "reconstruction_status": "validated_against_final_agent_state",
+      "series": [
+        {
+          "round": 1,
+          "mean_emotion": 0.0468,
+          "min_emotion": -0.188,
+          "max_emotion": 0.193,
+          "agent_count": 25
+        },
+        {
+          "round": 2,
+          "mean_emotion": 0.0468,
+          "min_emotion": -0.188,
+          "max_emotion": 0.193,
+          "agent_count": 25
+        }
+      ],
+      "rounds": [
+        {
+          "round": 1,
+          "action_counts": {
+            "observe": 25
+          },
+          "decision_count": 25,
+          "action_ids": [
+            "action:run_acee3ed808a04d2dabf3:1:agent_0000",
+            "action:run_acee3ed808a04d2dabf3:1:agent_0001",
+            "action:run_acee3ed808a04d2dabf3:1:agent_0002",
+            "action:run_acee3ed808a04d2dabf3:1:agent_0003",
+            "action:run_acee3ed808a04d2dabf3:1:agent_0004",
+            "action:run_acee3ed808a04d2dabf3:1:agent_0005",
+            "action:run_acee3ed808a04d2dabf3:1:agent_0006",
+            "action:run_acee3ed808a04d2dabf3:1:agent_0007",
+            "action:run_acee3ed808a04d2dabf3:1:agent_0008",
+            "action:run_acee3ed808a04d2dabf3:1:agent_0009",
+            "action:run_acee3ed808a04d2dabf3:1:agent_0010",
+            "action:run_acee3ed808a04d2dabf3:1:agent_0011",
+            "action:run_acee3ed808a04d2dabf3:1:agent_0012",
+            "action:run_acee3ed808a04d2dabf3:1:agent_0013",
+            "action:run_acee3ed808a04d2dabf3:1:agent_0014",
+            "action:run_acee3ed808a04d2dabf3:1:agent_0015",
+            "action:run_acee3ed808a04d2dabf3:1:agent_0016",
+            "action:run_acee3ed808a04d2dabf3:1:agent_0017",
+            "action:run_acee3ed808a04d2dabf3:1:agent_0018",
+            "action:run_acee3ed808a04d2dabf3:1:agent_0019",
+            "action:run_acee3ed808a04d2dabf3:1:agent_0020",
+            "action:run_acee3ed808a04d2dabf3:1:agent_0021",
+            "action:run_acee3ed808a04d2dabf3:1:agent_0022",
+            "action:run_acee3ed808a04d2dabf3:1:agent_0023",
+            "action:run_acee3ed808a04d2dabf3:1:agent_0024"
+          ]
+        },
+        {
+          "round": 2,
+          "action_counts": {
+            "observe": 25
+          },
+          "decision_count": 25,
+          "action_ids": [
+            "action:run_acee3ed808a04d2dabf3:2:agent_0000",
+            "action:run_acee3ed808a04d2dabf3:2:agent_0001",
+            "action:run_acee3ed808a04d2dabf3:2:agent_0002",
+            "action:run_acee3ed808a04d2dabf3:2:agent_0003",
+            "action:run_acee3ed808a04d2dabf3:2:agent_0004",
+            "action:run_acee3ed808a04d2dabf3:2:agent_0005",
+            "action:run_acee3ed808a04d2dabf3:2:agent_0006",
+            "action:run_acee3ed808a04d2dabf3:2:agent_0007",
+            "action:run_acee3ed808a04d2dabf3:2:agent_0008",
+            "action:run_acee3ed808a04d2dabf3:2:agent_0009",
+            "action:run_acee3ed808a04d2dabf3:2:agent_0010",
+            "action:run_acee3ed808a04d2dabf3:2:agent_0011",
+            "action:run_acee3ed808a04d2dabf3:2:agent_0012",
+            "action:run_acee3ed808a04d2dabf3:2:agent_0013",
+            "action:run_acee3ed808a04d2dabf3:2:agent_0014",
+            "action:run_acee3ed808a04d2dabf3:2:agent_0015",
+            "action:run_acee3ed808a04d2dabf3:2:agent_0016",
+            "action:run_acee3ed808a04d2dabf3:2:agent_0017",
+            "action:run_acee3ed808a04d2dabf3:2:agent_0018",
+            "action:run_acee3ed808a04d2dabf3:2:agent_0019",
+            "action:run_acee3ed808a04d2dabf3:2:agent_0020",
+            "action:run_acee3ed808a04d2dabf3:2:agent_0021",
+            "action:run_acee3ed808a04d2dabf3:2:agent_0022",
+            "action:run_acee3ed808a04d2dabf3:2:agent_0023",
+            "action:run_acee3ed808a04d2dabf3:2:agent_0024"
+          ]
+        }
+      ],
+      "emotion_state_available": true,
+      "calculation_basis": {
+        "measure": "mean_simulated_agent_emotion_state",
+        "range": [
+          -1,
+          1
+        ],
+        "rounds": [
+          1,
+          2
+        ],
+        "action_signals": {
+          "observe": 0.0,
+          "share": -0.06,
+          "comment": -0.04,
+          "seek_clarification": 0.03,
+          "express_complaint_intent": -0.12
+        },
+        "message_signal_multiplier": 0.25,
+        "validation": "reconstructed final state equals persisted final state"
+      },
+      "note": "按已声明状态转移规则重建的模拟状态；不是逐轮原始快照，也不是观测到的公众情绪。",
+      "run_id": "run_acee3ed808a04d2dabf3",
+      "case_id": "fictional_northstar_service_day3",
+      "graph_id": "fictional_northstar_graph_v1"
+    },
+    "key_nodes": {
+      "metric": "outgoing_runtime_message_count",
+      "interpretation": "Simulated activity, not causal influence.",
+      "nodes": [],
+      "run_id": "run_acee3ed808a04d2dabf3",
+      "case_id": "fictional_northstar_service_day3",
+      "graph_id": "fictional_northstar_graph_v1"
+    },
+    "risk": {
+      "alert_id": "alert_69d8d7d26358a566474003cd86c0e313",
+      "assessed_at": "2026-10-08T09:26:04.038851+00:00",
+      "assessment_fingerprint_sha256": "69d8d7d26358a566474003cd86c0e313b6d33fae737fc29a082a9dd105f68768",
+      "case_id": "fictional_northstar_service_day3",
+      "data_mode": "synthetic",
+      "discovered_at": "2026-10-08T09:26:04.038851+00:00",
+      "discovery_time_semantics": "local simulated-rule assessment time; not historical event discovery",
+      "evidence_refs": {
+        "action_ref_total": 25,
+        "action_refs": [
+          {
+            "agent_id": "agent_0000",
+            "evidence_ids": [
+              "fictional-service-notice"
+            ],
+            "message_ids": [],
+            "round": 2,
+            "run_id": "run_acee3ed808a04d2dabf3"
+          },
+          {
+            "agent_id": "agent_0001",
+            "evidence_ids": [
+              "fictional-service-notice"
+            ],
+            "message_ids": [],
+            "round": 2,
+            "run_id": "run_acee3ed808a04d2dabf3"
+          },
+          {
+            "agent_id": "agent_0002",
+            "evidence_ids": [
+              "fictional-service-notice"
+            ],
+            "message_ids": [],
+            "round": 2,
+            "run_id": "run_acee3ed808a04d2dabf3"
+          },
+          {
+            "agent_id": "agent_0003",
+            "evidence_ids": [
+              "fictional-service-notice"
+            ],
+            "message_ids": [],
+            "round": 2,
+            "run_id": "run_acee3ed808a04d2dabf3"
+          },
+          {
+            "agent_id": "agent_0004",
+            "evidence_ids": [
+              "fictional-service-notice"
+            ],
+            "message_ids": [],
+            "round": 2,
+            "run_id": "run_acee3ed808a04d2dabf3"
+          },
+          {
+            "agent_id": "agent_0005",
+            "evidence_ids": [
+              "fictional-service-notice"
+            ],
+            "message_ids": [],
+            "round": 2,
+            "run_id": "run_acee3ed808a04d2dabf3"
+          },
+          {
+            "agent_id": "agent_0006",
+            "evidence_ids": [
+              "fictional-service-notice"
+            ],
+            "message_ids": [],
+            "round": 2,
+            "run_id": "run_acee3ed808a04d2dabf3"
+          },
+          {
+            "agent_id": "agent_0007",
+            "evidence_ids": [
+              "fictional-service-notice"
+            ],
+            "message_ids": [],
+            "round": 2,
+            "run_id": "run_acee3ed808a04d2dabf3"
+          },
+          {
+            "agent_id": "agent_0008",
+            "evidence_ids": [
+              "fictional-service-notice"
+            ],
+            "message_ids": [],
+            "round": 2,
+            "run_id": "run_acee3ed808a04d2dabf3"
+          },
+          {
+            "agent_id": "agent_0009",
+            "evidence_ids": [
+              "fictional-service-notice"
+            ],
+            "message_ids": [],
+            "round": 2,
+            "run_id": "run_acee3ed808a04d2dabf3"
+          },
+          {
+            "agent_id": "agent_0010",
+            "evidence_ids": [
+              "fictional-service-notice"
+            ],
+            "message_ids": [],
+            "round": 2,
+            "run_id": "run_acee3ed808a04d2dabf3"
+          },
+          {
+            "agent_id": "agent_0011",
+            "evidence_ids": [
+              "fictional-service-notice"
+            ],
+            "message_ids": [],
+            "round": 2,
+            "run_id": "run_acee3ed808a04d2dabf3"
+          },
+          {
+            "agent_id": "agent_0012",
+            "evidence_ids": [
+              "fictional-service-notice"
+            ],
+            "message_ids": [],
+            "round": 2,
+            "run_id": "run_acee3ed808a04d2dabf3"
+          },
+          {
+            "agent_id": "agent_0013",
+            "evidence_ids": [
+              "fictional-service-notice"
+            ],
+            "message_ids": [],
+            "round": 2,
+            "run_id": "run_acee3ed808a04d2dabf3"
+          },
+          {
+            "agent_id": "agent_0014",
+            "evidence_ids": [
+              "fictional-service-notice"
+            ],
+            "message_ids": [],
+            "round": 2,
+            "run_id": "run_acee3ed808a04d2dabf3"
+          },
+          {
+            "agent_id": "agent_0015",
+            "evidence_ids": [
+              "fictional-service-notice"
+            ],
+            "message_ids": [],
+            "round": 2,
+            "run_id": "run_acee3ed808a04d2dabf3"
+          },
+          {
+            "agent_id": "agent_0016",
+            "evidence_ids": [
+              "fictional-service-notice"
+            ],
+            "message_ids": [],
+            "round": 2,
+            "run_id": "run_acee3ed808a04d2dabf3"
+          },
+          {
+            "agent_id": "agent_0017",
+            "evidence_ids": [
+              "fictional-service-notice"
+            ],
+            "message_ids": [],
+            "round": 2,
+            "run_id": "run_acee3ed808a04d2dabf3"
+          },
+          {
+            "agent_id": "agent_0018",
+            "evidence_ids": [
+              "fictional-service-notice"
+            ],
+            "message_ids": [],
+            "round": 2,
+            "run_id": "run_acee3ed808a04d2dabf3"
+          },
+          {
+            "agent_id": "agent_0019",
+            "evidence_ids": [
+              "fictional-service-notice"
+            ],
+            "message_ids": [],
+            "round": 2,
+            "run_id": "run_acee3ed808a04d2dabf3"
+          }
+        ],
+        "action_refs_truncated": true,
+        "case_id": "fictional_northstar_service_day3",
+        "cutoff": "2026-01-01T10:30:00+08:00",
+        "graph_id": "fictional_northstar_graph_v1",
+        "source_record_ids": [
+          "fictional-service-notice"
+        ],
+        "source_version": "day3-synthetic-v1"
+      },
+      "execution_mode": "BailianBackend",
+      "graph_id": "fictional_northstar_graph_v1",
+      "level": "blue",
+      "limitations": [
+        "Provisional thresholds on simulated complaint-intent decisions; not calibrated to real incidents.",
+        "Simulation actions and messages are not real platform activity or actual complaint volume.",
+        "Historical-source discovery and actual delivery timestamps are unavailable; the 30-minute red alert SLA is unverified.",
+        "Offline preview only; no WeCom or email notification has been sent.",
+        "Synthetic run must never trigger an external notification."
+      ],
+      "metrics": {
+        "latest_round_failed_decisions": 0,
+        "latest_round_simulated_messages": 0,
+        "latest_round_valid_decisions": 25,
+        "round": 2,
+        "run_failed_decisions": 0,
+        "run_status": "complete",
+        "simulated_complaint_intent_decisions": 0,
+        "simulated_complaint_intent_share": 0.0,
+        "thresholds": {
+          "orange": 0.2,
+          "red": 0.4,
+          "yellow": 0.05
+        }
+      },
+      "rule_version": "day4-simulated-complaint-share-v1-provisional",
+      "run_id": "run_acee3ed808a04d2dabf3",
+      "sent_at": null,
+      "status": "provisional_offline_assessment"
+    },
+    "recommendations": {
+      "items": [
+        {
+          "text": "在将本次历史推演用于业务处置前，复核截止前来源与当前业务问题的可核验关联；关联未确认时，保留为历史研判材料，不据此向客户或外部渠道发布结论。",
+          "applicable_when": "报告将用于当前业务处置，且已有材料可核验地关联到当前保险产品、理赔服务或公司事件时。",
+          "responsible_role": "舆情研判岗（建议角色，非指定责任人）",
+          "suggested_deadline": "建议在 1 个工作日内完成来源与业务关联复核；这是建议时限，不是已配置的 SLA。",
+          "follow_up_metrics": [
+            "新增可核验来源数",
+            "确认与当前业务直接关联的来源数",
+            "最新合格来源可见时间"
+          ],
+          "source_record_ids": [
+            "fictional-service-notice"
+          ],
+          "action_ids": [],
+          "message_ids": [],
+          "basis_kind": "cutoff_eligible_source_records",
+          "generated_by": "deterministic_workflow_template_not_model_output"
+        }
+      ],
+      "technical_checks": [],
+      "run_id": "run_acee3ed808a04d2dabf3",
+      "case_id": "fictional_northstar_service_day3",
+      "graph_id": "fictional_northstar_graph_v1"
+    }
+  },
+  "evidence": {
+    "source_record_ids": [
+      "fictional-service-notice"
+    ],
+    "decision_cited_source_record_ids": [
+      "fictional-service-notice"
+    ],
+    "failed_action_ids": [],
+    "graph_build_mode": "day2_cutoff_evidence_graph"
+  },
+  "limitations": [
+    "模拟消息不代表平台上的真实传播。",
+    "消息数量和引用不能证明消息导致了后续动作。",
+    "本报告不判定 G3 或 G4 关口状态。"
+  ],
+  "report_id": "report_9c5c7ad3579d00568aa1f6de"
+}

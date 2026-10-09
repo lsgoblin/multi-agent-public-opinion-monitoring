@@ -1,0 +1,92 @@
+{
+  "package_id": "unh_change_cyberattack_day2_multisource_20261004",
+  "version": "day2-multisource-v1",
+  "data_mode": "real_historical",
+  "package_status": "day2_cross_source_probe_not_formal_evaluation",
+  "source_use_scope": "仅供 Day 2 内部跨来源采集、cutoff 构图与引用核查；状态页只留指定更新的元数据和人工摘要，存档帖子仅留标题、链接和抓取时刻；不向收费模型发送新增来源。",
+  "evidence": {
+    "status_page_url": "https://status.changehealthcare.com/incidents/hqpjz25fn3n7",
+    "status_api_url": "https://solution-status.optum.com/api/v2/incidents/hqpjz25fn3n7.json",
+    "status_update_id": "9j1b644m46kx",
+    "status_body_sha256": "a51e2fd56038c789527055b2fa2e6de133d864a17b318120a92791cef825aa81",
+    "archive_url": "https://arctic-shift.photon-reddit.com/api/posts/ids?ids=1awwr9j",
+    "archive_post_id": "1awwr9j",
+    "archive_retrieved_on": 1708573941,
+    "archive_target": "https://status.changehealthcare.com/incidents/hqpjz25fn3n7",
+    "cutoff": "2024-02-22T16:48:39-05:00"
+  },
+  "case_import_projection": {
+    "case_id": "unh_change_20240222_day2_multisource",
+    "title": "UnitedHealth Group / Change Healthcare 网络事件：SEC 与 Optum 状态页",
+    "scope": "Day 2 单事件跨来源输入验证；SEC 原件与 Optum 官方状态更新，不代表五平台覆盖。",
+    "cutoff": "2024-02-22T16:48:39-05:00",
+    "cutoff_basis": "SEC 原始 8-K 的独立公开引用于 2024-02-22 16:18:39 EST 被归档，按该时刻加 30 分钟；后续更新不入输入。",
+    "data_mode": "real_historical",
+    "version": "unh-day2-multisource-2026-10-04-v1",
+    "records": [
+      {
+        "record_id": "unh-sec-20240222-initial",
+        "channel": "regulatory",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/731766/000073176624000045/unh-20240221.htm",
+        "publisher": "UnitedHealth Group via SEC EDGAR",
+        "title": "Form 8-K: Change Healthcare cybersecurity incident",
+        "summary": "UnitedHealth Group 原始申报称 Change Healthcare 部分 IT 系统遭未经授权访问，受影响系统已隔离，中断持续时间尚无法估计。",
+        "content_kind": "human_summary",
+        "data_mode": "real_historical",
+        "published_at": "2024-02-22T16:08:47-05:00",
+        "available_at": "2024-02-22T16:18:39-05:00",
+        "collected_at": "2026-10-02T12:48:18+08:00",
+        "availability_basis": "Arctic Shift 对公开 Reddit 帖子 1axi1g0 的 retrieved_on=1708636719；帖子标题和链接指向原始 SEC accession 0000731766-24-000045。SEC Accepted 时间不作为 available_at。",
+        "historical_integrity": "archived",
+        "acquisition_method": "manual_web_review",
+        "role": "input_candidate",
+        "limitations": [
+          "仅有独立帖子标题和指向原件的链接在当时被归档，非完整 SEC HTML 当刻快照。",
+          "单一披露不能代表保险行业或目标公司整体舆情。"
+        ]
+      },
+      {
+        "record_id": "unh-sec-20240308-update",
+        "channel": "regulatory",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/731766/000073176624000085/pressreleasedatedmarch7202.htm",
+        "publisher": "UnitedHealth Group via SEC EDGAR",
+        "title": "Form 8-K/A: later recovery update",
+        "summary": "公司后续附件报告部分药房服务恢复、资金支持以及支付与理赔系统恢复计划；并未证实事件整体结束。",
+        "content_kind": "human_summary",
+        "data_mode": "real_historical",
+        "published_at": "2024-03-08T17:13:56-05:00",
+        "available_at": null,
+        "collected_at": "2026-10-02T12:48:18+08:00",
+        "availability_basis": "SEC 后续 8-K/A 单独 accession 0000731766-24-000085，接收时刻晚于 cutoff；确切首次网页可见时间未核，不参与输入。",
+        "historical_integrity": "retrospective_unverified",
+        "acquisition_method": "manual_web_review",
+        "role": "evaluation_only",
+        "limitations": [
+          "后续材料不得进入 cutoff 输入、GraphRAG 或 Agent 记忆。",
+          "部分恢复不等于整体舆情平息。"
+        ]
+      },
+      {
+        "record_id": "optum-status-20240221-cyber-update",
+        "channel": "official_status",
+        "source_url": "https://status.changehealthcare.com/incidents/hqpjz25fn3n7",
+        "publisher": "Optum Solutions Status",
+        "title": "Change Healthcare cybersecurity network interruption",
+        "summary": "Optum 状态页当时报告 Change Healthcare 因网络安全问题发生网络中断，已断开受影响系统，预计中断至少持续到当天。",
+        "content_kind": "human_summary",
+        "data_mode": "real_historical",
+        "published_at": "2024-02-21T16:27:23-05:00",
+        "available_at": "2024-02-21T22:52:21-05:00",
+        "collected_at": "2026-10-04T06:25:24.057161+00:00",
+        "availability_basis": "官方 Statuspage 更新 9j1b644m46kx 的 created_at=2024-02-21T16:27:23.594-05:00、updated_at=16:40:49.526-05:00；Arctic Shift 对链接同一事件页的公开帖子 1awwr9j 在 2024-02-22T03:52:21Z 抓取，保守以该时刻证明事件页已公开。",
+        "historical_integrity": "archived",
+        "acquisition_method": "manual_web_review",
+        "role": "input_candidate",
+        "limitations": [
+          "存档帖子保存了事件页链接与标题，未保存当刻状态更新完整正文；原文版本由官方 Statuspage 的更新 ID、created_at、updated_at 和正文哈希核验。",
+          "事件状态页现含截止后大量更新，采集适配器只选指定截止前更新，不能整页入图。"
+        ]
+      }
+    ]
+  }
+}

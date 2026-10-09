@@ -1,0 +1,109 @@
+{
+  "round_id": "closure-20261009-functional-names-v1",
+  "zip_path": "artifacts/final-deployment-review/riskshield-local-demo-20261009.zip",
+  "zip_bytes": 1057000,
+  "zip_sha256": "efb7deaf334bfceb1069c910d9ecd18f99e4467e508a4c76fe32925c38d8fd9f",
+  "candidate_manifest_path": "artifacts/final-integration-review/candidate-package-manifest.json",
+  "candidate_manifest_sha256": "44a078a5b6154383b2cd55c20b5e3319becbe62dc79f6ab1e13439a3d99c9f74",
+  "expected_member_count": 125,
+  "zip_member_count": 125,
+  "extracted_member_count": 125,
+  "expected_uncompressed_bytes": 1872029,
+  "zip_names_match_manifest": true,
+  "extracted_names_match_manifest": true,
+  "member_hash_and_size_mismatches": [],
+  "unexpected_extracted_files": [],
+  "forbidden_paths": [],
+  "credential_assignment_fields": [
+    {
+      "variable": "DASHSCOPE_API_KEY",
+      "placeholder": true,
+      "has_value": false
+    }
+  ],
+  "nonplaceholder_credentials_detected": [],
+  "d_owned_files": [
+    {
+      "path": "Dockerfile",
+      "exists": true,
+      "matches": true
+    },
+    {
+      "path": ".dockerignore",
+      "exists": true,
+      "matches": true
+    },
+    {
+      "path": "compose.yaml",
+      "exists": true,
+      "matches": true
+    },
+    {
+      "path": "docs/delivery/deployment.md",
+      "exists": true,
+      "matches": true
+    },
+    {
+      "path": "docs/records/final-deployment-review.md",
+      "exists": true,
+      "matches": true
+    },
+    {
+      "path": "artifacts/final-deployment-review/closure-20261009-functional-names-v1/README.md",
+      "exists": true,
+      "matches": true
+    },
+    {
+      "path": "artifacts/final-deployment-review/closure-20261009-functional-names-v1/package-dependency-audit.json",
+      "exists": true,
+      "matches": true
+    },
+    {
+      "path": "artifacts/final-deployment-review/closure-20261009-functional-names-v1/package-inventory.txt",
+      "exists": true,
+      "matches": true
+    },
+    {
+      "path": "artifacts/final-deployment-review/closure-20261009-functional-names-v1/delivery-verification-plan.json",
+      "exists": true,
+      "matches": true
+    }
+  ],
+  "d_evidence": [
+    {
+      "path": "artifacts/final-deployment-review/version-manifest.json",
+      "exists": true,
+      "matches": true
+    },
+    {
+      "path": "artifacts/final-deployment-review/build.log",
+      "exists": true,
+      "matches": true
+    },
+    {
+      "path": "artifacts/final-deployment-review/case-closure-summary.json",
+      "exists": true,
+      "matches": true
+    },
+    {
+      "path": "artifacts/final-deployment-review/restart-persistence-summary.json",
+      "exists": true,
+      "matches": true
+    },
+    {
+      "path": "artifacts/final-deployment-review/stop-start-persistence-check.txt",
+      "exists": true,
+      "matches": true
+    },
+    {
+      "path": "artifacts/final-deployment-review/smoke-summary.json",
+      "exists": true,
+      "matches": true
+    },
+    {
+      "path": "artifacts/final-deployment-review/network-route-summary.json",
+      "exists": true,
+      "matches": true
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "case_id": "unh_change_20240222_day2_multisource",
+  "job_id": "job_5de8ee73d75c4bd1a65c",
+  "report_id": "report_7232e7a4f918c4cd506393f3",
+  "alert_id": "alert_b004baf85c607f8413a85ded5aa1bcb7",
+  "sha256": {
+    "case": "fa226212e5d541b89c2666027be6ff2f7523d4a8bb2f0cd97dda5f310f75e0c2",
+    "job": "2884ee8490187c7d7cf6310c0e4a206b86a2137216701e5b5d1d93d9088be15c",
+    "report": "24e364e5c3df2c0d770b860ad40e3cf01b0c103b86a8c749706f40f7e89f1671",
+    "alert": "2396b7a47dfec0de713819adccdec71a7c17983167e5fef52ac04d60cedbcfdd"
+  }
+}

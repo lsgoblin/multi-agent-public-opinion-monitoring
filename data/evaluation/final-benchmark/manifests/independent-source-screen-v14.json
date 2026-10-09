@@ -1,0 +1,541 @@
+{
+  "schema": "riskshield.final_benchmark.independent_source_screen.v14",
+  "dataset_version": "final-benchmark-evidence-v14-2026-10-08",
+  "retrieved_at_utc_range": [
+    "2026-10-08T11:42:31Z",
+    "2026-10-08T11:43:02Z"
+  ],
+  "purpose": "Evidence-first review of the seven existing holdout event identities; this pass adds no event or predictor input.",
+  "selection_exposure": "No E prediction or model output was read to select or exclude candidates.",
+  "protocol": {
+    "basis": "Main-agent-reviewed internal trajectory method supplement v13 plus the direct user deadline update.",
+    "windows": "Cutoff UTC day D0 excluded; baseline D-7 through D-1; observation D+1 through D+7.",
+    "required_sources": "Two independent, quantitatively comparable public-discussion source families; each source/window needs at least 6/7 valid days and at least 5 deduplicated primary units.",
+    "primary_unit": "Distinct HN story submissions, deduplicated by normalized linked URL. Comments are not substituted into the primary-unit count after seeing results.",
+    "direction": "Not assigned in this pre-screen. Zero/insufficient coverage, source conflict, and confounds remain unknown.",
+    "scope": "Insurance events only for the formal insurance denominator."
+  },
+  "source": {
+    "family": "Hacker News public submissions",
+    "endpoint": "https://hn.algolia.com/api/v1/search_by_date",
+    "version": "Public Algolia historical search; exact query and UTC range are recorded per window. Retrieved bytes were hashed; provider completeness is not established.",
+    "filters": "tags=story; one exact query per candidate and window; numeric created_at_i >= window start and < window end; hitsPerPage=1000. Each request covered one complete 7-day date range; individual per-day responses were not captured.",
+    "data_retained": "HN story ID, created_at, public headline and linked publisher URL only; no usernames or raw author fields retained.",
+    "retained_raw_payloads": false,
+    "hash_interpretation": "SHA-256 fixes the response bytes seen in this pass. It does not prove historical index completeness or independently reproduce provider coverage.",
+    "daily_coverage_note": "The successful range query does not establish six valid daily captures. No candidate is credited with 6/7 daily coverage in this pass."
+  },
+  "screened_candidates": [
+    {
+      "event_id": "fnf_cyberattack_20231123",
+      "identity": "Fidelity National Financial November 2023 network/cyber incident; retained as the existing v4 event identity.",
+      "cutoff": "2023-11-23T14:29:55Z",
+      "cutoff_input_ref": "data/evaluation/final-benchmark/inputs/qualified-inputs-v4.json#/events/1",
+      "query": "Fidelity National Financial",
+      "baseline": {
+        "utc_start": "2023-11-16T00:00:00Z",
+        "utc_end_exclusive": "2023-11-23T00:00:00Z",
+        "raw_hits": 1,
+        "primary_units_after_title_and_url_dedup": 1,
+        "response_sha256": "0c1963785c4c50fa90adc2f46d0ec5a5e9be217b2c6e729bf84d84dbbaef0ffb",
+        "items": [
+          {
+            "hn_id": "38382624",
+            "created_at": "2023-11-22T18:00:09Z",
+            "title": "Fidelity National Financial shuts down network in wake of cybersecurity incident",
+            "url": "https://techcrunch.com/2023/11/22/fidelity-national-financial-shuts-down-network-in-wake-of-cybersecurity-incident/",
+            "event_related": true
+          }
+        ],
+        "daily_valid_days_confirmed": null,
+        "daily_coverage_status": "Not individually verified; per-day response hashes and completeness evidence were not captured.",
+        "retrieved_at_utc": "2026-10-08T11:42:32Z"
+      },
+      "observation": {
+        "utc_start": "2023-11-24T00:00:00Z",
+        "utc_end_exclusive": "2023-12-01T00:00:00Z",
+        "raw_hits": 0,
+        "primary_units_after_title_and_url_dedup": 0,
+        "response_sha256": "259f5f42edad4ec0a90082a33a9f3373601d5b618bac34108913b3806673a6b7",
+        "items": [],
+        "daily_valid_days_confirmed": null,
+        "daily_coverage_status": "Not individually verified; per-day response hashes and completeness evidence were not captured.",
+        "retrieved_at_utc": "2026-10-08T11:42:33Z"
+      },
+      "other_public_discussion_source": "No second comparable family with a complete series is present in the existing evidence; prior Reddit archive limitations remain in v13.",
+      "decision": "保留既有候选，走势 unknown；单条基线和零观察命中不能证明平息，双源及单位门槛不满足。"
+    },
+    {
+      "event_id": "aflac_cybersecurity_incident_20250620",
+      "identity": "Aflac June 2025 cyber incident; retained as the existing company-specific v4 event identity.",
+      "cutoff": "2025-06-20T13:16:30Z",
+      "cutoff_input_ref": "data/evaluation/final-benchmark/inputs/qualified-inputs-v4.json#/events/2",
+      "query": "Aflac",
+      "baseline": {
+        "utc_start": "2025-06-13T00:00:00Z",
+        "utc_end_exclusive": "2025-06-20T00:00:00Z",
+        "raw_hits": 1,
+        "primary_units_after_title_and_url_dedup": 0,
+        "response_sha256": "6f71b387924f3f1cba6df51ef28724b4057dd43eeec385eb32432ead4404c278",
+        "items": [
+          {
+            "hn_id": "44280247",
+            "created_at": "2025-06-15T03:07:54Z",
+            "title": "Show HN: I created a multiple JSON queries tool",
+            "url": "https://app.postpilot.dev/",
+            "event_related": false
+          }
+        ],
+        "daily_valid_days_confirmed": null,
+        "daily_coverage_status": "Not individually verified; per-day response hashes and completeness evidence were not captured.",
+        "retrieved_at_utc": "2026-10-08T11:42:35Z"
+      },
+      "observation": {
+        "utc_start": "2025-06-21T00:00:00Z",
+        "utc_end_exclusive": "2025-06-28T00:00:00Z",
+        "raw_hits": 4,
+        "primary_units_after_title_and_url_dedup": 3,
+        "response_sha256": "c55084af54a3ca8eb769bb7ef6c8266b23f6281912657795b2ee4c5bdb9ab988",
+        "items": [
+          {
+            "hn_id": "44397420",
+            "created_at": "2025-06-27T15:14:02Z",
+            "title": "Offline Music, and MP3s and/or FLACs",
+            "url": "https://rubenerd.com/listening-to-mp3s-and-flacs/",
+            "event_related": false
+          },
+          {
+            "hn_id": "44359690",
+            "created_at": "2025-06-23T20:24:20Z",
+            "title": "Aflac Cyberattack Exposes Customers' Personal Data",
+            "url": "https://adaptive.live/blog/aflac-cyberattack-exposes-customers-personal-data-what-we-know",
+            "event_related": true
+          },
+          {
+            "hn_id": "44333670",
+            "created_at": "2025-06-21T01:13:13Z",
+            "title": "Aflac Incorporated Discloses Cybersecurity Incident",
+            "url": "https://newsroom.aflac.com/2025-06-20-Aflac-Incorporated-Discloses-Cybersecurity-Incident",
+            "event_related": true
+          },
+          {
+            "hn_id": "44333584",
+            "created_at": "2025-06-21T00:59:01Z",
+            "title": "Insurer Aflac investigating possible data leak after cyberattack",
+            "url": "https://www.reuters.com/business/insurer-aflac-discloses-cybersecurity-incident-2025-06-20/",
+            "event_related": true
+          }
+        ],
+        "daily_valid_days_confirmed": null,
+        "daily_coverage_status": "Not individually verified; per-day response hashes and completeness evidence were not captured.",
+        "retrieved_at_utc": "2026-10-08T11:42:36Z"
+      },
+      "other_public_discussion_source": "No second comparable family with a complete series is present in the existing evidence; prior Reddit archive limitations remain in v13.",
+      "decision": "保留既有候选，走势 unknown；基线事件相关单位为 0，观察窗仅 3，不能判平息或升级。"
+    },
+    {
+      "event_id": "allianz_life_data_breach_20250727",
+      "identity": "Allianz Life July 2025 data breach; retained as the existing company-specific v4 event identity.",
+      "cutoff": "2025-07-27T01:07:54Z",
+      "cutoff_input_ref": "data/evaluation/final-benchmark/inputs/qualified-inputs-v4.json#/events/3",
+      "query": "Allianz Life",
+      "baseline": {
+        "utc_start": "2025-07-20T00:00:00Z",
+        "utc_end_exclusive": "2025-07-27T00:00:00Z",
+        "raw_hits": 3,
+        "primary_units_after_title_and_url_dedup": 3,
+        "response_sha256": "c29d1924316f3b763fd4caaf0f187a502f7e7ba965c0d0c190b96c2467cb9360",
+        "items": [
+          {
+            "hn_id": "44696136",
+            "created_at": "2025-07-26T18:41:29Z",
+            "title": "Allianz Life confirms data breach impacts majority of 1.4M customers",
+            "url": "https://www.bleepingcomputer.com/news/security/allianz-life-confirms-data-breach-impacts-majority-of-14-million-customers/",
+            "event_related": true
+          },
+          {
+            "hn_id": "44695891",
+            "created_at": "2025-07-26T18:02:12Z",
+            "title": "Allianz Life: Insurance giant says most US customer data stolen in cyber-attack",
+            "url": "https://www.bbc.co.uk/news/articles/cd6nyng861wo",
+            "event_related": true
+          },
+          {
+            "hn_id": "44694259",
+            "created_at": "2025-07-26T14:16:36Z",
+            "title": "Allianz Life says 'majority' of customers' personal data stolen in cyberattack",
+            "url": "https://techcrunch.com/2025/07/26/allianz-life-says-majority-of-customers-personal-data-stolen-in-cyberattack/",
+            "event_related": true
+          }
+        ],
+        "daily_valid_days_confirmed": null,
+        "daily_coverage_status": "Not individually verified; per-day response hashes and completeness evidence were not captured.",
+        "retrieved_at_utc": "2026-10-08T11:42:37Z"
+      },
+      "observation": {
+        "utc_start": "2025-07-28T00:00:00Z",
+        "utc_end_exclusive": "2025-08-04T00:00:00Z",
+        "raw_hits": 0,
+        "primary_units_after_title_and_url_dedup": 0,
+        "response_sha256": "76b90abb48c2edce5455010cb4d42cafbec4fd2d941f52bc1e810cb9ef63bfd5",
+        "items": [],
+        "daily_valid_days_confirmed": null,
+        "daily_coverage_status": "Not individually verified; per-day response hashes and completeness evidence were not captured.",
+        "retrieved_at_utc": "2026-10-08T11:42:38Z"
+      },
+      "other_public_discussion_source": "No second comparable family with a complete series is present in the existing evidence; prior Reddit archive limitations remain in v13.",
+      "decision": "保留既有候选，走势 unknown；3 条基线报道和零观察命中不能证明公众舆情平息。"
+    },
+    {
+      "event_id": "anthem_anesthesia_proposal_20241204",
+      "identity": "Anthem anesthesia time-limit policy controversy; retained as the existing v4 identity.",
+      "cutoff": "2024-12-04T18:29:34Z",
+      "cutoff_input_ref": "data/evaluation/final-benchmark/inputs/qualified-inputs-v4.json#/events/4",
+      "query": "Anthem anesthesia",
+      "baseline": {
+        "utc_start": "2024-11-27T00:00:00Z",
+        "utc_end_exclusive": "2024-12-04T00:00:00Z",
+        "raw_hits": 0,
+        "primary_units_after_title_and_url_dedup": 0,
+        "response_sha256": "ae46b48992fd6eb8223d8ac0ae2e871f5558676a1f4a0c8138d27ad2d555b233",
+        "items": [],
+        "daily_valid_days_confirmed": null,
+        "daily_coverage_status": "Not individually verified; per-day response hashes and completeness evidence were not captured.",
+        "retrieved_at_utc": "2026-10-08T11:42:39Z"
+      },
+      "observation": {
+        "utc_start": "2024-12-05T00:00:00Z",
+        "utc_end_exclusive": "2024-12-12T00:00:00Z",
+        "raw_hits": 8,
+        "primary_units_after_title_and_url_dedup": 7,
+        "response_sha256": "3813b1334d9708d2682edc508cc1feb8ec320a2fab7edcc8ab2d479418346bac",
+        "duplicate_link_dedup": "HN IDs 42339983 and 42334531 point to the same AP article URL; count once for deduplicated primary units.",
+        "items": [
+          {
+            "hn_id": "42391803",
+            "created_at": "2024-12-11T19:33:11Z",
+            "title": "Anthem Blue Cross Blue Shield Reverses Planned Anesthesia Time Limits",
+            "url": "https://www.forbes.com/sites/mollybohannon/2024/12/06/anthem-blue-cross-blue-shield-reverses-planned-anesthesia-time-limits-after-intense-pushback/",
+            "event_related": true
+          },
+          {
+            "hn_id": "42358206",
+            "created_at": "2024-12-08T16:58:17Z",
+            "title": "Anthem drops controversial new plan to cap anesthesia coverage after backlash",
+            "url": "https://www.usatoday.com/story/news/health/2024/12/05/anesthesia-policy-anthem-bcbs/76796002007/",
+            "event_related": true
+          },
+          {
+            "hn_id": "42344867",
+            "created_at": "2024-12-06T21:47:54Z",
+            "title": "A big insurer backed off its plan to pay less for anesthesia. That's bad",
+            "url": "https://www.vox.com/policy/390031/anthem-blue-cross-blue-shield-anesthesia-limits-insurance",
+            "event_related": true
+          },
+          {
+            "hn_id": "42339983",
+            "created_at": "2024-12-06T14:15:05Z",
+            "title": "Anthem Blue Cross Blue Shield reverses decision to put time limit on anesthesia",
+            "url": "https://apnews.com/article/anthem-blue-cross-anesthesia-insurance-coverage-c8233db68f76342c4e794320f151a926",
+            "event_related": true
+          },
+          {
+            "hn_id": "42338383",
+            "created_at": "2024-12-06T10:31:23Z",
+            "title": "Anthem reverses plans to put time limits on anesthesia coverage",
+            "url": "https://www.npr.org/2024/12/05/nx-s1-5217617/blue-cross-blue-shield-anesthesia-anthem",
+            "event_related": true
+          },
+          {
+            "hn_id": "42335904",
+            "created_at": "2024-12-06T03:17:01Z",
+            "title": "Anthem BCBS calls off surgery anesthesia cap after UH CEO murdered",
+            "url": "https://www.axios.com/2024/12/05/blue-cross-blue-shield-anesthesia-anthem-connecticut-new-york",
+            "event_related": true,
+            "confound": "Headline explicitly links the reversal to the UnitedHealthcare CEO homicide."
+          },
+          {
+            "hn_id": "42334531",
+            "created_at": "2024-12-06T00:27:50Z",
+            "title": "Anthem BCBS reverses decision to put a time limit on anesthesia",
+            "url": "https://apnews.com/article/anthem-blue-cross-anesthesia-insurance-coverage-c8233db68f76342c4e794320f151a926",
+            "event_related": true,
+            "duplicate_of_hn_id": "42339983"
+          },
+          {
+            "hn_id": "42330022",
+            "created_at": "2024-12-05T17:01:01Z",
+            "title": "Anthem Blue Cross Blue Shield says it won't cover anesthesia after time limit",
+            "url": "https://www.today.com/health/news/blue-cross-blue-shield-anesthesia-rcna182990",
+            "event_related": true
+          }
+        ],
+        "daily_valid_days_confirmed": null,
+        "daily_coverage_status": "Not individually verified; per-day response hashes and completeness evidence were not captured.",
+        "retrieved_at_utc": "2026-10-08T11:42:40Z"
+      },
+      "other_public_discussion_source": "No second comparable family with a complete series is present in the existing evidence; prior Reddit archive limitations remain in v13.",
+      "decision": "走势 unknown；基线为 0，观察命中主要是新闻链接、含撤回结果，且与 2024-12-04 UHC CEO 枪击高度混杂。不得据此标平息或升级。"
+    },
+    {
+      "event_id": "cigna_algorithm_denial_lawsuit_20230725",
+      "identity": "Cigna PxDx algorithmic claim-denial lawsuit; retained as the existing v4 identity.",
+      "cutoff": "2023-07-25T16:23:54Z",
+      "cutoff_input_ref": "data/evaluation/final-benchmark/inputs/qualified-inputs-v4.json#/events/5",
+      "query": "Cigna algorithm",
+      "baseline": {
+        "utc_start": "2023-07-18T00:00:00Z",
+        "utc_end_exclusive": "2023-07-25T00:00:00Z",
+        "raw_hits": 0,
+        "primary_units_after_title_and_url_dedup": 0,
+        "response_sha256": "0c3d32b5cb39b81af01bff25242d95ac4716e2c3b3b1df0ee5f9466d51ecd8f5",
+        "items": [],
+        "daily_valid_days_confirmed": null,
+        "daily_coverage_status": "Not individually verified; per-day response hashes and completeness evidence were not captured.",
+        "retrieved_at_utc": "2026-10-08T11:42:42Z"
+      },
+      "observation": {
+        "utc_start": "2023-07-26T00:00:00Z",
+        "utc_end_exclusive": "2023-08-02T00:00:00Z",
+        "raw_hits": 2,
+        "primary_units_after_title_and_url_dedup": 2,
+        "response_sha256": "8bf6a89f4334f08f9f828acdc2a27670ce7b7678a2985af2d134b09c85ea68c3",
+        "items": [
+          {
+            "hn_id": "36885600",
+            "created_at": "2023-07-26T21:49:56Z",
+            "title": "Cigna sued over algorithmic denials of healthcare insurance",
+            "url": "https://www.theregister.com/2023/07/26/cigna_healthcare_insurance_ai/",
+            "event_related": true
+          },
+          {
+            "hn_id": "36872771",
+            "created_at": "2023-07-26T03:32:44Z",
+            "title": "Cigna Sued over Algorithm Used to Deny Coverage to Thousands of Patients",
+            "url": "https://www.forbes.com/sites/richardnieva/2023/07/24/cigna-sued-over-algorithm-allegedly-used-to-deny-coverage-to-hundreds-of-thousands-of-patients/",
+            "event_related": true
+          }
+        ],
+        "daily_valid_days_confirmed": null,
+        "daily_coverage_status": "Not individually verified; per-day response hashes and completeness evidence were not captured.",
+        "retrieved_at_utc": "2026-10-08T11:42:43Z"
+      },
+      "other_public_discussion_source": "No second comparable family with a complete series is present in the existing evidence; prior Reddit archive limitations remain in v13.",
+      "decision": "保留既有候选，走势 unknown；零基线及仅 2 个观察主题帖不满足窗口单位要求。"
+    },
+    {
+      "event_id": "unitedhealth_algorithm_care_lawsuit_20231115",
+      "identity": "UnitedHealth/Lokken Medicare Advantage algorithmic-care lawsuit; retained as the existing v4 identity.",
+      "cutoff": "2023-11-15T21:52:18Z",
+      "cutoff_input_ref": "data/evaluation/final-benchmark/inputs/qualified-inputs-v4.json#/events/6",
+      "query": "UnitedHealth algorithm",
+      "baseline": {
+        "utc_start": "2023-11-08T00:00:00Z",
+        "utc_end_exclusive": "2023-11-15T00:00:00Z",
+        "raw_hits": 1,
+        "primary_units_after_title_and_url_dedup": 1,
+        "response_sha256": "f82331359be4f53b1b52625698cfb22b53929416c980b8fa76c82a2ae2530df2",
+        "items": [
+          {
+            "hn_id": "38266825",
+            "created_at": "2023-11-14T17:53:06Z",
+            "title": "UnitedHealth made employees use an AI algorithm to end Medicare patients rehab",
+            "url": "https://www.statnews.com/2023/11/14/unitedhealth-algorithm-medicare-advantage-investigation/",
+            "event_related": true
+          }
+        ],
+        "daily_valid_days_confirmed": null,
+        "daily_coverage_status": "Not individually verified; per-day response hashes and completeness evidence were not captured.",
+        "retrieved_at_utc": "2026-10-08T11:42:45Z"
+      },
+      "observation": {
+        "utc_start": "2023-11-16T00:00:00Z",
+        "utc_end_exclusive": "2023-11-23T00:00:00Z",
+        "raw_hits": 1,
+        "primary_units_after_title_and_url_dedup": 1,
+        "response_sha256": "098c7eaa323f6b57c8800ada85828872a0ddc65b10aece0dc8dc5dffe0bedac1",
+        "items": [
+          {
+            "hn_id": "38286743",
+            "created_at": "2023-11-16T07:41:11Z",
+            "title": "UnitedHealth sued over use of algorithm in Medicare Advantage plans",
+            "url": "https://www.statnews.com/2023/11/14/unitedhealth-class-action-lawsuit-algorithm-medicare-advantage/",
+            "event_related": true
+          }
+        ],
+        "daily_valid_days_confirmed": null,
+        "daily_coverage_status": "Not individually verified; per-day response hashes and completeness evidence were not captured.",
+        "retrieved_at_utc": "2026-10-08T11:42:46Z"
+      },
+      "other_public_discussion_source": "No second comparable family with a complete series is present in the existing evidence; prior Reddit archive limitations remain in v13.",
+      "decision": "保留既有候选，走势 unknown；同一来源只有 1→1 个主题帖，覆盖单位不足，不能把报道时间当成讨论趋势。"
+    },
+    {
+      "event_id": "humana_algorithm_care_lawsuit_20231214",
+      "identity": "Humana Medicare Advantage algorithmic-care lawsuit; retained as the existing v4 identity.",
+      "cutoff": "2023-12-14T08:20:02Z",
+      "cutoff_input_ref": "data/evaluation/final-benchmark/inputs/qualified-inputs-v4.json#/events/7",
+      "query": "Humana algorithm",
+      "baseline": {
+        "utc_start": "2023-12-07T00:00:00Z",
+        "utc_end_exclusive": "2023-12-14T00:00:00Z",
+        "raw_hits": 2,
+        "primary_units_after_title_and_url_dedup": 0,
+        "response_sha256": "e55ca70c915e8f23071b46ed35dab0f4d0c3dd51e0e8b037d60e843eb953d3f2",
+        "items": [
+          {
+            "hn_id": "38585261",
+            "created_at": "2023-12-09T19:50:16Z",
+            "title": "FT is losing control over comments",
+            "url": null,
+            "event_related": false
+          },
+          {
+            "hn_id": "38565760",
+            "created_at": "2023-12-08T05:28:24Z",
+            "title": "Certain Algorithms to Improve the Human Condition Have Failed",
+            "url": "https://themarkup.org/2023/12/07/how-certain-algorithms-to-improve-the-human-condition-have-failed",
+            "event_related": false
+          }
+        ],
+        "daily_valid_days_confirmed": null,
+        "daily_coverage_status": "Not individually verified; per-day response hashes and completeness evidence were not captured.",
+        "retrieved_at_utc": "2026-10-08T11:42:47Z"
+      },
+      "observation": {
+        "utc_start": "2023-12-15T00:00:00Z",
+        "utc_end_exclusive": "2023-12-22T00:00:00Z",
+        "raw_hits": 1,
+        "primary_units_after_title_and_url_dedup": 0,
+        "response_sha256": "28e525c84c36255755235fcb5bbdd051b4b2b3bf61563e2fa2eef9497c695847",
+        "items": [
+          {
+            "hn_id": "38706157",
+            "created_at": "2023-12-20T07:04:32Z",
+            "title": "Ask HN: Reddit died, nothing took its place. What will happen when HN dies?",
+            "url": null,
+            "event_related": false
+          }
+        ],
+        "daily_valid_days_confirmed": null,
+        "daily_coverage_status": "Not individually verified; per-day response hashes and completeness evidence were not captured.",
+        "retrieved_at_utc": "2026-10-08T11:42:48Z"
+      },
+      "other_public_discussion_source": "No second comparable family with a complete series is present in the existing evidence; prior Reddit archive limitations remain in v13.",
+      "decision": "保留既有候选，HN 精确查询命中均为无关内容，走势 unknown；不把搜索引擎 false matches 当作零讨论或平息。"
+    }
+  ],
+  "secondary_source_attempt": {
+    "source_family": "Bluesky public posts",
+    "endpoint": "https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts",
+    "documentation": "https://github.com/bluesky-social/atproto/blob/main/lexicons/app/bsky/feed/searchPosts.json",
+    "request_scope": "One unauthenticated public GET for a State Farm California window screen; no account, login, alternate host, or access-control workaround.",
+    "result": "HTTP 403 Forbidden; no data retained and no zero count inferred.",
+    "decision": "Stop at the denial. No retry or alternate endpoint was used."
+  },
+  "overall_result": {
+    "existing_holdout_event_identities_screened": 7,
+    "new_independent_event_identities": 0,
+    "events_with_at_least_5_HN_primary_units_in_both_windows": 0,
+    "events_with_two_qualified_public_discussion_families": 0,
+    "qualified_trajectory_evidence_events": 0,
+    "new_formal_score_ready_events": 0,
+    "reason": "Seven existing v4 events and one Erie replacement lead were examined. No event met the primary-unit minimum in both windows; daily coverage was not verified as 6/7, and no second comparable public-discussion family was available. These are source-screen outcomes, not trend labels.",
+    "replacement_leads_with_evidence_review": 1,
+    "replacement_leads_admitted": 0
+  },
+  "replacement_lead_reviewed": {
+    "lead_id": "replacement_erie_cyber_outage",
+    "event_id_candidate": "erie_indemnity_network_security_event_20250611",
+    "identity": "One Erie Indemnity/Erie Insurance June 2025 outage and information-security incident. The public outage and later 8-K refer to the same incident; Philadelphia Insurance outage is a separate company event. Possible broader insurance-sector cyber campaign overlap with Aflac remains unresolved and is not counted as a second sample.",
+    "industry_scope": "Insurance; candidate only pending event-group review.",
+    "cutoff_candidate": {
+      "source": "SEC Form 8-K, accession 0000922621-25-000023, document erie-20250607.htm",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/922621/000092262125000023/erie-20250607.htm",
+      "acceptance_time_utc": "2025-06-11T16:26:09Z",
+      "selected_cutoff_utc": "2025-06-11T16:56:09Z",
+      "time_basis": "SEC filing acceptance timestamp plus the project 30-minute margin. The filing fixes content and time for this candidate input version; this is not claimed as the first public report of the outage, which was reported June 8/9.",
+      "cutoff_content_summary": "Erie reported unusual network activity identified June 7, classified it as an information-security event, and said response and investigation were ongoing; the full scope was not then known.",
+      "input_status": "Candidate-only. No cutoff-only JSON input was prepared or sent to E because trajectory and independent labels do not qualify."
+    },
+    "source_versions": [
+      {
+        "role": "fixed primary event record",
+        "publisher": "SEC EDGAR",
+        "version": "2025-06-11 8-K, accession 0000922621-25-000023; accepted 2025-06-11 16:26:09Z",
+        "url": "https://www.sec.gov/Archives/edgar/data/922621/000092262125000023/0000922621-25-000023-index.html"
+      },
+      {
+        "role": "company outage update source",
+        "publisher": "Erie Insurance",
+        "version": "public statement dated 2025-06-08; no minute-level visible-time witness retained in this screen",
+        "url": "https://www.erieinsurance.com/newsroom/press-releases/2025/erie-insurance-network-outage"
+      },
+      {
+        "role": "first-hand public discussion example",
+        "publisher": "Early Retirement forum",
+        "version": "thread page started 2025-06-14; page showed 21 posts through 2025-06-23 at retrieval",
+        "url": "https://www.early-retirement.org/threads/erie-insurance-cyber-attack.125525/"
+      },
+      {
+        "role": "later discussion example, not a count",
+        "publisher": "Bogleheads forum",
+        "version": "search index shows a thread started 2025-06-23; full page fetch returned HTTP 402 in this pass and was not retried",
+        "url": "https://www.bogleheads.org/forum/viewtopic.php?t=457005"
+      }
+    ],
+    "hn_screen": {
+      "source_family": "Hacker News public submissions",
+      "query": "Erie Insurance",
+      "primary_unit": "Distinct HN story submissions deduplicated by normalized linked URL",
+      "baseline": {
+        "utc_start": "2025-06-04T00:00:00Z",
+        "utc_end_exclusive": "2025-06-11T00:00:00Z",
+        "range_query_hits": 0,
+        "deduplicated_event_units": 0,
+        "response_sha256": "5d9f461f7929efa889549fe6bf9433a05e02b06ddb61bdab4afc992c7de56f42",
+        "retrieved_at_utc": "2026-10-08T11:43:00Z"
+      },
+      "observation": {
+        "utc_start": "2025-06-12T00:00:00Z",
+        "utc_end_exclusive": "2025-06-19T00:00:00Z",
+        "range_query_hits": 2,
+        "deduplicated_event_units": 1,
+        "response_sha256": "5cc2077bec06cbfd9e2ce86e261fa8370b788b2415080f34a4c768fcf9f1c078",
+        "items": [
+          {
+            "hn_ids": [
+              "44289800",
+              "44269398"
+            ],
+            "created_at_utc": [
+              "2025-06-16T14:22:52Z",
+              "2025-06-13T15:26:12Z"
+            ],
+            "title": "Erie Insurance Reports Information Security Event Caused Network Outage",
+            "url": "https://www.insurancejournal.com/news/east/2025/06/11/827295.htm",
+            "duplicate_link_deduplicated": true
+          }
+        ],
+        "retrieved_at_utc": "2026-10-08T11:43:02Z"
+      },
+      "daily_coverage": "Not individually captured; no 6/7 valid-day credit."
+    },
+    "other_discussion_evidence": [
+      {
+        "source_family": "Early Retirement forum",
+        "observations": "The thread begins after the selected cutoff on June 14. The accessible page shows replies on June 14, June 17, and June 20-23; it is one thread sample, not a complete forum search or a pre-cutoff baseline."
+      },
+      {
+        "source_family": "Reddit",
+        "observations": "Public search index has dated example posts on June 8, 11, 16, 18, and later dates; existing archive attempts did not yield a complete comparable daily series. Examples are corroborative only."
+      },
+      {
+        "source_family": "Bogleheads forum",
+        "observations": "A thread is indexed from June 23, after the seven-day observation window; the full-page request returned HTTP 402, so it is not counted."
+      }
+    ],
+    "trajectory_decision": "Unknown/not qualified. HN range results are 0→1 unique submissions with one duplicated link, not 6/7 daily coverage. Forum examples do not establish two comparable source families across both windows. No public silence, business restoration, or later thread count is treated as calming.",
+    "disposition": "Retain as a promising replacement lead for additional evidence review; do not admit into formal set or count toward 20."
+  }
+}

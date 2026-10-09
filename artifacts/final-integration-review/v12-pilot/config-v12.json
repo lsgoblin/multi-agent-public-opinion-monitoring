@@ -1,0 +1,8 @@
+{
+  "future_evidence_or_labels_read": 0,
+  "model_calls": 0,
+  "network_requests": 0,
+  "policy": "constant escalation for every event; independent of event text",
+  "provenance_urls_dereferenced": 0,
+  "sentiment": "abstain; event summary is not a title-level sentiment unit"
+}

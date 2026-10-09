@@ -1,0 +1,437 @@
+{
+  "schema": "riskshield.final_benchmark.annotation_register.v2",
+  "label_version": "final-benchmark-labels-v2-2026-10-08",
+  "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+  "access": "independent scoring only; never load into Store, graph, retrieval, Agent memory or prediction context",
+  "annotations": [
+    {
+      "event_id": "unh_change_cyberattack_20240222",
+      "record_id": "unh-sec-20240222-initial",
+      "target_subject": "UnitedHealth Group",
+      "status": "existing_limited_development_annotations_only",
+      "existing_annotations_ref": "data/evaluation/final-benchmark/labels/annotation-register-v1.json#/annotations/0",
+      "new_annotations": [],
+      "strict_double_blind_truth_verified": false
+    },
+    {
+      "event_id": "fnf_cyberattack_20231123",
+      "record_id": "reddit_archived_post_1821s44",
+      "target_subject": "Fidelity National Financial",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "status": "awaiting_two_independent_human_annotations",
+      "existing_annotations": [],
+      "adjudication": null,
+      "complaint_allegation_unverified": false
+    },
+    {
+      "event_id": "aflac_cybersecurity_incident_20250620",
+      "record_id": "reddit_archived_post_1lg33ey",
+      "target_subject": "Aflac Incorporated",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "status": "awaiting_two_independent_human_annotations",
+      "existing_annotations": [],
+      "adjudication": null,
+      "complaint_allegation_unverified": false
+    },
+    {
+      "event_id": "allianz_life_data_breach_20250727",
+      "record_id": "reddit_archived_post_1ma8wfj",
+      "target_subject": "Allianz Life Insurance Company of North America",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "status": "awaiting_two_independent_human_annotations",
+      "existing_annotations": [],
+      "adjudication": null,
+      "complaint_allegation_unverified": false
+    },
+    {
+      "event_id": "anthem_anesthesia_proposal_20241204",
+      "record_id": "reddit_archived_post_1h6mj0x",
+      "target_subject": "Anthem Blue Cross Blue Shield",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "status": "awaiting_two_independent_human_annotations",
+      "existing_annotations": [],
+      "adjudication": null,
+      "complaint_allegation_unverified": false
+    },
+    {
+      "event_id": "cigna_algorithm_denial_lawsuit_20230725",
+      "record_id": "reddit_archived_post_159ce8g",
+      "target_subject": "Cigna",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "status": "awaiting_two_independent_human_annotations",
+      "existing_annotations": [],
+      "adjudication": null,
+      "complaint_allegation_unverified": false
+    },
+    {
+      "event_id": "unitedhealth_algorithm_care_lawsuit_20231115",
+      "record_id": "reddit_archived_post_17w461q",
+      "target_subject": "UnitedHealth Group / UnitedHealthcare",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "status": "awaiting_two_independent_human_annotations",
+      "existing_annotations": [],
+      "adjudication": null,
+      "complaint_allegation_unverified": false
+    },
+    {
+      "event_id": "humana_algorithm_care_lawsuit_20231214",
+      "record_id": "reddit_archived_post_18i3k2f",
+      "target_subject": "Humana",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "status": "awaiting_two_independent_human_annotations",
+      "existing_annotations": [],
+      "adjudication": null,
+      "complaint_allegation_unverified": false
+    },
+    {
+      "event_id": "complaint_health_claim_review_20240818",
+      "record_id": "reddit_archived_post_1evaapp",
+      "target_subject": "Unspecified health insurer in the post",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "status": "awaiting_two_independent_human_annotations",
+      "existing_annotations": [],
+      "adjudication": null,
+      "complaint_allegation_unverified": true
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20241229",
+      "record_id": "reddit_archived_post_1hp6wa2",
+      "target_subject": "Unspecified homeowners insurer in the post",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "status": "awaiting_two_independent_human_annotations",
+      "existing_annotations": [],
+      "adjudication": null,
+      "complaint_allegation_unverified": true
+    },
+    {
+      "event_id": "complaint_home_coverage_after_termination_20240430",
+      "record_id": "reddit_archived_post_1ch6tu5",
+      "target_subject": "Unspecified homeowners insurer in the post",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "status": "awaiting_two_independent_human_annotations",
+      "existing_annotations": [],
+      "adjudication": null,
+      "complaint_allegation_unverified": true
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20231018",
+      "record_id": "reddit_archived_post_17acu1c",
+      "target_subject": "Unspecified homeowners insurer in the post",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "status": "awaiting_two_independent_human_annotations",
+      "existing_annotations": [],
+      "adjudication": null,
+      "complaint_allegation_unverified": true
+    },
+    {
+      "event_id": "complaint_health_claim_rejections_20241211",
+      "record_id": "reddit_archived_post_1hc1bcc",
+      "target_subject": "Unspecified health insurer in the post",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "status": "awaiting_two_independent_human_annotations",
+      "existing_annotations": [],
+      "adjudication": null,
+      "complaint_allegation_unverified": true
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20240524",
+      "record_id": "reddit_archived_post_1cznbtx",
+      "target_subject": "Unspecified homeowners insurer in the post",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "status": "awaiting_two_independent_human_annotations",
+      "existing_annotations": [],
+      "adjudication": null,
+      "complaint_allegation_unverified": true
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20231010",
+      "record_id": "reddit_archived_post_174m8f9",
+      "target_subject": "Unspecified homeowners insurer in the post",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "status": "awaiting_two_independent_human_annotations",
+      "existing_annotations": [],
+      "adjudication": null,
+      "complaint_allegation_unverified": true
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20240625",
+      "record_id": "reddit_archived_post_1do5am8",
+      "target_subject": "Unspecified homeowners insurer in the post",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "status": "awaiting_two_independent_human_annotations",
+      "existing_annotations": [],
+      "adjudication": null,
+      "complaint_allegation_unverified": true
+    },
+    {
+      "event_id": "complaint_auto_claim_denial_20241116",
+      "record_id": "reddit_archived_post_1gshw33",
+      "target_subject": "Unspecified auto insurer in the post",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "status": "awaiting_two_independent_human_annotations",
+      "existing_annotations": [],
+      "adjudication": null,
+      "complaint_allegation_unverified": true
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_inspection_20241011",
+      "record_id": "reddit_archived_post_1g1kc9b",
+      "target_subject": "Unspecified homeowners insurer in the post",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "status": "awaiting_two_independent_human_annotations",
+      "existing_annotations": [],
+      "adjudication": null,
+      "complaint_allegation_unverified": true
+    },
+    {
+      "event_id": "complaint_home_policy_claim_20240113",
+      "record_id": "reddit_archived_post_195twpp",
+      "target_subject": "Unspecified homeowners insurer in the post",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "status": "awaiting_two_independent_human_annotations",
+      "existing_annotations": [],
+      "adjudication": null,
+      "complaint_allegation_unverified": true
+    },
+    {
+      "event_id": "complaint_auto_cancellation_notice_20241003",
+      "record_id": "reddit_archived_post_1fvdpul",
+      "target_subject": "Unspecified auto insurer in the post",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "status": "awaiting_two_independent_human_annotations",
+      "existing_annotations": [],
+      "adjudication": null,
+      "complaint_allegation_unverified": true
+    }
+  ],
+  "event_outcomes": [
+    {
+      "event_id": "unh_change_cyberattack_20240222",
+      "window_start_exclusive": "2024-02-22T16:48:39-05:00",
+      "window_end_inclusive": "2024-02-29T16:48:39-05:00",
+      "window_status": "provisional_existing_window_pending_V2_Q05",
+      "observed_direction": null,
+      "annotators": [],
+      "adjudication": null,
+      "evidence_status": "No independent outcome evidence review or human direction judgment completed in this version.",
+      "status": "undetermined"
+    },
+    {
+      "event_id": "fnf_cyberattack_20231123",
+      "window_start_exclusive": "2023-11-23T14:29:55Z",
+      "window_end_inclusive": "2023-11-30T14:29:55Z",
+      "window_status": "provisional_7_day_window_pending_V2_Q05",
+      "observed_direction": null,
+      "annotators": [],
+      "adjudication": null,
+      "evidence_status": "No independent outcome evidence review or human direction judgment completed in this version.",
+      "status": "undetermined"
+    },
+    {
+      "event_id": "aflac_cybersecurity_incident_20250620",
+      "window_start_exclusive": "2025-06-20T13:16:30Z",
+      "window_end_inclusive": "2025-06-27T13:16:30Z",
+      "window_status": "provisional_7_day_window_pending_V2_Q05",
+      "observed_direction": null,
+      "annotators": [],
+      "adjudication": null,
+      "evidence_status": "No independent outcome evidence review or human direction judgment completed in this version.",
+      "status": "undetermined"
+    },
+    {
+      "event_id": "allianz_life_data_breach_20250727",
+      "window_start_exclusive": "2025-07-27T01:07:54Z",
+      "window_end_inclusive": "2025-08-03T01:07:54Z",
+      "window_status": "provisional_7_day_window_pending_V2_Q05",
+      "observed_direction": null,
+      "annotators": [],
+      "adjudication": null,
+      "evidence_status": "No independent outcome evidence review or human direction judgment completed in this version.",
+      "status": "undetermined"
+    },
+    {
+      "event_id": "anthem_anesthesia_proposal_20241204",
+      "window_start_exclusive": "2024-12-04T18:29:34Z",
+      "window_end_inclusive": "2024-12-11T18:29:34Z",
+      "window_status": "provisional_7_day_window_pending_V2_Q05",
+      "observed_direction": null,
+      "annotators": [],
+      "adjudication": null,
+      "evidence_status": "No independent outcome evidence review or human direction judgment completed in this version.",
+      "status": "undetermined"
+    },
+    {
+      "event_id": "cigna_algorithm_denial_lawsuit_20230725",
+      "window_start_exclusive": "2023-07-25T16:23:54Z",
+      "window_end_inclusive": "2023-08-01T16:23:54Z",
+      "window_status": "provisional_7_day_window_pending_V2_Q05",
+      "observed_direction": null,
+      "annotators": [],
+      "adjudication": null,
+      "evidence_status": "No independent outcome evidence review or human direction judgment completed in this version.",
+      "status": "undetermined"
+    },
+    {
+      "event_id": "unitedhealth_algorithm_care_lawsuit_20231115",
+      "window_start_exclusive": "2023-11-15T21:52:18Z",
+      "window_end_inclusive": "2023-11-22T21:52:18Z",
+      "window_status": "provisional_7_day_window_pending_V2_Q05",
+      "observed_direction": null,
+      "annotators": [],
+      "adjudication": null,
+      "evidence_status": "No independent outcome evidence review or human direction judgment completed in this version.",
+      "status": "undetermined"
+    },
+    {
+      "event_id": "humana_algorithm_care_lawsuit_20231214",
+      "window_start_exclusive": "2023-12-14T08:20:02Z",
+      "window_end_inclusive": "2023-12-21T08:20:02Z",
+      "window_status": "provisional_7_day_window_pending_V2_Q05",
+      "observed_direction": null,
+      "annotators": [],
+      "adjudication": null,
+      "evidence_status": "No independent outcome evidence review or human direction judgment completed in this version.",
+      "status": "undetermined"
+    },
+    {
+      "event_id": "complaint_health_claim_review_20240818",
+      "window_start_exclusive": "2024-08-18T14:46:54Z",
+      "window_end_inclusive": "2024-08-25T14:46:54Z",
+      "window_status": "provisional_7_day_window_pending_V2_Q05",
+      "observed_direction": null,
+      "annotators": [],
+      "adjudication": null,
+      "evidence_status": "No independent outcome evidence review or human direction judgment completed in this version.",
+      "status": "undetermined"
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20241229",
+      "window_start_exclusive": "2024-12-29T22:22:11Z",
+      "window_end_inclusive": "2025-01-05T22:22:11Z",
+      "window_status": "provisional_7_day_window_pending_V2_Q05",
+      "observed_direction": null,
+      "annotators": [],
+      "adjudication": null,
+      "evidence_status": "No independent outcome evidence review or human direction judgment completed in this version.",
+      "status": "undetermined"
+    },
+    {
+      "event_id": "complaint_home_coverage_after_termination_20240430",
+      "window_start_exclusive": "2024-04-30T23:41:09Z",
+      "window_end_inclusive": "2024-05-07T23:41:09Z",
+      "window_status": "provisional_7_day_window_pending_V2_Q05",
+      "observed_direction": null,
+      "annotators": [],
+      "adjudication": null,
+      "evidence_status": "No independent outcome evidence review or human direction judgment completed in this version.",
+      "status": "undetermined"
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20231018",
+      "window_start_exclusive": "2023-10-18T00:35:59Z",
+      "window_end_inclusive": "2023-10-25T00:35:59Z",
+      "window_status": "provisional_7_day_window_pending_V2_Q05",
+      "observed_direction": null,
+      "annotators": [],
+      "adjudication": null,
+      "evidence_status": "No independent outcome evidence review or human direction judgment completed in this version.",
+      "status": "undetermined"
+    },
+    {
+      "event_id": "complaint_health_claim_rejections_20241211",
+      "window_start_exclusive": "2024-12-11T19:40:51Z",
+      "window_end_inclusive": "2024-12-18T19:40:51Z",
+      "window_status": "provisional_7_day_window_pending_V2_Q05",
+      "observed_direction": null,
+      "annotators": [],
+      "adjudication": null,
+      "evidence_status": "No independent outcome evidence review or human direction judgment completed in this version.",
+      "status": "undetermined"
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20240524",
+      "window_start_exclusive": "2024-05-24T15:53:22Z",
+      "window_end_inclusive": "2024-05-31T15:53:22Z",
+      "window_status": "provisional_7_day_window_pending_V2_Q05",
+      "observed_direction": null,
+      "annotators": [],
+      "adjudication": null,
+      "evidence_status": "No independent outcome evidence review or human direction judgment completed in this version.",
+      "status": "undetermined"
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20231010",
+      "window_start_exclusive": "2023-10-10T14:41:29Z",
+      "window_end_inclusive": "2023-10-17T14:41:29Z",
+      "window_status": "provisional_7_day_window_pending_V2_Q05",
+      "observed_direction": null,
+      "annotators": [],
+      "adjudication": null,
+      "evidence_status": "No independent outcome evidence review or human direction judgment completed in this version.",
+      "status": "undetermined"
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20240625",
+      "window_start_exclusive": "2024-06-25T13:24:24Z",
+      "window_end_inclusive": "2024-07-02T13:24:24Z",
+      "window_status": "provisional_7_day_window_pending_V2_Q05",
+      "observed_direction": null,
+      "annotators": [],
+      "adjudication": null,
+      "evidence_status": "No independent outcome evidence review or human direction judgment completed in this version.",
+      "status": "undetermined"
+    },
+    {
+      "event_id": "complaint_auto_claim_denial_20241116",
+      "window_start_exclusive": "2024-11-16T07:38:12Z",
+      "window_end_inclusive": "2024-11-23T07:38:12Z",
+      "window_status": "provisional_7_day_window_pending_V2_Q05",
+      "observed_direction": null,
+      "annotators": [],
+      "adjudication": null,
+      "evidence_status": "No independent outcome evidence review or human direction judgment completed in this version.",
+      "status": "undetermined"
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_inspection_20241011",
+      "window_start_exclusive": "2024-10-11T21:46:37Z",
+      "window_end_inclusive": "2024-10-18T21:46:37Z",
+      "window_status": "provisional_7_day_window_pending_V2_Q05",
+      "observed_direction": null,
+      "annotators": [],
+      "adjudication": null,
+      "evidence_status": "No independent outcome evidence review or human direction judgment completed in this version.",
+      "status": "undetermined"
+    },
+    {
+      "event_id": "complaint_home_policy_claim_20240113",
+      "window_start_exclusive": "2024-01-13T18:31:40Z",
+      "window_end_inclusive": "2024-01-20T18:31:40Z",
+      "window_status": "provisional_7_day_window_pending_V2_Q05",
+      "observed_direction": null,
+      "annotators": [],
+      "adjudication": null,
+      "evidence_status": "No independent outcome evidence review or human direction judgment completed in this version.",
+      "status": "undetermined"
+    },
+    {
+      "event_id": "complaint_auto_cancellation_notice_20241003",
+      "window_start_exclusive": "2024-10-03T18:21:23Z",
+      "window_end_inclusive": "2024-10-10T18:21:23Z",
+      "window_status": "provisional_7_day_window_pending_V2_Q05",
+      "observed_direction": null,
+      "annotators": [],
+      "adjudication": null,
+      "evidence_status": "No independent outcome evidence review or human direction judgment completed in this version.",
+      "status": "undetermined"
+    }
+  ],
+  "statistics": {
+    "sentiment_units": 20,
+    "strict_double_blind_units_verified": 0,
+    "new_double_annotation_assignments_pending": 38,
+    "adjudicated_direction_labels": 0,
+    "all_observed_direction_null": true
+  },
+  "provenance_note": "No Agent-generated suggestion is recorded as human truth. Existing UNH labels retain the limits documented in v1."
+}

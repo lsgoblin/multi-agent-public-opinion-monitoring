@@ -4,7 +4,7 @@
 
 ## 工具与数据隔离
 
-- [评测实现](../../src/riskshield/day5_evaluation.py)只读取版本化输入 JSON 与独立标签 JSON，验证来源、可见时间、cutoff、预测和标签证据引用，再写入独立评测报告。标签不会导入 Store、知识图谱、检索、Agent 记忆或推演；文件引用作为本地 JSON Pointer 校验，不会复制来源正文进推演。
+- [评测实现](../../src/riskshield/evaluation.py)只读取版本化输入 JSON 与独立标签 JSON，验证来源、可见时间、cutoff、预测和标签证据引用，再写入独立评测报告。标签不会导入 Store、知识图谱、检索、Agent 记忆或推演；文件引用作为本地 JSON Pointer 校验，不会复制来源正文进推演。
 - [输入数据](../../data/evaluation/day5/inputs-v1.json)只记录输入快照、预测、执行模式和结果引用；[标签数据](../../data/evaluation/day5/future-labels-v1.json)单独存储人工情感标注与未来走势结论。未知或不确定的未来走势保持 `null`，不推造真值。
 - [模板与字段说明](../../data/evaluation/day5/README.md)列明输入结构、合格条件与仓库根目录运行命令。输入和标签各有空 JSON 模板。
 - 只有 `real_historical` 数据进入正式计算分母。测试中的合成记录只检验算式、缺失值处理和隔离逻辑；离线报告不把合成数据计入正式指标。

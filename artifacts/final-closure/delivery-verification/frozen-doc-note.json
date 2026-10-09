@@ -1,0 +1,19 @@
+{
+  "round_id": "closure-20261009-functional-names-v1",
+  "status": "stale_pre_freeze_statement_preserved",
+  "reason": "D-owned deployment documents and package members were frozen at d-prep-ready; the E-matched candidate freeze arrived afterward. This verification does not alter frozen source or ZIP members.",
+  "observations": [
+    {
+      "line": 159,
+      "statement": "says source was not finally frozen and no final ZIP will be generated in this round",
+      "path": "docs/delivery/deployment.md"
+    },
+    {
+      "line": 11,
+      "statement": "says no final ZIP was generated because matching E freeze evidence was not yet available",
+      "path": "docs/records/final-deployment-review.md"
+    }
+  ],
+  "verified_effect": "The ZIP was subsequently created from the matching E-frozen exact whitelist, extracted and built successfully. The stale lines do not invalidate the documented startup commands.",
+  "formal_acceptance": "No change: G3/G4/G5 remain unpassed."
+}

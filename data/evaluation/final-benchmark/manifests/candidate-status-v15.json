@@ -1,0 +1,79 @@
+{
+  "schema": "riskshield.final_benchmark.candidate_status.v15",
+  "dataset_version": "final-benchmark-evidence-v15-2026-10-08",
+  "base_freeze_v14_sha256": "c6f50253cd0cf6418202dca4bfca0b99d45218c24681e45a15462f5b8e58552b",
+  "schedule": {
+    "batch_freeze_beijing": "2026-10-09T10:00:00+08:00",
+    "project_deadline_beijing": "2026-10-09T12:00:00+08:00",
+    "source": "Direct user instruction; overrides older project-plan dates."
+  },
+  "protocol_for_main_agent": {
+    "current_method": "Use the already main-agent-reviewed v13 supplement: UTC full days, exclude D0, baseline D-7..D-1, observation D+1..D+7; two independent comparable public-discussion families; each family/window >=6/7 valid days and >=5 deduplicated event-relevant primary units; zero, missing, conflict or confounds remain unknown; news is supplemental only.",
+    "status": "Internal scoring method; not sponsor-confirmed. No thresholds were changed in v15.",
+    "specific_decision_needed": "Freeze whether an incident is statistically independent at victim-incident level or campaign level when secondary threat-intelligence reporting associates multiple insurers with a possible shared campaign. Until then, do not count Erie and Aflac as independent formal events."
+  },
+  "counts": {
+    "existing_v4_holdout_identities_screened_in_v14": 7,
+    "existing_v4_cutoff_time_witnessed": 7,
+    "existing_v4_cutoff_content_sufficient_to_identify_issue": 7,
+    "new_replacement_leads_screened_in_v15": 1,
+    "new_independent_event_identities_admitted_in_v15": 0,
+    "new_cutoff_inputs_qualified_in_v15": 0,
+    "new_events_with_two_qualified_public_discussion_families_in_v15": 0,
+    "new_events_with_qualified_trajectory_evidence_in_v15": 0,
+    "new_independent_human_sentiment_labels_received": 0,
+    "new_independent_human_trajectory_labels_received": 0,
+    "priority_sentiment_units_awaiting_assignment": 5,
+    "priority_sentiment_human_slots_missing": 10,
+    "new_formal_score_ready_events_this_pass": 0,
+    "formal_score_ready_holdout_total": 0,
+    "gap_to_interim_10": 10,
+    "gap_to_target_20": 20,
+    "June_2025_campaign_independence_adjudication_pending": true
+  },
+  "evidence_files": {
+    "new_identity_and_candidate_screen": "data/evaluation/final-benchmark/manifests/identity-and-louisiana-screen-v15.json",
+    "prior_source_screen": "data/evaluation/final-benchmark/manifests/independent-source-screen-v14.json",
+    "human_annotation_queue": "data/evaluation/final-benchmark/labels/human-annotation-queue-v14.md",
+    "human_annotation_base_packet": "data/evaluation/final-benchmark/labels/blind-sentiment-packet-v6.json",
+    "human_annotation_base_packet_sha256": "e31e1a2962e40bbbe4e2e06dbc7a8cbd2c1198031398b4407a47923b81ec29fc"
+  },
+  "predictor_handoff": {
+    "new_handoff_created": false,
+    "reason": "The Louisiana lead did not produce a qualified cutoff-only input or source evidence; no new eligible batch is available for E.",
+    "last_handoff": "data/evaluation/final-benchmark/manifests/e-handoff-v13.json",
+    "last_result": "artifacts/final-integration-review/v13-pilot/seal-v13.json; offline constant engineering baseline, not a real model prediction and not a formal score."
+  },
+  "human_labels": {
+    "new_submissions_received": 0,
+    "priority_queue_units": 5,
+    "priority_queue_slots_missing": 10,
+    "priority_unit_ids": [
+      "sent-fnf-1821s44",
+      "sent-anthem-1h6mj0x",
+      "sent-cigna-159ce8g",
+      "sent-humana-ars-20231213",
+      "sent-aflac-1lg33ey"
+    ],
+    "label_mapping_proposal_for_main_agent": {
+      "status": "Proposed only; not frozen and not assigned to annotators.",
+      "allowed_labels": ["positive", "negative", "neutral", "mixed", "unclear"],
+      "definitions": {
+        "positive": "The frozen title explicitly conveys approval, support, satisfaction or another positive evaluation.",
+        "negative": "The frozen title explicitly conveys dissatisfaction, concern, criticism, loss or another negative evaluation.",
+        "neutral": "The title mainly reports an event or an attributed allegation without a clear evaluative stance.",
+        "mixed": "The title clearly contains both positive and negative evaluations and cannot be reduced to one direction.",
+        "unclear": "The title is too short, ambiguous or context-dependent to determine its expressed tone."
+      },
+      "change_from_v6_proposal": "Keep the two already-defined mixed/unclear categories and remove the undefined uncertain value; do not collapse mixed or unclear into neutral.",
+      "required_main_agent_action": "Confirm or replace this mapping before blinded assignment."
+    },
+    "assignment_status": "The v14 blind task list remains prepared for main-agent assignment. No human has been assigned and no labels were filled."
+  },
+  "status_notes": [
+    "The fixed HN query returned zero matching story submissions on all 14 requested UTC days. This is not evidence of no public discussion or calming.",
+    "The one attempted official Reddit public-search request returned HTTP 403 Blocked and was stopped without retry or alternate endpoint.",
+    "No future evidence was inserted into cutoff inputs, Store, graph, Agent memory or prediction context.",
+    "The v14 human list has five title units and ten missing slots. No real-human submission was received; label mapping remains unresolved in its base v6 packet."
+  ]
+}

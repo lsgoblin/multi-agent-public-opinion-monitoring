@@ -1,0 +1,228 @@
+ Image riskshield:day4-local Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 594B 0.0s done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 373B 0.0s done
+#2 DONE 0.1s
+
+#3 [internal] load metadata for docker.io/library/python:3.12-slim
+#3 DONE 0.2s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 235B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 DONE 0.0s
+
+#6 [1/8] FROM docker.io/library/python:3.12-slim@sha256:05cda9777409a9c3ffddd94a4c476b79f0769a0b4857f0c7ed9226b6800b0d6f
+#6 resolve docker.io/library/python:3.12-slim@sha256:05cda9777409a9c3ffddd94a4c476b79f0769a0b4857f0c7ed9226b6800b0d6f 0.0s done
+#6 DONE 0.1s
+
+#7 [2/8] WORKDIR /app
+#7 CACHED
+
+#5 [internal] load build context
+#5 transferring context: 405.79kB 0.1s done
+#5 DONE 0.1s
+
+#8 [3/8] COPY pyproject.toml ./
+#8 DONE 0.1s
+
+#9 [4/8] COPY src ./src
+#9 DONE 0.1s
+
+#10 [5/8] COPY ui ./ui
+#10 DONE 0.1s
+
+#11 [6/8] COPY data/public ./data/public
+#11 DONE 0.1s
+
+#12 [7/8] COPY data/research/channel_checks_v2.json ./data/research/channel_checks_v2.json
+#12 DONE 0.1s
+
+#13 [8/8] RUN pip install --no-cache-dir -e . && mkdir -p /app/runtime
+#13 1.965 Obtaining file:///app
+#13 1.969   Installing build dependencies: started
+#13 17.19   Installing build dependencies: finished with status 'done'
+#13 17.19   Checking if build backend supports build_editable: started
+#13 13.61   Checking if build backend supports build_editable: finished with status 'done'
+#13 13.62   Getting requirements to build editable: started
+#13 14.15   Getting requirements to build editable: finished with status 'done'
+#13 14.15   Preparing editable metadata (pyproject.toml): started
+#13 14.67   Preparing editable metadata (pyproject.toml): finished with status 'done'
+#13 15.57 Collecting fastapi<1,>=0.115 (from riskshield==0.1.0)
+#13 16.06   Downloading fastapi-0.143.0-py3-none-any.whl.metadata (26 kB)
+#13 16.51 Collecting httpx<1,>=0.28 (from riskshield==0.1.0)
+#13 16.66   Downloading httpx-0.28.1-py3-none-any.whl.metadata (7.1 kB)
+#13 17.77 Collecting pydantic<3,>=2.10 (from riskshield==0.1.0)
+#13 17.92   Downloading pydantic-2.14.0-py3-none-any.whl.metadata (131 kB)
+#13 18.57 Collecting streamlit<2,>=1.40 (from riskshield==0.1.0)
+#13 18.71   Downloading streamlit-1.65.0-py3-none-any.whl.metadata (10 kB)
+#13 19.01 Collecting uvicorn<1,>=0.34 (from riskshield==0.1.0)
+#13 19.16   Downloading uvicorn-0.54.0-py3-none-any.whl.metadata (6.6 kB)
+#13 19.55 Collecting starlette>=0.46.0 (from fastapi<1,>=0.115->riskshield==0.1.0)
+#13 19.70   Downloading starlette-1.7.0-py3-none-any.whl.metadata (6.6 kB)
+#13 20.03 Collecting typing-extensions>=4.8.0 (from fastapi<1,>=0.115->riskshield==0.1.0)
+#13 20.19   Downloading typing_extensions-4.16.0-py3-none-any.whl.metadata (3.3 kB)
+#13 20.34 Collecting typing-inspection>=0.4.2 (from fastapi<1,>=0.115->riskshield==0.1.0)
+#13 20.49   Downloading typing_inspection-0.4.4-py3-none-any.whl.metadata (2.6 kB)
+#13 20.64 Collecting annotated-doc>=0.0.2 (from fastapi<1,>=0.115->riskshield==0.1.0)
+#13 20.79   Downloading annotated_doc-0.0.5-py3-none-any.whl.metadata (6.5 kB)
+#13 21.03 Collecting opentelemetry-api>=1.44.0 (from fastapi<1,>=0.115->riskshield==0.1.0)
+#13 21.18   Downloading opentelemetry_api-1.45.1-py3-none-any.whl.metadata (1.4 kB)
+#13 21.40 Collecting anyio (from httpx<1,>=0.28->riskshield==0.1.0)
+#13 21.54   Downloading anyio-4.15.1-py3-none-any.whl.metadata (4.7 kB)
+#13 21.77 Collecting certifi (from httpx<1,>=0.28->riskshield==0.1.0)
+#13 21.92   Downloading certifi-2026.7.22-py3-none-any.whl.metadata (2.5 kB)
+#13 22.13 Collecting httpcore==1.* (from httpx<1,>=0.28->riskshield==0.1.0)
+#13 22.28   Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+#13 22.47 Collecting idna (from httpx<1,>=0.28->riskshield==0.1.0)
+#13 22.63   Downloading idna-3.20-py3-none-any.whl.metadata (7.2 kB)
+#13 22.79 Collecting h11>=0.16 (from httpcore==1.*->httpx<1,>=0.28->riskshield==0.1.0)
+#13 22.94   Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+#13 23.10 Collecting annotated-types>=0.6.0 (from pydantic<3,>=2.10->riskshield==0.1.0)
+#13 23.25   Downloading annotated_types-0.8.0-py3-none-any.whl.metadata (15 kB)
+#13 27.85 Collecting pydantic-core==2.50.0 (from pydantic<3,>=2.10->riskshield==0.1.0)
+#13 28.00   Downloading pydantic_core-2.50.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.5 kB)
+#13 28.45 Collecting altair!=5.4.0,!=5.4.1,<7,>=5.0.0 (from streamlit<2,>=1.40->riskshield==0.1.0)
+#13 28.60   Downloading altair-6.3.0-py3-none-any.whl.metadata (11 kB)
+#13 28.79 Collecting click<9,>=7.0 (from streamlit<2,>=1.40->riskshield==0.1.0)
+#13 28.94   Downloading click-8.5.0-py3-none-any.whl.metadata (2.6 kB)
+#13 30.03 Collecting numpy<3,>=1.23 (from streamlit<2,>=1.40->riskshield==0.1.0)
+#13 30.17   Downloading numpy-2.5.3-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (6.6 kB)
+#13 30.49 Collecting packaging>=20 (from streamlit<2,>=1.40->riskshield==0.1.0)
+#13 30.64   Downloading packaging-26.3-py3-none-any.whl.metadata (3.5 kB)
+#13 31.37 Collecting pandas<4,>=1.4.0 (from streamlit<2,>=1.40->riskshield==0.1.0)
+#13 31.66   Downloading pandas-3.0.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (79 kB)
+#13 32.80 Collecting pillow<13,>=7.1.0 (from streamlit<2,>=1.40->riskshield==0.1.0)
+#13 32.96   Downloading pillow-12.3.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl.metadata (9.1 kB)
+#13 33.13 Collecting pydeck<1,>=0.8.0b4 (from streamlit<2,>=1.40->riskshield==0.1.0)
+#13 33.62   Downloading pydeck-0.9.3-py2.py3-none-any.whl.metadata (4.2 kB)
+#13 34.30 Collecting protobuf<8,>=5.26.1 (from streamlit<2,>=1.40->riskshield==0.1.0)
+#13 34.45   Downloading protobuf-7.36.2-cp310-abi3-manylinux2014_x86_64.whl.metadata (595 bytes)
+#13 35.01 Collecting pyarrow!=25.0.0,<26,>=7.0 (from streamlit<2,>=1.40->riskshield==0.1.0)
+#13 35.16   Downloading pyarrow-25.0.1-cp312-cp312-manylinux_2_28_x86_64.whl.metadata (3.0 kB)
+#13 35.50 Collecting requests<3,>=2.27 (from streamlit<2,>=1.40->riskshield==0.1.0)
+#13 35.65   Downloading requests-2.34.2-py3-none-any.whl.metadata (4.8 kB)
+#13 35.81 Collecting toml<2,>=0.10.1 (from streamlit<2,>=1.40->riskshield==0.1.0)
+#13 35.97   Downloading toml-0.10.2-py2.py3-none-any.whl.metadata (7.1 kB)
+#13 36.32 Collecting httptools<1,>=0.6.3 (from streamlit<2,>=1.40->riskshield==0.1.0)
+#13 36.48   Downloading httptools-0.8.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (3.5 kB)
+#13 36.64 Collecting python-multipart<1,>=0.0.10 (from streamlit<2,>=1.40->riskshield==0.1.0)
+#13 36.79   Downloading python_multipart-0.0.32-py3-none-any.whl.metadata (2.1 kB)
+#13 37.21 Collecting websockets<18,>=12.0.0 (from streamlit<2,>=1.40->riskshield==0.1.0)
+#13 37.36   Downloading websockets-17.2-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (6.3 kB)
+#13 37.52 Collecting itsdangerous<3,>=2.1.2 (from streamlit<2,>=1.40->riskshield==0.1.0)
+#13 37.68   Downloading itsdangerous-2.2.0-py3-none-any.whl.metadata (1.9 kB)
+#13 37.93 Collecting watchdog<7,>=2.1.5 (from streamlit<2,>=1.40->riskshield==0.1.0)
+#13 38.08   Downloading watchdog-6.0.0-py3-none-manylinux2014_x86_64.whl.metadata (44 kB)
+#13 38.37 Collecting jinja2 (from altair!=5.4.0,!=5.4.1,<7,>=5.0.0->streamlit<2,>=1.40->riskshield==0.1.0)
+#13 38.53   Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+#13 38.89 Collecting jsonschema>=3.0 (from altair!=5.4.0,!=5.4.1,<7,>=5.0.0->streamlit<2,>=1.40->riskshield==0.1.0)
+#13 39.09   Downloading jsonschema-4.26.0-py3-none-any.whl.metadata (7.6 kB)
+#13 39.36 Collecting narwhals>=2.4.0 (from altair!=5.4.0,!=5.4.1,<7,>=5.0.0->streamlit<2,>=1.40->riskshield==0.1.0)
+#13 39.62   Downloading narwhals-2.26.0-py3-none-any.whl.metadata (15 kB)
+#13 40.15 Collecting python-dateutil>=2.8.2 (from pandas<4,>=1.4.0->streamlit<2,>=1.40->riskshield==0.1.0)
+#13 40.55   Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+#13 41.09 Collecting charset_normalizer<4,>=2 (from requests<3,>=2.27->streamlit<2,>=1.40->riskshield==0.1.0)
+#13 41.24   Downloading charset_normalizer-3.5.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (46 kB)
+#13 41.10 Collecting urllib3<3,>=1.26 (from requests<3,>=2.27->streamlit<2,>=1.40->riskshield==0.1.0)
+#13 41.50   Downloading urllib3-2.8.0-py3-none-any.whl.metadata (7.4 kB)
+#13 41.90 Collecting MarkupSafe>=2.0 (from jinja2->altair!=5.4.0,!=5.4.1,<7,>=5.0.0->streamlit<2,>=1.40->riskshield==0.1.0)
+#13 42.12   Downloading markupsafe-3.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+#13 42.28 Collecting attrs>=22.2.0 (from jsonschema>=3.0->altair!=5.4.0,!=5.4.1,<7,>=5.0.0->streamlit<2,>=1.40->riskshield==0.1.0)
+#13 42.73   Downloading attrs-26.1.0-py3-none-any.whl.metadata (8.8 kB)
+#13 42.92 Collecting jsonschema-specifications>=2023.03.6 (from jsonschema>=3.0->altair!=5.4.0,!=5.4.1,<7,>=5.0.0->streamlit<2,>=1.40->riskshield==0.1.0)
+#13 43.09   Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl.metadata (2.9 kB)
+#13 43.42 Collecting referencing>=0.28.4 (from jsonschema>=3.0->altair!=5.4.0,!=5.4.1,<7,>=5.0.0->streamlit<2,>=1.40->riskshield==0.1.0)
+#13 43.69   Downloading referencing-0.37.0-py3-none-any.whl.metadata (2.8 kB)
+#13 44.77 Collecting rpds-py>=0.25.0 (from jsonschema>=3.0->altair!=5.4.0,!=5.4.1,<7,>=5.0.0->streamlit<2,>=1.40->riskshield==0.1.0)
+#13 45.08   Downloading rpds_py-2026.9.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.1 kB)
+#13 45.24 Collecting six>=1.5 (from python-dateutil>=2.8.2->pandas<4,>=1.4.0->streamlit<2,>=1.40->riskshield==0.1.0)
+#13 45.45   Downloading six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+#13 45.65 Downloading fastapi-0.143.0-py3-none-any.whl (144 kB)
+#13 48.83 Downloading httpx-0.28.1-py3-none-any.whl (73 kB)
+#13 50.13 Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+#13 50.78 Downloading pydantic-2.14.0-py3-none-any.whl (487 kB)
+#13 53.72 Downloading pydantic_core-2.50.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.2 MB)
+#13 58.13    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.2/2.2 MB 516.9 kB/s eta 0:00:00
+#13 58.32 Downloading streamlit-1.65.0-py3-none-any.whl (10.3 MB)
+#13 65.01    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.3/10.3 MB 1.6 MB/s eta 0:00:00
+#13 65.72 Downloading uvicorn-0.54.0-py3-none-any.whl (87 kB)
+#13 65.89 Downloading altair-6.3.0-py3-none-any.whl (797 kB)
+#13 66.37    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 797.2/797.2 kB 2.8 MB/s eta 0:00:00
+#13 66.56 Downloading annotated_doc-0.0.5-py3-none-any.whl (5.3 kB)
+#13 66.76 Downloading annotated_types-0.8.0-py3-none-any.whl (13 kB)
+#13 66.95 Downloading anyio-4.15.1-py3-none-any.whl (132 kB)
+#13 67.32 Downloading click-8.5.0-py3-none-any.whl (125 kB)
+#13 67.70 Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+#13 68.04 Downloading httptools-0.8.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (523 kB)
+#13 68.56 Downloading idna-3.20-py3-none-any.whl (69 kB)
+#13 68.75 Downloading itsdangerous-2.2.0-py3-none-any.whl (16 kB)
+#13 68.92 Downloading numpy-2.5.3-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (16.7 MB)
+#13 71.61    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 16.7/16.7 MB 3.2 MB/s eta 0:00:00
+#13 71.78 Downloading opentelemetry_api-1.45.1-py3-none-any.whl (60 kB)
+#13 72.10 Downloading packaging-26.3-py3-none-any.whl (129 kB)
+#13 72.52 Downloading pandas-3.0.6-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (10.8 MB)
+#13 75.10    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.8/10.8 MB 4.5 MB/s eta 0:00:00
+#13 75.26 Downloading pillow-12.3.0-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl (6.9 MB)
+#13 76.85    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.9/6.9 MB 4.9 MB/s eta 0:00:00
+#13 77.01 Downloading protobuf-7.36.2-cp310-abi3-manylinux2014_x86_64.whl (343 kB)
+#13 77.38 Downloading pyarrow-25.0.1-cp312-cp312-manylinux_2_28_x86_64.whl (50.1 MB)
+#13 89.62    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 50.1/50.1 MB 4.1 MB/s eta 0:00:00
+#13 89.78 Downloading pydeck-0.9.3-py2.py3-none-any.whl (11.4 MB)
+#13 92.64    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.4/11.4 MB 4.3 MB/s eta 0:00:00
+#13 92.80 Downloading python_multipart-0.0.32-py3-none-any.whl (30 kB)
+#13 93.12 Downloading requests-2.34.2-py3-none-any.whl (73 kB)
+#13 93.29 Downloading certifi-2026.7.22-py3-none-any.whl (136 kB)
+#13 93.66 Downloading starlette-1.7.0-py3-none-any.whl (78 kB)
+#13 93.84 Downloading toml-0.10.2-py2.py3-none-any.whl (16 kB)
+#13 94.17 Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+#13 94.33 Downloading typing_inspection-0.4.4-py3-none-any.whl (14 kB)
+#13 94.50 Downloading watchdog-6.0.0-py3-none-manylinux2014_x86_64.whl (79 kB)
+#13 94.82 Downloading websockets-17.2-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (225 kB)
+#13 95.74 Downloading charset_normalizer-3.5.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (257 kB)
+#13 96.49 Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+#13 97.02 Downloading jsonschema-4.26.0-py3-none-any.whl (90 kB)
+#13 98.86 Downloading narwhals-2.26.0-py3-none-any.whl (474 kB)
+#13 96.10 Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+#13 96.86 Downloading urllib3-2.8.0-py3-none-any.whl (135 kB)
+#13 97.59 Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+#13 97.76 Downloading jsonschema_specifications-2025.9.1-py3-none-any.whl (18 kB)
+#13 98.00 Downloading markupsafe-3.0.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+#13 98.17 Downloading referencing-0.37.0-py3-none-any.whl (26 kB)
+#13 98.52 Downloading rpds_py-2026.9.1-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (371 kB)
+#13 99.89 Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)
+#13 100.0 Building wheels for collected packages: riskshield
+#13 100.0   Building editable for riskshield (pyproject.toml): started
+#13 100.6   Building editable for riskshield (pyproject.toml): finished with status 'done'
+#13 100.6   Created wheel for riskshield: filename=riskshield-0.1.0-0.editable-py3-none-any.whl size=1350 sha256=3c4bdd2039370d567aa8f45652d6052f799d93dd1b808f29c49cb1166b97e8fa
+#13 100.6   Stored in directory: /tmp/pip-ephem-wheel-cache-q1wi21tz/wheels/54/1b/b7/aa63e25c8f14f4f2ae7b04e6097bdecb770e455c5c1ee0a600
+#13 100.6 Successfully built riskshield
+#13 100.7 Installing collected packages: websockets, watchdog, urllib3, typing-extensions, toml, six, rpds-py, python-multipart, pyarrow, protobuf, pillow, packaging, numpy, narwhals, MarkupSafe, itsdangerous, idna, httptools, h11, click, charset_normalizer, certifi, attrs, annotated-types, annotated-doc, uvicorn, typing-inspection, requests, referencing, python-dateutil, pydantic-core, opentelemetry-api, jinja2, httpcore, anyio, starlette, pydeck, pydantic, pandas, jsonschema-specifications, httpx, jsonschema, fastapi, altair, streamlit, riskshield
+#13 113.5 Successfully installed MarkupSafe-3.0.4 altair-6.3.0 annotated-doc-0.0.5 annotated-types-0.8.0 anyio-4.15.1 attrs-26.1.0 certifi-2026.7.22 charset_normalizer-3.5.2 click-8.5.0 fastapi-0.143.0 h11-0.16.0 httpcore-1.0.9 httptools-0.8.0 httpx-0.28.1 idna-3.20 itsdangerous-2.2.0 jinja2-3.1.6 jsonschema-4.26.0 jsonschema-specifications-2025.9.1 narwhals-2.26.0 numpy-2.5.3 opentelemetry-api-1.45.1 packaging-26.3 pandas-3.0.6 pillow-12.3.0 protobuf-7.36.2 pyarrow-25.0.1 pydantic-2.14.0 pydantic-core-2.50.0 pydeck-0.9.3 python-dateutil-2.9.0.post0 python-multipart-0.0.32 referencing-0.37.0 requests-2.34.2 riskshield-0.1.0 rpds-py-2026.9.1 six-1.17.0 starlette-1.7.0 streamlit-1.65.0 toml-0.10.2 typing-extensions-4.16.0 typing-inspection-0.4.4 urllib3-2.8.0 uvicorn-0.54.0 watchdog-6.0.0 websockets-17.2
+#13 113.5 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.
+#13 114.5 
+#13 114.5 [notice] A new release of pip is available: 25.0.1 -> 26.2.1
+#13 114.5 [notice] To update, run: pip install --upgrade pip
+#13 DONE 115.4s
+
+#14 exporting to image
+#14 exporting layers
+#14 exporting layers 12.7s done
+#14 exporting manifest sha256:d9b9e639eb34236d8fbfd0fcec863e03404ebc1f0a35925f9cb6380b30042ee2 0.0s done
+#14 exporting config sha256:7358093909414ce2aebe7db7178bffb21ff03938cbfda9a7d2d91dd707e065dd 0.0s done
+#14 exporting attestation manifest sha256:1e95e2a2175607bc9ee1b92d342d109a0cedf2d4b02941dece77f9970d1f17ff 0.0s done
+#14 exporting manifest list sha256:fc534eac7b89f206ce81e045012fa4bb01f9cf781ec65ac91560b91c4890eea8
+#14 exporting manifest list sha256:fc534eac7b89f206ce81e045012fa4bb01f9cf781ec65ac91560b91c4890eea8 0.0s done
+#14 naming to docker.io/library/riskshield:day4-local done
+#14 unpacking to docker.io/library/riskshield:day4-local
+#14 unpacking to docker.io/library/riskshield:day4-local 5.1s done
+#14 DONE 18.0s
+
+#15 resolving provenance for metadata file
+#15 DONE 0.0s
+ Image riskshield:day4-local Built 

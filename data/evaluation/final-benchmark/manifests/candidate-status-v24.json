@@ -1,0 +1,38 @@
+{
+  "schema": "riskshield.final_benchmark.candidate_status.v24",
+  "dataset_version": "final-benchmark-final-reconciliation-v24-2026-10-09",
+  "created_at_utc": "2026-10-08T16:24:13+00:00",
+  "base_freeze_v23_sha256": "f9eab15a9cd76887bc5156f4ea2ee6549ca5710baadea6946645e1dbb73be213",
+  "final_reconciliation": {
+    "path": "data/evaluation/final-benchmark/manifests/final-reconciliation-v24.json",
+    "sha256": "d8c69cb69300f49657ae01c862202974d050f04038b6537d37a0172c0158364d"
+  },
+  "status": {
+    "v4_source_records": 20,
+    "identifiable_event_identities": 8,
+    "development_event_identities": 1,
+    "holdout_event_identities": 7,
+    "auxiliary_individual_complaint_posts": 12,
+    "completed_independent_human_sentiment_double_label_units": 5,
+    "same_label_agreement_units": 5,
+    "disagreement_units": 0,
+    "sentiment_units_with_paired_E_prediction": 0,
+    "computed_sentiment_score_units": 0,
+    "trajectory_evidence_qualified_events": 0,
+    "independent_human_trajectory_labels": 0,
+    "formal_score_ready_holdout_events": 0,
+    "formal_event_target": 20,
+    "formal_event_gap": 20,
+    "additional_distinct_event_identities_needed_to_reach_20_identity_count_only": 13
+  },
+  "assessment": {
+    "sentiment": "PARTIALLY_VERIFIED: five exact-title units have completed independent double annotation with agreement and source-title hash match. Formal sentiment scoring awaits frozen V2-Q03 mapping and a paired, sealed E sentiment prediction.",
+    "trajectory": "NOT_MET: no event has qualifying evidence and independent human trend label under the frozen protocol; 0/20 formal score-ready holdouts.",
+    "identity_gap": "There are 7 existing holdout event identities. At least 13 additional identities would be needed merely to reach 20 identities; this does not reduce the 20-event formal qualification gap."
+  },
+  "supersedes_aggregate_interpretation_in": [
+    "docs/records/final-benchmark-dataset.md",
+    "data/evaluation/final-benchmark/manifests/candidate-status-v23.json"
+  ],
+  "immutable_history": "v1-v23 inputs, labels, evidence, status files, and freezes are unchanged."
+}

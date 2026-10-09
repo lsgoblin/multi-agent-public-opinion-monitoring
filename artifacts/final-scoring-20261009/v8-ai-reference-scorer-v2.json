@@ -1,0 +1,581 @@
+{
+  "ai_reference_sha256": "a42187bd2e5bb96d73e3517338b98e353d3cd8d299b4cf1fa0a1a9981581e731",
+  "event_count": 4,
+  "freeze_path": "data/evaluation/final-benchmark/manifests/freeze-v8.json",
+  "freeze_sha256": "9110a1c397ed94c790a493af6796b9df692615ec022eda67fd577ce717356aa7",
+  "limits": [
+    "Fixed offline constant baseline is not a model forecast",
+    "Only evidence-backed, formally eligible independent human labels enter official metrics",
+    "Event summaries are not original title-level sentiment units; AI references are exploratory only"
+  ],
+  "metrics": {
+    "ai_reference_agreement": {
+      "confusion_matrix_ai_reference_by_prediction": {
+        "negative": {
+          "negative": 0,
+          "neutral": 0,
+          "positive": 0
+        },
+        "neutral": {
+          "negative": 0,
+          "neutral": 0,
+          "positive": 0
+        },
+        "positive": {
+          "negative": 0,
+          "neutral": 0,
+          "positive": 0
+        }
+      },
+      "denominator": 0,
+      "excluded_units": [
+        {
+          "evaluation_id": "ai-reference__allianz_life_data_breach_20250727__allianz_life_data_breach_20250727",
+          "event_id": "allianz_life_data_breach_20250727",
+          "reasons": [
+            "ai_reference_unit_missing_from_prediction_inputs"
+          ],
+          "unit_id": "allianz_life_data_breach_20250727"
+        },
+        {
+          "evaluation_id": "ai-reference__unitedhealth_algorithm_care_lawsuit_20231115__unitedhealth_algorithm_care_lawsuit_20231115",
+          "event_id": "unitedhealth_algorithm_care_lawsuit_20231115",
+          "reasons": [
+            "ai_reference_needs_review",
+            "ai_reference_unit_missing_from_prediction_inputs",
+            "missing_or_invalid_ai_reference_label"
+          ],
+          "unit_id": "unitedhealth_algorithm_care_lawsuit_20231115"
+        },
+        {
+          "evaluation_id": "ai-reference__complaint_health_claim_review_20240818__complaint_health_claim_review_20240818",
+          "event_id": "complaint_health_claim_review_20240818",
+          "reasons": [
+            "ai_reference_unit_missing_from_prediction_inputs"
+          ],
+          "unit_id": "complaint_health_claim_review_20240818"
+        },
+        {
+          "evaluation_id": "ai-reference__complaint_home_nonrenewal_20241229__complaint_home_nonrenewal_20241229",
+          "event_id": "complaint_home_nonrenewal_20241229",
+          "reasons": [
+            "ai_reference_unit_missing_from_prediction_inputs"
+          ],
+          "unit_id": "complaint_home_nonrenewal_20241229"
+        },
+        {
+          "evaluation_id": "ai-reference__complaint_home_coverage_after_termination_20240430__complaint_home_coverage_after_termination_20240430",
+          "event_id": "complaint_home_coverage_after_termination_20240430",
+          "reasons": [
+            "ai_reference_needs_review",
+            "ai_reference_unit_missing_from_prediction_inputs",
+            "missing_or_invalid_ai_reference_label"
+          ],
+          "unit_id": "complaint_home_coverage_after_termination_20240430"
+        },
+        {
+          "evaluation_id": "ai-reference__complaint_home_nonrenewal_20231018__complaint_home_nonrenewal_20231018",
+          "event_id": "complaint_home_nonrenewal_20231018",
+          "reasons": [
+            "ai_reference_unit_missing_from_prediction_inputs"
+          ],
+          "unit_id": "complaint_home_nonrenewal_20231018"
+        },
+        {
+          "evaluation_id": "ai-reference__complaint_health_claim_rejections_20241211__complaint_health_claim_rejections_20241211",
+          "event_id": "complaint_health_claim_rejections_20241211",
+          "reasons": [
+            "ai_reference_needs_review",
+            "ai_reference_unit_missing_from_prediction_inputs",
+            "missing_or_invalid_ai_reference_label"
+          ],
+          "unit_id": "complaint_health_claim_rejections_20241211"
+        },
+        {
+          "evaluation_id": "ai-reference__complaint_home_nonrenewal_20240524__complaint_home_nonrenewal_20240524",
+          "event_id": "complaint_home_nonrenewal_20240524",
+          "reasons": [
+            "ai_reference_unit_missing_from_prediction_inputs"
+          ],
+          "unit_id": "complaint_home_nonrenewal_20240524"
+        },
+        {
+          "evaluation_id": "ai-reference__complaint_home_nonrenewal_20231010__complaint_home_nonrenewal_20231010",
+          "event_id": "complaint_home_nonrenewal_20231010",
+          "reasons": [
+            "ai_reference_unit_missing_from_prediction_inputs"
+          ],
+          "unit_id": "complaint_home_nonrenewal_20231010"
+        },
+        {
+          "evaluation_id": "ai-reference__complaint_home_nonrenewal_20240625__complaint_home_nonrenewal_20240625",
+          "event_id": "complaint_home_nonrenewal_20240625",
+          "reasons": [
+            "ai_reference_unit_missing_from_prediction_inputs"
+          ],
+          "unit_id": "complaint_home_nonrenewal_20240625"
+        },
+        {
+          "evaluation_id": "ai-reference__complaint_auto_claim_denial_20241116__complaint_auto_claim_denial_20241116",
+          "event_id": "complaint_auto_claim_denial_20241116",
+          "reasons": [
+            "ai_reference_unit_missing_from_prediction_inputs"
+          ],
+          "unit_id": "complaint_auto_claim_denial_20241116"
+        },
+        {
+          "evaluation_id": "ai-reference__complaint_home_nonrenewal_inspection_20241011__complaint_home_nonrenewal_inspection_20241011",
+          "event_id": "complaint_home_nonrenewal_inspection_20241011",
+          "reasons": [
+            "ai_reference_unit_missing_from_prediction_inputs"
+          ],
+          "unit_id": "complaint_home_nonrenewal_inspection_20241011"
+        },
+        {
+          "evaluation_id": "ai-reference__complaint_home_policy_claim_20240113__complaint_home_policy_claim_20240113",
+          "event_id": "complaint_home_policy_claim_20240113",
+          "reasons": [
+            "ai_reference_unit_missing_from_prediction_inputs"
+          ],
+          "unit_id": "complaint_home_policy_claim_20240113"
+        },
+        {
+          "evaluation_id": "ai-reference__complaint_auto_cancellation_notice_20241003__complaint_auto_cancellation_notice_20241003",
+          "event_id": "complaint_auto_cancellation_notice_20241003",
+          "reasons": [
+            "ai_reference_unit_missing_from_prediction_inputs"
+          ],
+          "unit_id": "complaint_auto_cancellation_notice_20241003"
+        },
+        {
+          "evaluation_id": "ai-reference__bcbs_louisiana_elevance_sale_20240206__ap-bcbsla-elevance-hearing-20240206",
+          "event_id": "bcbs_louisiana_elevance_sale_20240206",
+          "reasons": [
+            "ai_reference_unit_missing_from_prediction_inputs"
+          ],
+          "unit_id": "ap-bcbsla-elevance-hearing-20240206"
+        },
+        {
+          "evaluation_id": "ai-reference__state_farm_ca_new_business_pause_20230526__statefarm-newsroom-ca-new-business-20230526",
+          "event_id": "state_farm_ca_new_business_pause_20230526",
+          "reasons": [
+            "ai_reference_unit_missing_from_prediction_inputs"
+          ],
+          "unit_id": "statefarm-newsroom-ca-new-business-20230526"
+        },
+        {
+          "evaluation_id": "ai-reference__windows_recall_privacy_controversy_20240607__axios_recall_update_20240607_wayback_190027",
+          "event_id": "windows_recall_privacy_controversy_20240607",
+          "reasons": [
+            "ai_reference_unit_missing_from_prediction_inputs"
+          ],
+          "unit_id": "axios_recall_update_20240607_wayback_190027"
+        },
+        {
+          "evaluation_id": "ai-reference__windows_recall_privacy_controversy_20240607__hn_recall_update_item_40610469",
+          "event_id": "windows_recall_privacy_controversy_20240607",
+          "reasons": [
+            "ai_reference_unit_missing_from_prediction_inputs"
+          ],
+          "unit_id": "hn_recall_update_item_40610469"
+        }
+      ],
+      "exclusion_count": 18,
+      "exclusion_reasons": {
+        "ai_reference_needs_review": 3,
+        "ai_reference_unit_missing_from_prediction_inputs": 18,
+        "missing_or_invalid_ai_reference_label": 3
+      },
+      "formal_human_ground_truth": false,
+      "human_gold_denominator_impact": 0,
+      "numerator": 0,
+      "reference_model": "GPT-6 (Codex)",
+      "sample_size": 0,
+      "status": "exploratory_ai_reference_agreement_only",
+      "undefined_reason": "no exact original-title units have both a prediction and AI reference label",
+      "value": null
+    },
+    "direction_agreement": {
+      "confusion_matrix_actual_by_predicted": {
+        "calming": {
+          "calming": 0,
+          "escalation": 0
+        },
+        "escalation": {
+          "calming": 0,
+          "escalation": 0
+        }
+      },
+      "denominator": 0,
+      "excluded_events_or_rows": [
+        {
+          "evaluation_ids": [
+            "aflac_cybersecurity_incident_20250620_v6__direction__e-handoff-v8"
+          ],
+          "event_id": "aflac_cybersecurity_incident_20250620",
+          "reasons": [
+            "missing_or_unresolved_observed_direction_label"
+          ]
+        },
+        {
+          "evaluation_ids": [
+            "bcbs_louisiana_elevance_sale_20240206_v5__direction__e-handoff-v8"
+          ],
+          "event_id": "bcbs_louisiana_elevance_sale_20240206",
+          "reasons": [
+            "holdout_candidate_not_admitted",
+            "missing_or_unresolved_observed_direction_label"
+          ]
+        },
+        {
+          "evaluation_ids": [
+            "fnf_cyberattack_20231123_v5__direction__e-handoff-v8"
+          ],
+          "event_id": "fnf_cyberattack_20231123",
+          "reasons": [
+            "missing_or_unresolved_observed_direction_label"
+          ]
+        },
+        {
+          "evaluation_ids": [
+            "state_farm_ca_new_business_pause_20230526_v8__direction__e-handoff-v8"
+          ],
+          "event_id": "state_farm_ca_new_business_pause_20230526",
+          "reasons": [
+            "holdout_candidate_not_admitted",
+            "missing_or_unresolved_observed_direction_label"
+          ]
+        }
+      ],
+      "exclusion_count": 4,
+      "exclusion_reasons": {
+        "holdout_candidate_not_admitted": 2,
+        "missing_or_unresolved_observed_direction_label": 4
+      },
+      "numerator": 0,
+      "sample_size_events": 0,
+      "scored_events": [],
+      "undefined_reason": "no distinct event has both a direction prediction and an evidence-backed observed direction label",
+      "value": null
+    },
+    "evaluation_version": "final-benchmark-evidence-pilot-v8-2026-10-08__offline_constant_escalation_baseline_v1",
+    "input_exclusions": {
+      "count": 0,
+      "excluded_rows": [],
+      "reasons": {}
+    },
+    "label_version": "final-benchmark-evidence-pilot-v8-2026-10-08__human_labels_only",
+    "negative_identification": {
+      "binary_accuracy": {
+        "denominator": 0,
+        "formula": "(TP + TN) / (TP + FP + FN + TN)",
+        "numerator": 0,
+        "undefined_reason": "no sentiment records are evaluable",
+        "value": null
+      },
+      "counts": {
+        "false_negative": 0,
+        "false_positive": 0,
+        "true_negative": 0,
+        "true_positive": 0
+      },
+      "definition_status": "unresolved by V2-Q03; both candidate definitions are reported",
+      "exclusion_count": 4,
+      "exclusion_reasons": {
+        "holdout_candidate_not_admitted": 2,
+        "missing_sentiment_prediction": 4,
+        "missing_separate_evaluation_label": 4,
+        "not_an_original_title_or_post_unit": 4
+      },
+      "negative_confusion_matrix": {
+        "actual_negative": {
+          "predicted_negative": 0,
+          "predicted_nonnegative": 0
+        },
+        "actual_nonnegative": {
+          "predicted_negative": 0,
+          "predicted_nonnegative": 0
+        }
+      },
+      "precision": {
+        "denominator": 0,
+        "formula": "TP / (TP + FP)",
+        "numerator": 0,
+        "undefined_reason": "no predictions were classified as negative",
+        "value": null
+      },
+      "recall": {
+        "denominator": 0,
+        "formula": "TP / (TP + FN)",
+        "numerator": 0,
+        "undefined_reason": "no human-labeled negative records",
+        "value": null
+      },
+      "sample_size": 0
+    },
+    "provenance": {
+      "future_labels_sha256": null,
+      "future_labels_used_only_for_metric_calculation": true,
+      "input_sha256": "91c3b749b7dc14d06936ed1dae25c417dd7787369aa0e25880c8eaffbda7f7f3",
+      "multiple_sources_same_event_counted_as_distinct_direction_events": false,
+      "synthetic_data_in_formal_denominators": false
+    },
+    "sample_size": {
+      "direction_evaluable_events": 0,
+      "distinct_cutoff_qualified_real_events": 4,
+      "distinct_real_events": 4,
+      "distinct_real_source_records": 4,
+      "holdout_split_events": 2,
+      "input_rows": 4,
+      "nonhistorical_rows_excluded": 0,
+      "sentiment_evaluable_records": 0
+    },
+    "schema": "riskshield.day5.evaluation-report.v1",
+    "sentiment_three_class": {
+      "class_support": {
+        "negative": 0,
+        "neutral": 0,
+        "positive": 0
+      },
+      "confusion_matrix_actual_by_predicted": {
+        "negative": {
+          "negative": 0,
+          "neutral": 0,
+          "positive": 0
+        },
+        "neutral": {
+          "negative": 0,
+          "neutral": 0,
+          "positive": 0
+        },
+        "positive": {
+          "negative": 0,
+          "neutral": 0,
+          "positive": 0
+        }
+      },
+      "denominator": 0,
+      "excluded_rows": [
+        {
+          "evaluation_id": "fnf_cyberattack_20231123_v5__direction__e-handoff-v8",
+          "event_id": "fnf_cyberattack_20231123",
+          "reasons": [
+            "missing_sentiment_prediction",
+            "missing_separate_evaluation_label",
+            "not_an_original_title_or_post_unit"
+          ],
+          "unit_id": "event_cutoff_summary"
+        },
+        {
+          "evaluation_id": "bcbs_louisiana_elevance_sale_20240206_v5__direction__e-handoff-v8",
+          "event_id": "bcbs_louisiana_elevance_sale_20240206",
+          "reasons": [
+            "holdout_candidate_not_admitted",
+            "missing_sentiment_prediction",
+            "missing_separate_evaluation_label",
+            "not_an_original_title_or_post_unit"
+          ],
+          "unit_id": "event_cutoff_summary"
+        },
+        {
+          "evaluation_id": "aflac_cybersecurity_incident_20250620_v6__direction__e-handoff-v8",
+          "event_id": "aflac_cybersecurity_incident_20250620",
+          "reasons": [
+            "missing_sentiment_prediction",
+            "missing_separate_evaluation_label",
+            "not_an_original_title_or_post_unit"
+          ],
+          "unit_id": "event_cutoff_summary"
+        },
+        {
+          "evaluation_id": "state_farm_ca_new_business_pause_20230526_v8__direction__e-handoff-v8",
+          "event_id": "state_farm_ca_new_business_pause_20230526",
+          "reasons": [
+            "holdout_candidate_not_admitted",
+            "missing_sentiment_prediction",
+            "missing_separate_evaluation_label",
+            "not_an_original_title_or_post_unit"
+          ],
+          "unit_id": "event_cutoff_summary"
+        }
+      ],
+      "exclusion_count": 4,
+      "exclusion_reasons": {
+        "holdout_candidate_not_admitted": 2,
+        "missing_sentiment_prediction": 4,
+        "missing_separate_evaluation_label": 4,
+        "not_an_original_title_or_post_unit": 4
+      },
+      "numerator": 0,
+      "sample_size": 0,
+      "scored_units": [],
+      "undefined_reason": "no records have a valid prediction and unanimous independent labels",
+      "value": null
+    },
+    "source_metrics": {
+      "definition_status": {
+        "direction_stability_and_abstention": "unresolved; only explicit escalation/calming pairs are scoreable",
+        "historical_event_count": "unresolved; source range remains 10–20 distinct real events",
+        "negative_identification_accuracy": "unresolved; report negative precision and binary accuracy separately"
+      },
+      "mapping_document": "docs/design/05-赛题指标映射表.md",
+      "thresholds_preserved": {
+        "direction_agreement": "at least 70%",
+        "historical_real_events": "10–20; exact minimum unresolved",
+        "negative_identification_accuracy": "at least 90% (formal formula unresolved)",
+        "negative_recall": "at least 85%",
+        "three_class_sentiment_accuracy": "at least 88%"
+      }
+    }
+  },
+  "per_event": [
+    {
+      "case_id": "fnf_cyberattack_20231123_v5",
+      "direction_correct": null,
+      "direction_exclusion_reasons": [
+        "missing_or_unresolved_observed_direction_label"
+      ],
+      "direction_scoreable": false,
+      "event_id": "fnf_cyberattack_20231123",
+      "observed_direction": null,
+      "prediction": "escalation",
+      "prediction_mode": "offline_constant_escalation_baseline_v1",
+      "sentiment_exclusion_reasons": [
+        "missing_sentiment_prediction",
+        "missing_separate_evaluation_label",
+        "not_an_original_title_or_post_unit"
+      ],
+      "sentiment_scoreable_units": 0,
+      "split": "holdout"
+    },
+    {
+      "case_id": "bcbs_louisiana_elevance_sale_20240206_v5",
+      "direction_correct": null,
+      "direction_exclusion_reasons": [
+        "candidate_not_admitted_to_formal_split"
+      ],
+      "direction_scoreable": false,
+      "event_id": "bcbs_louisiana_elevance_sale_20240206",
+      "observed_direction": null,
+      "prediction": "escalation",
+      "prediction_mode": "offline_constant_escalation_baseline_v1",
+      "sentiment_exclusion_reasons": [
+        "holdout_candidate_not_admitted",
+        "missing_sentiment_prediction",
+        "missing_separate_evaluation_label",
+        "not_an_original_title_or_post_unit"
+      ],
+      "sentiment_scoreable_units": 0,
+      "split": "holdout_candidate"
+    },
+    {
+      "case_id": "aflac_cybersecurity_incident_20250620_v6",
+      "direction_correct": null,
+      "direction_exclusion_reasons": [
+        "missing_or_unresolved_observed_direction_label"
+      ],
+      "direction_scoreable": false,
+      "event_id": "aflac_cybersecurity_incident_20250620",
+      "observed_direction": null,
+      "prediction": "escalation",
+      "prediction_mode": "offline_constant_escalation_baseline_v1",
+      "sentiment_exclusion_reasons": [
+        "missing_sentiment_prediction",
+        "missing_separate_evaluation_label",
+        "not_an_original_title_or_post_unit"
+      ],
+      "sentiment_scoreable_units": 0,
+      "split": "holdout"
+    },
+    {
+      "case_id": "state_farm_ca_new_business_pause_20230526_v8",
+      "direction_correct": null,
+      "direction_exclusion_reasons": [
+        "candidate_not_admitted_to_formal_split"
+      ],
+      "direction_scoreable": false,
+      "event_id": "state_farm_ca_new_business_pause_20230526",
+      "observed_direction": null,
+      "prediction": "escalation",
+      "prediction_mode": "offline_constant_escalation_baseline_v1",
+      "sentiment_exclusion_reasons": [
+        "holdout_candidate_not_admitted",
+        "missing_sentiment_prediction",
+        "missing_separate_evaluation_label",
+        "not_an_original_title_or_post_unit"
+      ],
+      "sentiment_scoreable_units": 0,
+      "split": "holdout_candidate"
+    }
+  ],
+  "per_sentiment_unit": [
+    {
+      "correct": null,
+      "event_id": "fnf_cyberattack_20231123",
+      "exclusion_reasons": [
+        "missing_sentiment_prediction",
+        "missing_separate_evaluation_label",
+        "not_an_original_title_or_post_unit"
+      ],
+      "prediction": null,
+      "scoreable": false,
+      "truth": null,
+      "unit_id": "event_cutoff_summary",
+      "unit_kind": null
+    },
+    {
+      "correct": null,
+      "event_id": "bcbs_louisiana_elevance_sale_20240206",
+      "exclusion_reasons": [
+        "holdout_candidate_not_admitted",
+        "missing_sentiment_prediction",
+        "missing_separate_evaluation_label",
+        "not_an_original_title_or_post_unit"
+      ],
+      "prediction": null,
+      "scoreable": false,
+      "truth": null,
+      "unit_id": "event_cutoff_summary",
+      "unit_kind": null
+    },
+    {
+      "correct": null,
+      "event_id": "aflac_cybersecurity_incident_20250620",
+      "exclusion_reasons": [
+        "missing_sentiment_prediction",
+        "missing_separate_evaluation_label",
+        "not_an_original_title_or_post_unit"
+      ],
+      "prediction": null,
+      "scoreable": false,
+      "truth": null,
+      "unit_id": "event_cutoff_summary",
+      "unit_kind": null
+    },
+    {
+      "correct": null,
+      "event_id": "state_farm_ca_new_business_pause_20230526",
+      "exclusion_reasons": [
+        "holdout_candidate_not_admitted",
+        "missing_sentiment_prediction",
+        "missing_separate_evaluation_label",
+        "not_an_original_title_or_post_unit"
+      ],
+      "prediction": null,
+      "scoreable": false,
+      "truth": null,
+      "unit_id": "event_cutoff_summary",
+      "unit_kind": null
+    }
+  ],
+  "prediction_seal_path": "artifacts/final-integration-review/v8-pilot/pilot-seal-e-handoff-v8.json",
+  "prediction_seal_sha256": "0748b57d03acfd73120b77bf4ae8b1e8776394482272552656c11c37221a164f",
+  "schema": "riskshield.final_benchmark.pilot_score.v1",
+  "score_side_hashes": {
+    "data/evaluation/final-benchmark/labels/blind-sentiment-packet-v6.json": "e31e1a2962e40bbe4e2e06dbc7a8cbdd2c1198031398b4407a47923b81ec29fc",
+    "data/evaluation/final-benchmark/labels/trajectory-evidence-v8.json": "47a3b4191c826c53cc1005ed8960c9372a1934a3f4b87582f10118fe4457d058"
+  },
+  "sentiment_human_labels": 0,
+  "status": "engineering_flow_verified_formal_metrics_unavailable",
+  "trend_human_labels": 0
+}

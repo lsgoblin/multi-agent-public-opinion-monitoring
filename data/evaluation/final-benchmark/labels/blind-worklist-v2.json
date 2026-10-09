@@ -1,0 +1,700 @@
+{
+  "schema": "riskshield.final_benchmark.blind_worklist.v2",
+  "dataset_version": "final-benchmark-public-history-v2-2026-10-08",
+  "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+  "access": "independent human annotators only; do not pass to prediction execution",
+  "tasks": [
+    {
+      "event_id": "unh_change_cyberattack_20240222",
+      "source_record_id": "unh-sec-20240222-initial",
+      "split": "development",
+      "status": "excluded_from_holdout_worklist_previously_exposed",
+      "annotator_slots": []
+    },
+    {
+      "event_id": "fnf_cyberattack_20231123",
+      "source_record_id": "reddit_archived_post_1821s44",
+      "split": "holdout",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "material_to_show": {
+        "title_or_redacted_headline": "Fidelity National Financial shuts down network in wake of cybersecurity incident",
+        "event_summary_at_cutoff": "Archived headline: Fidelity National Financial shuts down its network following a cybersecurity incident.",
+        "target_subject": "Fidelity National Financial",
+        "cutoff": "2023-11-23T14:29:55Z"
+      },
+      "status": "not_started",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        }
+      ],
+      "adjudication": null
+    },
+    {
+      "event_id": "aflac_cybersecurity_incident_20250620",
+      "source_record_id": "reddit_archived_post_1lg33ey",
+      "split": "holdout",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "material_to_show": {
+        "title_or_redacted_headline": "Aflac [AFL] hit with a cybersecurity breach",
+        "event_summary_at_cutoff": "Archived headline reports a cybersecurity incident affecting Aflac.",
+        "target_subject": "Aflac Incorporated",
+        "cutoff": "2025-06-20T13:16:30Z"
+      },
+      "status": "not_started",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        }
+      ],
+      "adjudication": null
+    },
+    {
+      "event_id": "allianz_life_data_breach_20250727",
+      "source_record_id": "reddit_archived_post_1ma8wfj",
+      "split": "holdout",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "material_to_show": {
+        "title_or_redacted_headline": "Allianz Life reports a customer data breach",
+        "event_summary_at_cutoff": "Archived headline reports a data breach affecting Allianz Life customers.",
+        "target_subject": "Allianz Life Insurance Company of North America",
+        "cutoff": "2025-07-27T01:07:54Z"
+      },
+      "status": "not_started",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        }
+      ],
+      "adjudication": null
+    },
+    {
+      "event_id": "anthem_anesthesia_proposal_20241204",
+      "source_record_id": "reddit_archived_post_1h6mj0x",
+      "split": "holdout",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "material_to_show": {
+        "title_or_redacted_headline": "Anthem anesthesia reimbursement proposal draws criticism",
+        "event_summary_at_cutoff": "Archived headline reports an Anthem proposal concerning reimbursement for anesthesia duration.",
+        "target_subject": "Anthem Blue Cross Blue Shield",
+        "cutoff": "2024-12-04T18:29:34Z"
+      },
+      "status": "not_started",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        }
+      ],
+      "adjudication": null
+    },
+    {
+      "event_id": "cigna_algorithm_denial_lawsuit_20230725",
+      "source_record_id": "reddit_archived_post_159ce8g",
+      "split": "holdout",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "material_to_show": {
+        "title_or_redacted_headline": "Cigna Sued Over Algorithm Allegedly Used To Deny Coverage To Hundreds Of Thousands Of Patients",
+        "event_summary_at_cutoff": "Archived headline reports a lawsuit alleging use of an algorithm to deny health coverage.",
+        "target_subject": "Cigna",
+        "cutoff": "2023-07-25T16:23:54Z"
+      },
+      "status": "not_started",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        }
+      ],
+      "adjudication": null
+    },
+    {
+      "event_id": "unitedhealth_algorithm_care_lawsuit_20231115",
+      "source_record_id": "reddit_archived_post_17w461q",
+      "split": "holdout",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "material_to_show": {
+        "title_or_redacted_headline": "UnitedHealth faces class action lawsuit over algorithmic care denials in Medicare Advantage plans",
+        "event_summary_at_cutoff": "Archived headline reports a class action concerning alleged algorithmic care denials in Medicare Advantage.",
+        "target_subject": "UnitedHealth Group / UnitedHealthcare",
+        "cutoff": "2023-11-15T21:52:18Z"
+      },
+      "status": "not_started",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        }
+      ],
+      "adjudication": null
+    },
+    {
+      "event_id": "humana_algorithm_care_lawsuit_20231214",
+      "source_record_id": "reddit_archived_post_18i3k2f",
+      "split": "holdout",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "material_to_show": {
+        "title_or_redacted_headline": "Humana lawsuit alleges use of an AI tool in care-denial decisions",
+        "event_summary_at_cutoff": "Archived headline reports a lawsuit alleging use of an AI tool in care-denial decisions; an unsupported percentage in the source headline is omitted.",
+        "target_subject": "Humana",
+        "cutoff": "2023-12-14T08:20:02Z"
+      },
+      "status": "not_started",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        }
+      ],
+      "adjudication": null
+    },
+    {
+      "event_id": "complaint_health_claim_review_20240818",
+      "source_record_id": "reddit_archived_post_1evaapp",
+      "split": "holdout",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "material_to_show": {
+        "title_or_redacted_headline": "Insurance claim review complaint",
+        "event_summary_at_cutoff": "A public post title reports that an insurer would not review a claim; this records the complaint post, not proof of its allegation.",
+        "target_subject": "Unspecified health insurer in the post",
+        "cutoff": "2024-08-18T14:46:54Z"
+      },
+      "status": "not_started",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        }
+      ],
+      "adjudication": null
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20241229",
+      "source_record_id": "reddit_archived_post_1hp6wa2",
+      "split": "holdout",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "material_to_show": {
+        "title_or_redacted_headline": "Homeowners policy non-renewal complaint",
+        "event_summary_at_cutoff": "A public post title reports a homeowners policy non-renewal; this records the complaint post, not proof of its allegation.",
+        "target_subject": "Unspecified homeowners insurer in the post",
+        "cutoff": "2024-12-29T22:22:11Z"
+      },
+      "status": "not_started",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        }
+      ],
+      "adjudication": null
+    },
+    {
+      "event_id": "complaint_home_coverage_after_termination_20240430",
+      "source_record_id": "reddit_archived_post_1ch6tu5",
+      "split": "holdout",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "material_to_show": {
+        "title_or_redacted_headline": "Request for homeowners coverage after policy termination",
+        "event_summary_at_cutoff": "A public post title asks about obtaining homeowners coverage after a policy ended; the allegation is unverified.",
+        "target_subject": "Unspecified homeowners insurer in the post",
+        "cutoff": "2024-04-30T23:41:09Z"
+      },
+      "status": "not_started",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        }
+      ],
+      "adjudication": null
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20231018",
+      "source_record_id": "reddit_archived_post_17acu1c",
+      "split": "holdout",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "material_to_show": {
+        "title_or_redacted_headline": "Homeowners policy non-renewal complaint",
+        "event_summary_at_cutoff": "A public post title reports a homeowners policy non-renewal. Only the original poster's episode is counted.",
+        "target_subject": "Unspecified homeowners insurer in the post",
+        "cutoff": "2023-10-18T00:35:59Z"
+      },
+      "status": "not_started",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        }
+      ],
+      "adjudication": null
+    },
+    {
+      "event_id": "complaint_health_claim_rejections_20241211",
+      "source_record_id": "reddit_archived_post_1hc1bcc",
+      "split": "holdout",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "material_to_show": {
+        "title_or_redacted_headline": "Health insurance claim rejection complaint",
+        "event_summary_at_cutoff": "A public post title reports rejected insurance claims; the reason and underlying claim are unverified.",
+        "target_subject": "Unspecified health insurer in the post",
+        "cutoff": "2024-12-11T19:40:51Z"
+      },
+      "status": "not_started",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        }
+      ],
+      "adjudication": null
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20240524",
+      "source_record_id": "reddit_archived_post_1cznbtx",
+      "split": "holdout",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "material_to_show": {
+        "title_or_redacted_headline": "Homeowners non-renewal complaint",
+        "event_summary_at_cutoff": "A public post title reports a homeowners non-renewal concern; this is one poster's complaint, not a market-wide event.",
+        "target_subject": "Unspecified homeowners insurer in the post",
+        "cutoff": "2024-05-24T15:53:22Z"
+      },
+      "status": "not_started",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        }
+      ],
+      "adjudication": null
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20231010",
+      "source_record_id": "reddit_archived_post_174m8f9",
+      "split": "holdout",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "material_to_show": {
+        "title_or_redacted_headline": "Homeowners policy non-renewal complaint",
+        "event_summary_at_cutoff": "A public post title reports a homeowners non-renewal. Only the original poster's episode is counted.",
+        "target_subject": "Unspecified homeowners insurer in the post",
+        "cutoff": "2023-10-10T14:41:29Z"
+      },
+      "status": "not_started",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        }
+      ],
+      "adjudication": null
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20240625",
+      "source_record_id": "reddit_archived_post_1do5am8",
+      "split": "holdout",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "material_to_show": {
+        "title_or_redacted_headline": "Homeowners policy non-renewal complaint",
+        "event_summary_at_cutoff": "A public post title reports that a homeowners policy would not be renewed; the allegation is unverified.",
+        "target_subject": "Unspecified homeowners insurer in the post",
+        "cutoff": "2024-06-25T13:24:24Z"
+      },
+      "status": "not_started",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        }
+      ],
+      "adjudication": null
+    },
+    {
+      "event_id": "complaint_auto_claim_denial_20241116",
+      "source_record_id": "reddit_archived_post_1gshw33",
+      "split": "holdout",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "material_to_show": {
+        "title_or_redacted_headline": "Auto insurance claim denial complaint",
+        "event_summary_at_cutoff": "A public post title reports a disputed auto claim denial. Personal circumstances are omitted; allegation unverified.",
+        "target_subject": "Unspecified auto insurer in the post",
+        "cutoff": "2024-11-16T07:38:12Z"
+      },
+      "status": "not_started",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        }
+      ],
+      "adjudication": null
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_inspection_20241011",
+      "source_record_id": "reddit_archived_post_1g1kc9b",
+      "split": "holdout",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "material_to_show": {
+        "title_or_redacted_headline": "Homeowners non-renewal after disputed inspection",
+        "event_summary_at_cutoff": "A public post title reports a non-renewal after disputed inspection findings; property details omitted, allegation unverified.",
+        "target_subject": "Unspecified homeowners insurer in the post",
+        "cutoff": "2024-10-11T21:46:37Z"
+      },
+      "status": "not_started",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        }
+      ],
+      "adjudication": null
+    },
+    {
+      "event_id": "complaint_home_policy_claim_20240113",
+      "source_record_id": "reddit_archived_post_195twpp",
+      "split": "holdout",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "material_to_show": {
+        "title_or_redacted_headline": "Homeowners policy and replacement coverage complaint",
+        "event_summary_at_cutoff": "A public post title links a homeowners policy ending with a claim and difficulty obtaining replacement coverage; details omitted, allegation unverified.",
+        "target_subject": "Unspecified homeowners insurer in the post",
+        "cutoff": "2024-01-13T18:31:40Z"
+      },
+      "status": "not_started",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        }
+      ],
+      "adjudication": null
+    },
+    {
+      "event_id": "complaint_auto_cancellation_notice_20241003",
+      "source_record_id": "reddit_archived_post_1fvdpul",
+      "split": "holdout",
+      "input_snapshot_sha256": "aa5ad52a4e042c3a0e52ef85f597af852e7bb28f9fddf31f9affd06a5247ce6e",
+      "material_to_show": {
+        "title_or_redacted_headline": "Auto policy cancellation and notice complaint",
+        "event_summary_at_cutoff": "A public post title reports a discovered auto policy cancellation and uncertainty about notice; details omitted, allegation unverified.",
+        "target_subject": "Unspecified auto insurer in the post",
+        "cutoff": "2024-10-03T18:21:23Z"
+      },
+      "status": "not_started",
+      "annotator_slots": [
+        {
+          "slot": "A",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        },
+        {
+          "slot": "B",
+          "annotator_id": null,
+          "submitted_at": null,
+          "review_completed_at": null,
+          "prediction_seen_before_answer": null,
+          "other_answer_seen_before_answer": null,
+          "label": null,
+          "reason": null
+        }
+      ],
+      "adjudication": null
+    }
+  ],
+  "pending_independent_annotation_assignments": 38
+}

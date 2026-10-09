@@ -1,0 +1,50 @@
+{
+  "schema": "riskshield.final_benchmark.freeze.v7",
+  "dataset_version": "final-benchmark-evidence-pilot-v7-2026-10-08",
+  "created_at_utc": "2026-10-08T09:44:28.1626118Z",
+  "base_freeze_v6_sha256": "5656e8e172e8a844e35877c148b3f6b19b9c570a8c414c982c1226d01b5a2811",
+  "input_file": "data/evaluation/final-benchmark/inputs/qualified-inputs-v6.json",
+  "input_sha256": "f02876394a5e840fb3c06a93f30ccffb5445afe0e28e9dbefd281ab003d82a83",
+  "files": [
+    {
+      "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v6.json",
+      "sha256": "f02876394a5e840fb3c06a93f30ccffb5445afe0e28e9dbefd281ab003d82a83",
+      "bytes": 9739
+    },
+    {
+      "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v7.json",
+      "sha256": "77be3d63e08f95182d27bb1469e3e4fdc86a24bfef53ea5515a6cef2d08dd063",
+      "bytes": 14778
+    },
+    {
+      "path": "data/evaluation/final-benchmark/labels/trend-protocol-proposal-v7.md",
+      "sha256": "cf6f07a2745e30d8d758d6b73db5402f1aa91f0291f4ce6d9554f70346935b32",
+      "bytes": 3816
+    },
+    {
+      "path": "data/evaluation/final-benchmark/labels/human-annotation-worklist-v7.md",
+      "sha256": "5f6221ee55afc4fe21094662de02655216aba9691f303664e4ad92ff776741a6",
+      "bytes": 1407
+    },
+    {
+      "path": "data/evaluation/final-benchmark/manifests/candidate-status-v7.json",
+      "sha256": "e7fdf3793063be6a7b73e31c2f69865a75f905fb0896c2ac1e309ebc52b8560e",
+      "bytes": 2712
+    },
+    {
+      "path": "data/evaluation/final-benchmark/manifests/e-handoff-v7.json",
+      "sha256": "42e1da910e867b36d03cadf9be256d138656d56650d3d777e12c3790018d2361",
+      "bytes": 1872
+    },
+    {
+      "path": "data/evaluation/final-benchmark/manifests/public-research-log-v7.json",
+      "sha256": "8fa3131469d646d344b3de2e0c50b064458aa119ecd9d3b0a87822c199cf3a22",
+      "bytes": 4021
+    }
+  ],
+  "notes": [
+    "v1-v6 frozen artifacts remain unchanged.",
+    "This version adds one cutoff source summary and three score-side archive-query dossiers; it adds zero formal score-ready events.",
+    "The window is an internal proposal pending main-agent freeze."
+  ]
+}

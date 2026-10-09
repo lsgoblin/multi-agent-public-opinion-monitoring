@@ -1,0 +1,41 @@
+{
+  "schema": "riskshield.final_benchmark.public_research_log.v5",
+  "dataset_version": "final-benchmark-evidence-pilot-v5-2026-10-08",
+  "research_session_checked_at_utc": "2026-10-08T07:56:21Z",
+  "scope": "Existing user-authorized public-source review. No login, access-limit bypass, paid model call, external transfer, notice, or retention of personal contact data.",
+  "source_chains": [
+    {
+      "record_id": "fnf-sec-original-8k-20231121",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1331875/000133187523000064/fnf-20231119.htm",
+      "fixed_version": "SEC accession 0001331875-23-000064, original Form 8-K; later amendments excluded",
+      "existence_time_evidence": "The fixed SEC filing and signature date are Nov 21, 2023; the v5 FNF cutoff remains the pre-existing Nov 23 archive witness plus 30 minutes.",
+      "specific_content_evidence": "The SEC page states that FNF reported access to certain systems, containment measures, operational disruption, an ongoing investigation and uncertain impact.",
+      "later_discussion_evidence": "Dated Reddit, The Register forum and TechCrunch records are separately listed in trajectory-evidence-v5.json.",
+      "local_source_bytes_retained": false,
+      "secondary_time_crosscheck": "Last10K reports 2023-11-21 17:06:23 EST; this exact time is not used to set cutoff."
+    },
+    {
+      "record_id": "ap-bcbsla-elevance-hearing-20240206",
+      "source_url": "https://apnews.com/article/blue-cross-elevance-louisiana-health-insurance-sale-968df3fb5b53a1fb678c27afcebccbf1",
+      "fixed_version": "AP story ID 968df3fb5b53a1fb678c27afcebccbf1, original report dated Feb 6, 2024",
+      "existence_time_evidence": "AP article metadata identifies publication at 2024-02-06 22:38:11Z; v5 input cutoff adds 30 minutes.",
+      "specific_content_evidence": "The AP article page describes the Feb 5 hearing, divided policyholders, concerns and pending state/member approval. No visible updated marker was found; historical bytes were not retained.",
+      "later_discussion_evidence": "Dated public threads Feb 7, official Senate report Feb 8 and trade coverage Feb 9 are in trajectory-evidence-v5.json.",
+      "local_source_bytes_retained": false
+    }
+  ],
+  "access_attempts": [
+    {"resource":"Direct SEC EDGAR index HTTP request for FNF accession","result":"403 Forbidden","interpretation":"No local copy; exact SEC filing content remained browser-accessible at that accession. No retry or bypass."},
+    {"resource":"FNF issuer static original-filing mirror","result":"20-second request timeout","interpretation":"No local copy retained. No retry."},
+    {"resource":"GDELT DOC TimelineVol query for FNF","result":"SSL connection failure","interpretation":"No series retained. No retry."},
+    {"resource":"GDELT DOC TimelineVol query for Louisiana BCBS/Elevance","result":"SSL connection failure","interpretation":"No series retained. No retry."},
+    {"resource":"GDELT DOC TimelineVol query for Anthem anesthesia","result":"429 Too Many Requests","interpretation":"No series retained or used. No retry."},
+    {"resource":"Direct browser opening of selected Reddit discussion pages","result":"Browser access error for some pages; dated indexed search records available","interpretation":"No access bypass, comment-tree dump or current vote values used."}
+  ],
+  "privacy": "No commenter names, handles, email addresses, raw personal complaint bodies or personal details retained. Current vote totals excluded from comparison.",
+  "limitations": [
+    "No exhaustive fixed-query source census across both windows.",
+    "Publisher time does not alone establish historical body version; fixed accession/article IDs and cross-source evidence are recorded where available.",
+    "Any future reporting count must be called a coverage/传播热度代理, not public emotion truth."
+  ]
+}

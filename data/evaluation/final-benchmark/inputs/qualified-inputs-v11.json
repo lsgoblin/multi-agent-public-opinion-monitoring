@@ -1,0 +1,69 @@
+{
+  "schema": "riskshield.final_benchmark.inputs.v11",
+  "dataset_version": "final-benchmark-candidate-evidence-v11-2026-10-08",
+  "base_freeze_v10_sha256": "543d1c1eb43f1edff019212b1ab7a38999c88bcf3401151ac66c0636b0b96397",
+  "data_mode": "real_historical_public_sources",
+  "purpose": "One cutoff-only E pilot candidate with fixed pre-cutoff legal material; not admitted to the formal trend-scoring denominator.",
+  "label_access": "none",
+  "events": [
+    {
+      "event_id": "unitedhealth_algorithm_care_lawsuit_20231115",
+      "case_id": "unitedhealth_algorithm_care_lawsuit_20231115_v11",
+      "split": "holdout_candidate",
+      "existing_identity_ref": "data/evaluation/final-benchmark/manifests/candidate-events-v4.json#/events/6",
+      "event_identity": "One Lokken class-action controversy concerning UnitedHealth/naviHealth and nH Predict in Medicare Advantage post-acute care. The complaint, its news reports and later discussion count as one event. It is distinct from the unrelated February 2024 Change Healthcare cyberattack and the separate Humana lawsuit.",
+      "target_subject": "UnitedHealth Group / UnitedHealthcare / naviHealth",
+      "cutoff": "2023-11-15T21:52:18Z",
+      "cutoff_rule": "Arctic Shift historical title witness captured at 2023-11-15T21:22:18Z plus the existing 30-minute margin.",
+      "input_text": "A class-action complaint filed on November 14, 2023 alleges that UnitedHealth, UnitedHealthcare and naviHealth used the nH Predict algorithm in Medicare Advantage post-acute care decisions, overriding treating clinicians and denying coverage for care the plaintiffs say was medically necessary. The complaint's claims remain allegations, not findings. A contemporaneous STAT investigation published November 14 separately reported employee pressure to follow algorithmic rehabilitation-stay projections. No later filing, response, ruling or outcome is included.",
+      "input_text_kind": "Time-bounded human summary of the fixed complaint, contemporaneous STAT report and cutoff headline; allegations are attributed.",
+      "cutoff_sources": [
+        {
+          "record_id": "reddit_archived_post_17w461q",
+          "publisher": "Public Reddit post in r/Health; title snapshot archived by Arctic Shift",
+          "source_url": "https://www.reddit.com/r/Health/comments/17w461q/",
+          "source_version": "arctic-shift-title-snapshot-v1",
+          "post_created_at": "2023-11-15T21:22:01Z",
+          "captured_at": "2023-11-15T21:22:18Z",
+          "title": "UnitedHealth faces class action lawsuit over algorithmic care denials in Medicare Advantage plans",
+          "content_kind": "title_only",
+          "time_evidence": "Archived retrieved_on timestamp, already retained in v4 cutoff evidence.",
+          "available_at": "2023-11-15T21:22:18Z",
+          "available_at_precision": "second; archive capture",
+          "future_result": false
+        },
+        {
+          "record_id": "lokken_complaint_doc1_20231114",
+          "publisher": "U.S. District Court for the District of Minnesota; public fixed copy of Doc. 1",
+          "source_url": "https://whatleykallas.com/wp-content/uploads/2023/12/Lokken-v-UnitedHealth-complaint-11-14.pdf",
+          "docket_reference_url": "https://dockets.justia.com/docket/minnesota/mndce/0%3A2023cv03514/211721",
+          "source_version": "Case 0:23-cv-03514, Doc. 1, 46-page class-action complaint; the PDF first page states Filed 11/14/23.",
+          "published_at": "2023-11-14",
+          "published_at_precision": "court filing date; no filing time asserted",
+          "content_summary": "The fixed pleading states that plaintiffs allege nH Predict was used in post-acute Medicare Advantage care determinations and that the algorithm's outputs overrode treating clinicians. These are allegations in a complaint, not adjudicated facts.",
+          "time_evidence": "The docket record identifies Doc. 1 as filed November 14, 2023; the public PDF identifies the same case and filing date.",
+          "future_result": false
+        },
+        {
+          "record_id": "stat_unitedhealth_algorithm_investigation_20231114",
+          "publisher": "STAT News",
+          "source_url": "https://www.statnews.com/2023/11/14/unitedhealth-algorithm-medicare-advantage-investigation/",
+          "source_version": "STAT investigation page dated November 14, 2023; a Hacker News Algolia record shows the link and headline publicly posted 2023-11-14T17:53:06Z.",
+          "published_at": "2023-11-14",
+          "published_at_precision": "date on publisher page; link-publication timestamp cross-witnessed to the second",
+          "content_summary": "STAT reported that internal documents showed pressure to keep rehabilitation stays within algorithmic projections. This is contemporaneous reporting, not a later case result.",
+          "time_evidence_url": "https://hn.algolia.com/api/v1/search_by_date?query=UnitedHealth%20algorithm&tags=story&numericFilters=created_at_i%3E%3D1699401600%2Ccreated_at_i%3C1700006400&hitsPerPage=1000",
+          "future_result": false
+        }
+      ],
+      "cutoff_context_supplements": [
+        "lokken_complaint_doc1_20231114",
+        "stat_unitedhealth_algorithm_investigation_20231114"
+      ],
+      "future_evidence_ref": "data/evaluation/final-benchmark/labels/trajectory-evidence-v11.json#/events/0",
+      "annotation_ref": "data/evaluation/final-benchmark/labels/human-annotation-worklist-v11.md#task-u11-uhc-001",
+      "input_status": "cutoff-content-sufficient-for-E-pilot; not formally trend eligible",
+      "prediction_context_limit": "Only the three cutoff_sources and this summary are allowed. No future evidence, labels, scores or predictions may be read by the predictor."
+    }
+  ]
+}

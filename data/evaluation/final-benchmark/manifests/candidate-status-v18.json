@@ -1,0 +1,65 @@
+{
+  "schema": "riskshield.final_benchmark.candidate_status.v18",
+  "dataset_version": "final-benchmark-evidence-v18-2026-10-08",
+  "base_freeze_v16_sha256": "e1ed3254d4682bef8e45de0234b945128b94b1f663144d017b2c79269d82f791",
+  "schedule": {
+    "batch_freeze_beijing": "2026-10-09T10:00:00+08:00",
+    "project_deadline_beijing": "2026-10-09T12:00:00+08:00"
+  },
+  "input_record_identity_context": {
+    "v4_input_records": 20,
+    "identifiable_event_identities": 8,
+    "development_event_identities": 1,
+    "holdout_event_identities": 7,
+    "individual_complaint_post_records": 12,
+    "note": "The 20 v4 input records are not 20 independent event identities. The 12 individual complaint records remain auxiliary posts and are not counted as 12 public controversies."
+  },
+  "human_annotation_summary": {
+    "user_submitted_record_labels_total": 25,
+    "submission_files": [
+      "data/evaluation/final-benchmark/labels/human-sentiment-submissions-v16.json",
+      "data/evaluation/final-benchmark/labels/human-sentiment-submissions-v17.json",
+      "data/evaluation/final-benchmark/labels/human-sentiment-submissions-v18.json"
+    ],
+    "valid_exact_title_units_from_v6_packet_with_one_response": 0,
+    "exact_title_units_second_rater_slots_missing": 0,
+    "units_with_two_independent_answers": 5,
+    "development_item_responses_excluded_from_holdout": 1,
+    "additional_summary_or_text_scope_unverified_responses": 14,
+    "complaint_summary_responses_not_eligible_as_original_title_gold": 12,
+    "holdout_event_summary_responses_pending_exact_text_validation": 2,
+    "adjudicated_units": 0,
+    "prediction_exposure_attested": false,
+    "other_annotator_answer_exposure_attested": false,
+    "details": "The five exact v6 title units now have two human submissions each. Labels agree on all five: neutral for FNF, Cigna, and Humana; negative for Anthem and Aflac. The v6 answer set remains immutable. Fourteen other holdout responses remain summary/text-scope unverified; one development response remains excluded. These labels do not provide trajectory truth or make an event formally score-ready.",
+    "annotator_ids": [
+      "leos",
+      "Dick"
+    ],
+    "distinct_v4_record_ids_with_any_response": 20,
+    "v4_records_with_exactly_one_response": 15,
+    "v4_records_with_two_responses": 5,
+    "valid_exact_title_units_with_two_responses": 5,
+    "same_label_units": 5,
+    "different_label_units": 0,
+    "independence_basis": "Both annotators use distinct IDs and each declares no prediction exposure and no exposure to the other answer; this blindness metadata is self-reported, not independently audited."
+  },
+  "trajectory_and_formal_scoring": {
+    "independent_human_trajectory_labels_received": 0,
+    "new_formal_score_ready_events_this_pass": 0,
+    "formal_score_ready_holdout_total": 0,
+    "gap_to_interim_10": 10,
+    "gap_to_target_20": 20,
+    "reason": "Human sentiment responses do not qualify missing cutoff evidence, comparable public-discussion series, or independent trajectory truth."
+  },
+  "predictor_handoff": {
+    "new_handoff_created": false,
+    "reason": "No new qualified cutoff-only prediction input was created. Human labels remain isolated from E."
+  },
+  "next_actions": [
+    "For the other 14 holdout responses, reconcile exact frozen source text before deciding whether to re-annotate or retain as auxiliary summary ratings.",
+    "Keep the UnitedHealth development response out of the holdout denominator.",
+    "Do not count any sentiment submission as a trajectory label or formal score-ready event."
+  ],
+  "base_freeze_v17_sha256": "bb21a00dab0f380ec7b2edea819f5078d6d823d5f1aab067fba80f1ad690fd70"
+}

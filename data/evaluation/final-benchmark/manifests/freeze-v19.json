@@ -1,0 +1,30 @@
+{
+  "schema": "riskshield.final_benchmark.freeze.v19",
+  "dataset_version": "final-benchmark-evidence-v19-2026-10-08",
+  "created_at_utc": "2026-10-08T15:01:28+00:00",
+  "base_freeze_v18_sha256": "8a37151856f8e160e51bb0097db8ed5c0730879a1c37221cd2b33bf46703e9cf",
+  "freeze_is_self_hashed": false,
+  "files": [
+    {
+      "path": "data/evaluation/final-benchmark/labels/verified-original-titles-v19.json",
+      "bytes": 29681,
+      "sha256": "54a08c3543f29bd808e74b1b1998286771a26626caf9c4f68dd7f416fe0235e2"
+    },
+    {
+      "path": "data/evaluation/final-benchmark/labels/blind-sentiment-reannotation-packet-v19.json",
+      "bytes": 24222,
+      "sha256": "0f92c86092187ba936a48881eb98d8592e38a7bdcadb39a547c1f1d85697f565"
+    },
+    {
+      "path": "data/evaluation/final-benchmark/manifests/candidate-status-v19.json",
+      "bytes": 4942,
+      "sha256": "065e12814f20028d5aeb6c06c5280873da32fa489f5f125934ce84744ec929bd"
+    }
+  ],
+  "notes": [
+    "Append-only original-title evidence and blind re-annotation packet for 14 v4 holdout records; v1-v18 files remain unchanged.",
+    "All 14 supplied title strings independently match archived title SHA-256 values; one title includes a terminal LF.",
+    "Thirteen prior summary-based labels are retained as auxiliary and not counted as original-title gold. UnitedHealth has one reconciled first-pass label and needs one independent second rating.",
+    "No trajectory evidence, trajectory labels, E input, or formal score-ready event was added."
+  ]
+}

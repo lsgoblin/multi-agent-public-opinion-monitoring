@@ -4,7 +4,7 @@
 
 ## 授权与输入
 
-按[运行边界决定](../planning/15-Day2语义模型运行边界决定.md)，固定使用 DeepSeek `deepseek-flash`、非思考模式和 JSON 输出。本地从[事件包](../../data/public/unh_change_20240222_event_v2.json)导入临时 SQLite 后调用 `Store.snapshot`；快照只有 `unh-sec-20240222-initial` 一条合格输入，后续更新被排除。真实请求的用户消息仅含 `company`、`title`、`summary`：公司为 UnitedHealth Group，标题及人工摘要来自该条快照。记录 ID 仅留本地。请求不含 SEC 网页字节、URL、帖子、后续更新或其他来源；系统消息只含三分类指令与 JSON 示例。实现见 [day2_sentiment.py](../../src/riskshield/day2_sentiment.py)。
+按[运行边界决定](../planning/15-Day2语义模型运行边界决定.md)，固定使用 DeepSeek `deepseek-flash`、非思考模式和 JSON 输出。本地从[事件包](../../data/public/unh_change_20240222_event_v2.json)导入临时 SQLite 后调用 `Store.snapshot`；快照只有 `unh-sec-20240222-initial` 一条合格输入，后续更新被排除。真实请求的用户消息仅含 `company`、`title`、`summary`：公司为 UnitedHealth Group，标题及人工摘要来自该条快照。记录 ID 仅留本地。请求不含 SEC 网页字节、URL、帖子、后续更新或其他来源；系统消息只含三分类指令与 JSON 示例。实现见 [day2_sentiment.py](../../src/riskshield/sentiment.py)。
 
 ## 实际运行
 

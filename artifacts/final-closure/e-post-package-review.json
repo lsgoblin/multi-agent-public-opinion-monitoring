@@ -1,0 +1,119 @@
+{
+  "schema": "riskshield.final_closure.e_post_package_review.v1",
+  "closure_id": "closure-20261009-functional-names-v1",
+  "status": "local_demo_package_built_and_verified; formal_acceptance_not_passed",
+  "recorded_at_local": "2026-10-09 02:27 +08:00",
+  "post_freeze_supplement": true,
+  "package_members_unchanged": true,
+  "artifact_hashes": {
+    "candidate_manifest": {
+      "path": "artifacts/final-integration-review/candidate-package-manifest.json",
+      "sha256": "44a078a5b6154383b2cd55c20b5e3319becbe62dc79f6ab1e13439a3d99c9f74"
+    },
+    "integration_ready": {
+      "path": "artifacts/final-closure/integration-ready.json",
+      "sha256": "76a39125589dd2fc6e20e863961f61e740d481016236f422010165b256167928"
+    },
+    "version_manifest": {
+      "path": "artifacts/final-closure/version-manifest-closure-20261009-functional-names-v1.json",
+      "sha256": "ee61f6f6ceef75eef840175abb09d57a226aaf9ad38b25af98e998cc67ec4984"
+    },
+    "d_delivery_ready": {
+      "path": "artifacts/final-closure/d-delivery-ready.json",
+      "sha256": "54672a6b9608e05373e5bbb97c07aa1f2f4373235848305810217c18140da8e6"
+    },
+    "package_verification": {
+      "path": "artifacts/final-closure/delivery-verification/package-verification.json",
+      "sha256": "6fafa13e0e329303ec0487f21637a5b0f4b33109ceb9b7f7fcb43f2365dbd6e3"
+    },
+    "compose_case_summary": {
+      "path": "artifacts/final-closure/delivery-verification/case-closure-summary.json",
+      "sha256": "467e639805b7a7d9c2cf3bfc1498515232ded0eb49661cf05262f8b61cd9bb53"
+    },
+    "restart_summary": {
+      "path": "artifacts/final-closure/delivery-verification/restart-persistence-summary.json",
+      "sha256": "09d1f5473e7d7056f520e941c248be183eb0cd4a62d5f6ae42f96f5a1fa33fde"
+    },
+    "post_restart_health": {
+      "path": "artifacts/final-closure/delivery-verification/post-restart-health.json",
+      "sha256": "7cdeba9cc28535cbbf4e9cf6b203ad7796a66bd1b27ee27fb45d5ee41a4d7b8b"
+    }
+  },
+  "zip": {
+    "path": "artifacts/final-deployment-review/riskshield-local-demo-20261009.zip",
+    "bytes": 1057000,
+    "sha256": "efb7deaf334bfceb1069c910d9ecd18f99e4467e508a4c76fe32925c38d8fd9f",
+    "member_count": 125,
+    "all_members_match": true,
+    "extract_copy_hashes_match": true
+  },
+  "docker": {
+    "built_from_extracted_frozen_copy": true,
+    "compose_project": "riskshieldzip0218",
+    "api_port": 28142,
+    "web_port": 28642,
+    "api_health": "ok",
+    "web_http_status": 200,
+    "normal_stop_start_passed": "passed",
+    "records_hashes_match": true
+  },
+  "runtime_case": {
+    "case_id": "unh_change_20240222_day2_multisource",
+    "graph_id": "936c73951d2ab46f8e0ee6bb",
+    "run_id": "run_5b34f55b8e4a48e9bba5",
+    "job_id": "job_36e9dbf63cac48758d9e",
+    "report_id": "report_8d276af64ee76780c9e7632f",
+    "alert_id": "alert_ad9dcaeff2912edb52f3f57e361f8051",
+    "job_status": "complete",
+    "result_state": "success",
+    "execution_mode": "offline_dynamic_substitute",
+    "completed_rounds": 3,
+    "target_rounds": 3,
+    "valid_actions": 30,
+    "failed_actions": 0,
+    "model_calls": 0,
+    "network_requests": 0,
+    "report_modules": [
+      "emotion_evolution",
+      "key_nodes",
+      "propagation",
+      "recommendations",
+      "risk"
+    ],
+    "alert_level": "blue",
+    "alert_status": "provisional_offline_assessment"
+  },
+  "limitations": {
+    "B_screenshot_saved": false,
+    "query_mode": "lexical matching; full natural-language answer/context not implemented",
+    "A_500x30": "partial 3477/15000; no post-rename rerun",
+    "C_formal_metrics": "not computable 0/0",
+    "G3_G4_G5_passed": false,
+    "docker_full_egress_isolation": "not verified"
+  },
+  "frozen_document_note": {
+    "round_id": "closure-20261009-functional-names-v1",
+    "status": "stale_pre_freeze_statement_preserved",
+    "reason": "D-owned deployment documents and package members were frozen at d-prep-ready; the E-matched candidate freeze arrived afterward. This verification does not alter frozen source or ZIP members.",
+    "observations": [
+      {
+        "line": 159,
+        "statement": "says source was not finally frozen and no final ZIP will be generated in this round",
+        "path": "docs/delivery/deployment.md"
+      },
+      {
+        "line": 11,
+        "statement": "says no final ZIP was generated because matching E freeze evidence was not yet available",
+        "path": "docs/records/final-deployment-review.md"
+      },
+      {
+        "path": "docs/records/final-integration-review.md",
+        "line": 71,
+        "statement": "says D ZIP and extracted-copy verification are subsequent work; this was accurate at E freeze time but is stale after D completed delivery verification."
+      }
+    ],
+    "verified_effect": "The ZIP was later created from the matching E-frozen whitelist, extracted, built and restarted successfully. These two D-owned and one E-owned pre-freeze status lines do not invalidate startup instructions or ZIP/hash evidence; package members remain byte-identical.",
+    "formal_acceptance": "No change: G3/G4/G5 remain unpassed."
+  },
+  "disposition": "The frozen package and primary delivery documents remain unchanged. This supplement records post-ZIP results without changing any manifest member or invalidating the checked archive."
+}

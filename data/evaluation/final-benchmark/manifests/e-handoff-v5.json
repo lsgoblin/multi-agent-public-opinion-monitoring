@@ -1,0 +1,15 @@
+{
+  "schema": "riskshield.final_benchmark.e_handoff.v5",
+  "dataset_version": "final-benchmark-evidence-pilot-v5-2026-10-08",
+  "predictor_execution_read_allowlist": ["data/evaluation/final-benchmark/inputs/qualified-inputs-v5.json"],
+  "label_files_readable_by_predictor": false,
+  "score_side_may_read_after_prediction_freeze": [
+    "data/evaluation/final-benchmark/labels/trajectory-evidence-v5.json",
+    "data/evaluation/final-benchmark/labels/blind-sentiment-packet-v5.json"
+  ],
+  "input_schema": "riskshield.final_benchmark.inputs.v5; events[] fields event_id, case_id, split, cutoff, input_text, cutoff_sources, sources[].source_url/source_version/published_at",
+  "legacy_mapping": "If E requires riskshield.day5.evaluation-inputs.v1, map event_id/case_id, cutoff, input_text, split and cutoff-source metadata to cases[]. Do not map future evidence or annotation fields into predictor context.",
+  "run_requirement": "Fresh v5 prediction run required; do not reuse v4 predictions because the input content set differs. Agent C did not access prediction outputs.",
+  "input_sha256": "8303e6e1107035b82b176b9cabe0d9727fa6795e747a7de2127e51df90933879",
+  "formal_scoring_status": "Waiting for E prediction, main-agent protocol freeze and independent human labels. Predictions can run in parallel; labels remain isolated."
+}

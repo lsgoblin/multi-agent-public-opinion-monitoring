@@ -1,0 +1,38 @@
+{
+  "schema": "riskshield.final_benchmark.source_leads.v2",
+  "dataset_version": "final-benchmark-public-history-v2-2026-10-08",
+  "authorization": "User explicitly authorized public web research; queried free public sources only; no paid calls or external transfer.",
+  "not_counted_or_rejected": [
+    {
+      "lead": "23 Black Cat complaint IDs reviewed",
+      "reason": "No usable historical Wayback snapshot confirmed; none added without a cutoff witness.",
+      "events_counted": 0
+    },
+    {
+      "lead": "State Farm California pause post 13t10ms",
+      "reason": "Archive retrieval was about 84 days after post creation; not a contemporaneous title snapshot.",
+      "events_counted": 0
+    },
+    {
+      "lead": "Allstate California pause post 140vf09",
+      "reason": "Archive retrieval was about 79 days after post creation; not a contemporaneous title snapshot.",
+      "events_counted": 0
+    },
+    {
+      "lead": "Farmers California limit post 14tau3w",
+      "reason": "Prompt time witness, but omitted to avoid overconcentrating one California market-withdrawal trend.",
+      "events_counted": 0
+    },
+    {
+      "lead": "Other reposts and related thread comments",
+      "reason": "Same event, not an original complaint episode, or no contemporaneous archive witness.",
+      "events_counted": 0
+    }
+  ],
+  "counts": {
+    "new_cutoff_qualified_events": 19,
+    "remaining_cutoff_gap": 0,
+    "pending_sentiment_assignments": 38,
+    "pending_direction_labels": 20
+  }
+}

@@ -1,0 +1,833 @@
+{
+  "schema": "riskshield.final_benchmark.candidate_events.v2",
+  "dataset_version": "final-benchmark-public-history-v2-2026-10-08",
+  "counting_unit": "one independently identified incident or one independently authored complaint episode; sources, URLs, aliases, comments, reposts do not add events",
+  "qualification_rule": "A cutoff-qualified item needs a historical visibility witness and only pre-cutoff material in the frozen input. New archive cutoffs use retrieved_on + 30 minutes. Complaint entries establish a real public complaint post; underlying allegations remain unverified.",
+  "split_rule": "UNH remains development; 19 new events are holdout. All related topic groups stay in holdout. No holdout predictions have been run.",
+  "events": [
+    {
+      "event_id": "unh_change_cyberattack_20240222",
+      "known_aliases_and_case_ids": [
+        "unh-change-cyberattack-20240222",
+        "unh_change_20240222_v2_archived",
+        "unh_change_20240222_day2_multisource"
+      ],
+      "identity_basis": "UnitedHealth Group / Change Healthcare single cybersecurity incident; SEC, Optum, archived public references and Day 1/Day 2 case IDs all refer to this event",
+      "summary": "Network incident affecting Change Healthcare, disclosed in an SEC filing and an Optum status update.",
+      "data_mode": "real_historical",
+      "source_files": [
+        {
+          "path": "data/public/unh_change_20240222_event_v2.json",
+          "version": "day1-v2-event-package-2026-10-02-archived-visibility",
+          "role": "input_and_later_evidence_package"
+        },
+        {
+          "path": "data/public/unh_change_20240222_day2_multisource_event.json",
+          "version": "day2-multisource-v1",
+          "role": "same_event_second_source_package"
+        },
+        {
+          "path": "data/research/unh_change_20240222_visibility.json",
+          "version": "unh-change-20240222-visibility-v1",
+          "role": "time_evidence"
+        }
+      ],
+      "use_scope": "Existing local Day 1/Day 2 materials may be reused for authorized restricted Day 5 offline checks. SEC and archive evidence were limited to internal time-isolation work; Optum material was limited to internal source linkage. No new external model transfer or redistribution is authorized.",
+      "public_or_visible_at": "2024-02-22T16:18:39-05:00",
+      "time_evidence": [
+        {
+          "path": "data/research/unh_change_20240222_visibility.json",
+          "pointer": "/independent_visibility_witness/retrieved_on_et",
+          "meaning": "conservative witness for original SEC accession"
+        },
+        {
+          "path": "data/public/unh_change_20240222_day2_multisource_event.json",
+          "pointer": "/evidence/archive_retrieved_on",
+          "meaning": "earlier Optum incident-page witness, Unix seconds"
+        }
+      ],
+      "cutoff": "2024-02-22T16:48:39-05:00",
+      "cutoff_status": "qualified_under_existing_limited_sec_observation_point",
+      "cutoff_limitation": "Optum's incident-page witness predates the SEC witness. This cutoff is not 30 minutes after the earliest appearance of the overall incident; changing the observation target would require a new frozen protocol.",
+      "input_file": "data/evaluation/final-benchmark/inputs/qualified-inputs-v2.json",
+      "input_record_ids": [
+        "unh-sec-20240222-initial",
+        "optum-status-20240221-cyber-update"
+      ],
+      "excluded_later_record_ids": [
+        "unh-sec-20240308-update"
+      ],
+      "observation_window": {
+        "start_exclusive": "2024-02-22T16:48:39-05:00",
+        "end_inclusive": "2024-02-29T16:48:39-05:00",
+        "status": "provisional_7_day_rule_pending_V2_Q05"
+      },
+      "label_status": "one SEC source has two existing human neutral annotations; their strict double-blind independence is not established; Optum has one non-blind initial annotation; no adjudicated direction label",
+      "split": "development",
+      "exclusion_reason_for_formal_event_scoring": "No adjudicated direction outcome and no paired prediction; previously probed, so remains development."
+    },
+    {
+      "event_id": "blackcat_17374386012",
+      "known_aliases_and_case_ids": [
+        "blackcat-17374386012",
+        "blackcat_zongan_17374386012_v2_visibility_audit"
+      ],
+      "identity_basis": "One verified Black Cat complaint ID and its merchant reply/completion timeline are one complaint episode, not multiple events",
+      "summary": "Redacted insurance claim-handling complaint involving ZhongAn customer service.",
+      "data_mode": "real_historical",
+      "source_files": [
+        {
+          "path": "data/public/blackcat_17374386012_event_v2.json",
+          "version": "day1-v2-event-package-2026-10-02-visibility-audit",
+          "role": "candidate_and_later_timeline_package"
+        }
+      ],
+      "use_scope": "User-confirmed Black Cat sample authorization covers redacted local storage, model processing, demonstration and competition submission; this preparation only reads the existing local redacted package. New collection or external transfer requires separate scope check.",
+      "public_or_visible_at": null,
+      "time_evidence": [
+        {
+          "path": "data/public/blackcat_17374386012_event_v2.json",
+          "pointer": "/event/public_visibility_audit",
+          "meaning": "submission and review times do not establish historical anonymous visibility"
+        }
+      ],
+      "cutoff": null,
+      "cutoff_status": "ineligible_unknown_historical_public_visibility",
+      "input_file": null,
+      "input_record_ids": [],
+      "excluded_later_record_ids": [
+        "blackcat-17374386012-business-reply",
+        "blackcat-17374386012-resolution"
+      ],
+      "observation_window": null,
+      "label_status": "source package contains a provisional single-reviewer sentiment suggestion; no independent sentiment truth or event direction label",
+      "split": "unassigned_blocked",
+      "exclusion_reason_for_formal_event_scoring": "Historical anonymous public visibility before the outcome is unknown. The old 22:21 cutoff is invalid; single-complaint completion cannot prove public-opinion calming."
+    },
+    {
+      "event_id": "zongan_marketing_202403",
+      "known_aliases_and_case_ids": [
+        "za_marketing_202403_v1"
+      ],
+      "identity_basis": "Three news summaries describe or repeat one ZhongAn marketing-call/text controversy; repost dates do not create additional events",
+      "summary": "Reports about disputed marketing calls and text messages and consumer-council communication.",
+      "data_mode": "real_historical",
+      "source_files": [
+        {
+          "path": "data/public/za_marketing_2024.json",
+          "version": "day1-public-review-v1",
+          "role": "three_record_candidate_package"
+        }
+      ],
+      "use_scope": "Existing locally reviewed human summaries only; publisher permissions and any further collection, redistribution or model transfer must be checked source by source.",
+      "public_or_visible_at": null,
+      "time_evidence": [
+        {
+          "path": "data/public/za_marketing_2024.json",
+          "pointer": "/records/0/available_at",
+          "meaning": "null: displayed publication time is not a historical visibility witness"
+        }
+      ],
+      "cutoff": null,
+      "cutoff_status": "ineligible_unknown_historical_public_visibility",
+      "input_file": null,
+      "input_record_ids": [],
+      "excluded_later_record_ids": [
+        "ifeng_20240315",
+        "sina_20240320"
+      ],
+      "observation_window": null,
+      "label_status": "no independent human sentiment labels or adjudicated direction label",
+      "split": "unassigned_blocked",
+      "exclusion_reason_for_formal_event_scoring": "No contemporaneous visibility witness for the first report, so the historical cutoff cannot be qualified; later reposts are the same event and not independent direction truth."
+    },
+    {
+      "event_id": "fnf_cyberattack_20231123",
+      "event_type": "corporate_incident",
+      "identity_basis": "One FNF cybersecurity incident; other posts and articles about the same incident are not additional events.",
+      "summary": "Archived headline: Fidelity National Financial shuts down its network following a cybersecurity incident.",
+      "data_mode": "real_historical_public_post",
+      "source_ref": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+      "archive_post_id": "1821s44",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "use_scope": "Local offline preparation; title only and redacted complaint summary. No author or body retained, no external redistribution. Complaint truth remains unverified.",
+      "public_or_visible_at": "2023-11-23T13:59:40Z",
+      "archive_witness_at": "2023-11-23T13:59:55Z",
+      "archive_lag_seconds": 15,
+      "cutoff": "2023-11-23T14:29:55Z",
+      "cutoff_status": "qualified_title_only_historical_archive_witness",
+      "input_file": "data/evaluation/final-benchmark/inputs/qualified-inputs-v2.json",
+      "input_record_ids": [
+        "reddit_archived_post_1821s44"
+      ],
+      "observation_window": {
+        "start_exclusive": "2023-11-23T14:29:55Z",
+        "end_inclusive": "2023-11-30T14:29:55Z",
+        "status": "provisional_7_day_rule_pending_V2_Q05"
+      },
+      "label_status": "awaiting independent human label",
+      "split": "holdout",
+      "related_event_group": "insurance_sector_cyber",
+      "target_subject": "Fidelity National Financial",
+      "identity_validation_sources": [
+        {
+          "publisher": "U.S. SEC EDGAR",
+          "url": "https://www.investor.fnf.com/static-files/c76988f7-929f-4fdb-99dc-2048586391e7",
+          "role": "identity validation only; not a prediction input",
+          "date": "2023-11-21"
+        }
+      ],
+      "exclusion_reason_for_formal_scoring": "No adjudicated direction label and no paired frozen model prediction; eligible input is not a scored result."
+    },
+    {
+      "event_id": "aflac_cybersecurity_incident_20250620",
+      "event_type": "corporate_incident",
+      "identity_basis": "Aflac-specific incident; not merged with other company incidents solely because reporting describes a broader campaign.",
+      "summary": "Archived headline reports a cybersecurity incident affecting Aflac.",
+      "data_mode": "real_historical_public_post",
+      "source_ref": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+      "archive_post_id": "1lg33ey",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "use_scope": "Local offline preparation; title only and redacted complaint summary. No author or body retained, no external redistribution. Complaint truth remains unverified.",
+      "public_or_visible_at": "2025-06-20T12:46:13Z",
+      "archive_witness_at": "2025-06-20T12:46:30Z",
+      "archive_lag_seconds": 17,
+      "cutoff": "2025-06-20T13:16:30Z",
+      "cutoff_status": "qualified_title_only_historical_archive_witness",
+      "input_file": "data/evaluation/final-benchmark/inputs/qualified-inputs-v2.json",
+      "input_record_ids": [
+        "reddit_archived_post_1lg33ey"
+      ],
+      "observation_window": {
+        "start_exclusive": "2025-06-20T13:16:30Z",
+        "end_inclusive": "2025-06-27T13:16:30Z",
+        "status": "provisional_7_day_rule_pending_V2_Q05"
+      },
+      "label_status": "awaiting independent human label",
+      "split": "holdout",
+      "related_event_group": "insurance_sector_cyber",
+      "target_subject": "Aflac Incorporated",
+      "identity_validation_sources": [
+        {
+          "publisher": "Aflac newsroom",
+          "url": "https://newsroom.aflac.com/2025-06-20-Aflac-Incorporated-Discloses-Cybersecurity-Incident",
+          "role": "identity validation only; not a prediction input",
+          "date": "2025-06-20"
+        }
+      ],
+      "exclusion_reason_for_formal_scoring": "No adjudicated direction label and no paired frozen model prediction; eligible input is not a scored result."
+    },
+    {
+      "event_id": "allianz_life_data_breach_20250727",
+      "event_type": "corporate_incident",
+      "identity_basis": "Allianz Life-specific breach; separate incident and system from the other selected cyber events.",
+      "summary": "Archived headline reports a data breach affecting Allianz Life customers.",
+      "data_mode": "real_historical_public_post",
+      "source_ref": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+      "archive_post_id": "1ma8wfj",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "use_scope": "Local offline preparation; title only and redacted complaint summary. No author or body retained, no external redistribution. Complaint truth remains unverified.",
+      "public_or_visible_at": "2025-07-27T00:37:37Z",
+      "archive_witness_at": "2025-07-27T00:37:54Z",
+      "archive_lag_seconds": 17,
+      "cutoff": "2025-07-27T01:07:54Z",
+      "cutoff_status": "qualified_title_only_historical_archive_witness",
+      "input_file": "data/evaluation/final-benchmark/inputs/qualified-inputs-v2.json",
+      "input_record_ids": [
+        "reddit_archived_post_1ma8wfj"
+      ],
+      "observation_window": {
+        "start_exclusive": "2025-07-27T01:07:54Z",
+        "end_inclusive": "2025-08-03T01:07:54Z",
+        "status": "provisional_7_day_rule_pending_V2_Q05"
+      },
+      "label_status": "awaiting independent human label",
+      "split": "holdout",
+      "related_event_group": "insurance_sector_cyber",
+      "target_subject": "Allianz Life Insurance Company of North America",
+      "identity_validation_sources": [
+        {
+          "publisher": "Associated Press",
+          "url": "https://apnews.com/article/12b991a141c24d3a060642c0d173e0be",
+          "role": "identity validation only; not a prediction input",
+          "date": "2025-07-26"
+        }
+      ],
+      "exclusion_reason_for_formal_scoring": "No adjudicated direction label and no paired frozen model prediction; eligible input is not a scored result."
+    },
+    {
+      "event_id": "anthem_anesthesia_proposal_20241204",
+      "event_type": "corporate_policy_controversy",
+      "identity_basis": "The proposal and its later reversal are one event; reversal posts are excluded from the cutoff input and not counted separately.",
+      "summary": "Archived headline reports an Anthem proposal concerning reimbursement for anesthesia duration.",
+      "data_mode": "real_historical_public_post",
+      "source_ref": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+      "archive_post_id": "1h6mj0x",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "use_scope": "Local offline preparation; title only and redacted complaint summary. No author or body retained, no external redistribution. Complaint truth remains unverified.",
+      "public_or_visible_at": "2024-12-04T17:59:16Z",
+      "archive_witness_at": "2024-12-04T17:59:34Z",
+      "archive_lag_seconds": 18,
+      "cutoff": "2024-12-04T18:29:34Z",
+      "cutoff_status": "qualified_title_only_historical_archive_witness",
+      "input_file": "data/evaluation/final-benchmark/inputs/qualified-inputs-v2.json",
+      "input_record_ids": [
+        "reddit_archived_post_1h6mj0x"
+      ],
+      "observation_window": {
+        "start_exclusive": "2024-12-04T18:29:34Z",
+        "end_inclusive": "2024-12-11T18:29:34Z",
+        "status": "provisional_7_day_rule_pending_V2_Q05"
+      },
+      "label_status": "awaiting independent human label",
+      "split": "holdout",
+      "related_event_group": "health_insurer_policy_controversies",
+      "target_subject": "Anthem Blue Cross Blue Shield",
+      "identity_validation_sources": [
+        {
+          "publisher": "American Society of Anesthesiologists",
+          "url": "https://www.asahq.org/about-asa/newsroom/news-releases/2024/11/anthem-blue-cross-blue-shield-will-not-pay-complete-duration-of-anesthesia-for-surgical-procedures",
+          "role": "pre-cutoff identity validation; not added to frozen input",
+          "date": "2024-11"
+        }
+      ],
+      "exclusion_reason_for_formal_scoring": "No adjudicated direction label and no paired frozen model prediction; eligible input is not a scored result."
+    },
+    {
+      "event_id": "cigna_algorithm_denial_lawsuit_20230725",
+      "event_type": "corporate_litigation_controversy",
+      "identity_basis": "One Cigna-specific lawsuit concerning claim review; allegations remain allegations.",
+      "summary": "Archived headline reports a lawsuit alleging use of an algorithm to deny health coverage.",
+      "data_mode": "real_historical_public_post",
+      "source_ref": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+      "archive_post_id": "159ce8g",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "use_scope": "Local offline preparation; title only and redacted complaint summary. No author or body retained, no external redistribution. Complaint truth remains unverified.",
+      "public_or_visible_at": "2023-07-25T15:53:39Z",
+      "archive_witness_at": "2023-07-25T15:53:54Z",
+      "archive_lag_seconds": 15,
+      "cutoff": "2023-07-25T16:23:54Z",
+      "cutoff_status": "qualified_title_only_historical_archive_witness",
+      "input_file": "data/evaluation/final-benchmark/inputs/qualified-inputs-v2.json",
+      "input_record_ids": [
+        "reddit_archived_post_159ce8g"
+      ],
+      "observation_window": {
+        "start_exclusive": "2023-07-25T16:23:54Z",
+        "end_inclusive": "2023-08-01T16:23:54Z",
+        "status": "provisional_7_day_rule_pending_V2_Q05"
+      },
+      "label_status": "awaiting independent human label",
+      "split": "holdout",
+      "related_event_group": "health_insurer_policy_controversies",
+      "target_subject": "Cigna",
+      "identity_validation_sources": [
+        {
+          "publisher": "CBS News",
+          "url": "https://www.cbsnews.com/amp/news/cigna-algorithm-patient-claims-lawsuit/",
+          "role": "identity validation only; not a prediction input",
+          "date": "2023-07-26"
+        }
+      ],
+      "exclusion_reason_for_formal_scoring": "No adjudicated direction label and no paired frozen model prediction; eligible input is not a scored result."
+    },
+    {
+      "event_id": "unitedhealth_algorithm_care_lawsuit_20231115",
+      "event_type": "corporate_litigation_controversy",
+      "identity_basis": "One UnitedHealth-specific lawsuit, separate from Change Healthcare and from the Humana lawsuit.",
+      "summary": "Archived headline reports a class action concerning alleged algorithmic care denials in Medicare Advantage.",
+      "data_mode": "real_historical_public_post",
+      "source_ref": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+      "archive_post_id": "17w461q",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "use_scope": "Local offline preparation; title only and redacted complaint summary. No author or body retained, no external redistribution. Complaint truth remains unverified.",
+      "public_or_visible_at": "2023-11-15T21:22:01Z",
+      "archive_witness_at": "2023-11-15T21:22:18Z",
+      "archive_lag_seconds": 17,
+      "cutoff": "2023-11-15T21:52:18Z",
+      "cutoff_status": "qualified_title_only_historical_archive_witness",
+      "input_file": "data/evaluation/final-benchmark/inputs/qualified-inputs-v2.json",
+      "input_record_ids": [
+        "reddit_archived_post_17w461q"
+      ],
+      "observation_window": {
+        "start_exclusive": "2023-11-15T21:52:18Z",
+        "end_inclusive": "2023-11-22T21:52:18Z",
+        "status": "provisional_7_day_rule_pending_V2_Q05"
+      },
+      "label_status": "awaiting independent human label",
+      "split": "holdout",
+      "related_event_group": "health_insurer_policy_controversies",
+      "target_subject": "UnitedHealth Group / UnitedHealthcare",
+      "identity_validation_sources": [
+        {
+          "publisher": "STAT News",
+          "url": "https://www.statnews.com/2023/11/14/unitedhealth-class-action-lawsuit-algorithm-medicare-advantage/",
+          "role": "identity validation only; not a prediction input",
+          "date": "2023-11-14"
+        }
+      ],
+      "exclusion_reason_for_formal_scoring": "No adjudicated direction label and no paired frozen model prediction; eligible input is not a scored result."
+    },
+    {
+      "event_id": "humana_algorithm_care_lawsuit_20231214",
+      "event_type": "corporate_litigation_controversy",
+      "identity_basis": "One Humana-specific lawsuit; separate from the UnitedHealth lawsuit, although both concern the same vendor tool.",
+      "summary": "Archived headline reports a lawsuit alleging use of an AI tool in care-denial decisions; an unsupported percentage in the source headline is omitted.",
+      "data_mode": "real_historical_public_post",
+      "source_ref": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+      "archive_post_id": "18i3k2f",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "use_scope": "Local offline preparation; title only and redacted complaint summary. No author or body retained, no external redistribution. Complaint truth remains unverified.",
+      "public_or_visible_at": "2023-12-14T07:49:45Z",
+      "archive_witness_at": "2023-12-14T07:50:02Z",
+      "archive_lag_seconds": 17,
+      "cutoff": "2023-12-14T08:20:02Z",
+      "cutoff_status": "qualified_title_only_historical_archive_witness",
+      "input_file": "data/evaluation/final-benchmark/inputs/qualified-inputs-v2.json",
+      "input_record_ids": [
+        "reddit_archived_post_18i3k2f"
+      ],
+      "observation_window": {
+        "start_exclusive": "2023-12-14T08:20:02Z",
+        "end_inclusive": "2023-12-21T08:20:02Z",
+        "status": "provisional_7_day_rule_pending_V2_Q05"
+      },
+      "label_status": "awaiting independent human label",
+      "split": "holdout",
+      "related_event_group": "health_insurer_policy_controversies",
+      "target_subject": "Humana",
+      "identity_validation_sources": [
+        {
+          "publisher": "STAT News",
+          "url": "https://www.statnews.com/2023/12/12/humana-algorithm-medicare-advantage-patients-lawsuit/",
+          "role": "identity validation only; not a prediction input",
+          "date": "2023-12-12"
+        }
+      ],
+      "exclusion_reason_for_formal_scoring": "No adjudicated direction label and no paired frozen model prediction; eligible input is not a scored result."
+    },
+    {
+      "event_id": "complaint_health_claim_review_20240818",
+      "event_type": "individual_complaint_episode",
+      "identity_basis": "Original non-crosspost complaint post by an author distinct from the other selected complaint authors; underlying claim unverified.",
+      "summary": "A public post title reports that an insurer would not review a claim; this records the complaint post, not proof of its allegation.",
+      "data_mode": "real_historical_public_post",
+      "source_ref": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+      "archive_post_id": "1evaapp",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "use_scope": "Local offline preparation; title only and redacted complaint summary. No author or body retained, no external redistribution. Complaint truth remains unverified.",
+      "public_or_visible_at": "2024-08-18T14:16:39Z",
+      "archive_witness_at": "2024-08-18T14:16:54Z",
+      "archive_lag_seconds": 15,
+      "cutoff": "2024-08-18T14:46:54Z",
+      "cutoff_status": "qualified_title_only_historical_archive_witness",
+      "input_file": "data/evaluation/final-benchmark/inputs/qualified-inputs-v2.json",
+      "input_record_ids": [
+        "reddit_archived_post_1evaapp"
+      ],
+      "observation_window": {
+        "start_exclusive": "2024-08-18T14:46:54Z",
+        "end_inclusive": "2024-08-25T14:46:54Z",
+        "status": "provisional_7_day_rule_pending_V2_Q05"
+      },
+      "label_status": "awaiting independent human label; underlying complaint unverified",
+      "split": "holdout",
+      "related_event_group": "individual_complaint_episodes",
+      "target_subject": "Unspecified health insurer in the post",
+      "identity_validation_sources": [],
+      "exclusion_reason_for_formal_scoring": "No adjudicated direction label and no paired frozen model prediction; eligible input is not a scored result."
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20241229",
+      "event_type": "individual_complaint_episode",
+      "identity_basis": "Original non-crosspost complaint post by a distinct author; underlying claim unverified.",
+      "summary": "A public post title reports a homeowners policy non-renewal; this records the complaint post, not proof of its allegation.",
+      "data_mode": "real_historical_public_post",
+      "source_ref": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+      "archive_post_id": "1hp6wa2",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "use_scope": "Local offline preparation; title only and redacted complaint summary. No author or body retained, no external redistribution. Complaint truth remains unverified.",
+      "public_or_visible_at": "2024-12-29T21:51:54Z",
+      "archive_witness_at": "2024-12-29T21:52:11Z",
+      "archive_lag_seconds": 17,
+      "cutoff": "2024-12-29T22:22:11Z",
+      "cutoff_status": "qualified_title_only_historical_archive_witness",
+      "input_file": "data/evaluation/final-benchmark/inputs/qualified-inputs-v2.json",
+      "input_record_ids": [
+        "reddit_archived_post_1hp6wa2"
+      ],
+      "observation_window": {
+        "start_exclusive": "2024-12-29T22:22:11Z",
+        "end_inclusive": "2025-01-05T22:22:11Z",
+        "status": "provisional_7_day_rule_pending_V2_Q05"
+      },
+      "label_status": "awaiting independent human label; underlying complaint unverified",
+      "split": "holdout",
+      "related_event_group": "homeowners_complaint_episodes",
+      "target_subject": "Unspecified homeowners insurer in the post",
+      "identity_validation_sources": [],
+      "exclusion_reason_for_formal_scoring": "No adjudicated direction label and no paired frozen model prediction; eligible input is not a scored result."
+    },
+    {
+      "event_id": "complaint_home_coverage_after_termination_20240430",
+      "event_type": "individual_complaint_episode",
+      "identity_basis": "Original non-crosspost complaint post by a distinct author; underlying claim unverified.",
+      "summary": "A public post title asks about obtaining homeowners coverage after a policy ended; the allegation is unverified.",
+      "data_mode": "real_historical_public_post",
+      "source_ref": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+      "archive_post_id": "1ch6tu5",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "use_scope": "Local offline preparation; title only and redacted complaint summary. No author or body retained, no external redistribution. Complaint truth remains unverified.",
+      "public_or_visible_at": "2024-04-30T23:10:53Z",
+      "archive_witness_at": "2024-04-30T23:11:09Z",
+      "archive_lag_seconds": 16,
+      "cutoff": "2024-04-30T23:41:09Z",
+      "cutoff_status": "qualified_title_only_historical_archive_witness",
+      "input_file": "data/evaluation/final-benchmark/inputs/qualified-inputs-v2.json",
+      "input_record_ids": [
+        "reddit_archived_post_1ch6tu5"
+      ],
+      "observation_window": {
+        "start_exclusive": "2024-04-30T23:41:09Z",
+        "end_inclusive": "2024-05-07T23:41:09Z",
+        "status": "provisional_7_day_rule_pending_V2_Q05"
+      },
+      "label_status": "awaiting independent human label; underlying complaint unverified",
+      "split": "holdout",
+      "related_event_group": "homeowners_complaint_episodes",
+      "target_subject": "Unspecified homeowners insurer in the post",
+      "identity_validation_sources": [],
+      "exclusion_reason_for_formal_scoring": "No adjudicated direction label and no paired frozen model prediction; eligible input is not a scored result."
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20231018",
+      "event_type": "individual_complaint_episode",
+      "identity_basis": "Original non-crosspost complaint post by a distinct author; comments and later commenters excluded; claim unverified.",
+      "summary": "A public post title reports a homeowners policy non-renewal. Only the original poster's episode is counted.",
+      "data_mode": "real_historical_public_post",
+      "source_ref": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+      "archive_post_id": "17acu1c",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "use_scope": "Local offline preparation; title only and redacted complaint summary. No author or body retained, no external redistribution. Complaint truth remains unverified.",
+      "public_or_visible_at": "2023-10-18T00:05:46Z",
+      "archive_witness_at": "2023-10-18T00:05:59Z",
+      "archive_lag_seconds": 13,
+      "cutoff": "2023-10-18T00:35:59Z",
+      "cutoff_status": "qualified_title_only_historical_archive_witness",
+      "input_file": "data/evaluation/final-benchmark/inputs/qualified-inputs-v2.json",
+      "input_record_ids": [
+        "reddit_archived_post_17acu1c"
+      ],
+      "observation_window": {
+        "start_exclusive": "2023-10-18T00:35:59Z",
+        "end_inclusive": "2023-10-25T00:35:59Z",
+        "status": "provisional_7_day_rule_pending_V2_Q05"
+      },
+      "label_status": "awaiting independent human label; underlying complaint unverified",
+      "split": "holdout",
+      "related_event_group": "homeowners_complaint_episodes",
+      "target_subject": "Unspecified homeowners insurer in the post",
+      "identity_validation_sources": [],
+      "exclusion_reason_for_formal_scoring": "No adjudicated direction label and no paired frozen model prediction; eligible input is not a scored result."
+    },
+    {
+      "event_id": "complaint_health_claim_rejections_20241211",
+      "event_type": "individual_complaint_episode",
+      "identity_basis": "Original non-crosspost complaint post by a distinct author; underlying claim unverified.",
+      "summary": "A public post title reports rejected insurance claims; the reason and underlying claim are unverified.",
+      "data_mode": "real_historical_public_post",
+      "source_ref": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+      "archive_post_id": "1hc1bcc",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "use_scope": "Local offline preparation; title only and redacted complaint summary. No author or body retained, no external redistribution. Complaint truth remains unverified.",
+      "public_or_visible_at": "2024-12-11T19:10:36Z",
+      "archive_witness_at": "2024-12-11T19:10:51Z",
+      "archive_lag_seconds": 15,
+      "cutoff": "2024-12-11T19:40:51Z",
+      "cutoff_status": "qualified_title_only_historical_archive_witness",
+      "input_file": "data/evaluation/final-benchmark/inputs/qualified-inputs-v2.json",
+      "input_record_ids": [
+        "reddit_archived_post_1hc1bcc"
+      ],
+      "observation_window": {
+        "start_exclusive": "2024-12-11T19:40:51Z",
+        "end_inclusive": "2024-12-18T19:40:51Z",
+        "status": "provisional_7_day_rule_pending_V2_Q05"
+      },
+      "label_status": "awaiting independent human label; underlying complaint unverified",
+      "split": "holdout",
+      "related_event_group": "individual_complaint_episodes",
+      "target_subject": "Unspecified health insurer in the post",
+      "identity_validation_sources": [],
+      "exclusion_reason_for_formal_scoring": "No adjudicated direction label and no paired frozen model prediction; eligible input is not a scored result."
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20240524",
+      "event_type": "individual_complaint_episode",
+      "identity_basis": "Original non-crosspost complaint post by a distinct author; underlying claim unverified.",
+      "summary": "A public post title reports a homeowners non-renewal concern; this is one poster's complaint, not a market-wide event.",
+      "data_mode": "real_historical_public_post",
+      "source_ref": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+      "archive_post_id": "1cznbtx",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "use_scope": "Local offline preparation; title only and redacted complaint summary. No author or body retained, no external redistribution. Complaint truth remains unverified.",
+      "public_or_visible_at": "2024-05-24T15:23:05Z",
+      "archive_witness_at": "2024-05-24T15:23:22Z",
+      "archive_lag_seconds": 17,
+      "cutoff": "2024-05-24T15:53:22Z",
+      "cutoff_status": "qualified_title_only_historical_archive_witness",
+      "input_file": "data/evaluation/final-benchmark/inputs/qualified-inputs-v2.json",
+      "input_record_ids": [
+        "reddit_archived_post_1cznbtx"
+      ],
+      "observation_window": {
+        "start_exclusive": "2024-05-24T15:53:22Z",
+        "end_inclusive": "2024-05-31T15:53:22Z",
+        "status": "provisional_7_day_rule_pending_V2_Q05"
+      },
+      "label_status": "awaiting independent human label; underlying complaint unverified",
+      "split": "holdout",
+      "related_event_group": "homeowners_complaint_episodes",
+      "target_subject": "Unspecified homeowners insurer in the post",
+      "identity_validation_sources": [],
+      "exclusion_reason_for_formal_scoring": "No adjudicated direction label and no paired frozen model prediction; eligible input is not a scored result."
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20231010",
+      "event_type": "individual_complaint_episode",
+      "identity_basis": "Original non-crosspost complaint post by a distinct author; comments and later commenters excluded; claim unverified.",
+      "summary": "A public post title reports a homeowners non-renewal. Only the original poster's episode is counted.",
+      "data_mode": "real_historical_public_post",
+      "source_ref": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+      "archive_post_id": "174m8f9",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "use_scope": "Local offline preparation; title only and redacted complaint summary. No author or body retained, no external redistribution. Complaint truth remains unverified.",
+      "public_or_visible_at": "2023-10-10T14:11:15Z",
+      "archive_witness_at": "2023-10-10T14:11:29Z",
+      "archive_lag_seconds": 14,
+      "cutoff": "2023-10-10T14:41:29Z",
+      "cutoff_status": "qualified_title_only_historical_archive_witness",
+      "input_file": "data/evaluation/final-benchmark/inputs/qualified-inputs-v2.json",
+      "input_record_ids": [
+        "reddit_archived_post_174m8f9"
+      ],
+      "observation_window": {
+        "start_exclusive": "2023-10-10T14:41:29Z",
+        "end_inclusive": "2023-10-17T14:41:29Z",
+        "status": "provisional_7_day_rule_pending_V2_Q05"
+      },
+      "label_status": "awaiting independent human label; underlying complaint unverified",
+      "split": "holdout",
+      "related_event_group": "homeowners_complaint_episodes",
+      "target_subject": "Unspecified homeowners insurer in the post",
+      "identity_validation_sources": [],
+      "exclusion_reason_for_formal_scoring": "No adjudicated direction label and no paired frozen model prediction; eligible input is not a scored result."
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20240625",
+      "event_type": "individual_complaint_episode",
+      "identity_basis": "Original non-crosspost complaint post by a distinct author; underlying claim unverified.",
+      "summary": "A public post title reports that a homeowners policy would not be renewed; the allegation is unverified.",
+      "data_mode": "real_historical_public_post",
+      "source_ref": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+      "archive_post_id": "1do5am8",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "use_scope": "Local offline preparation; title only and redacted complaint summary. No author or body retained, no external redistribution. Complaint truth remains unverified.",
+      "public_or_visible_at": "2024-06-25T12:54:09Z",
+      "archive_witness_at": "2024-06-25T12:54:24Z",
+      "archive_lag_seconds": 15,
+      "cutoff": "2024-06-25T13:24:24Z",
+      "cutoff_status": "qualified_title_only_historical_archive_witness",
+      "input_file": "data/evaluation/final-benchmark/inputs/qualified-inputs-v2.json",
+      "input_record_ids": [
+        "reddit_archived_post_1do5am8"
+      ],
+      "observation_window": {
+        "start_exclusive": "2024-06-25T13:24:24Z",
+        "end_inclusive": "2024-07-02T13:24:24Z",
+        "status": "provisional_7_day_rule_pending_V2_Q05"
+      },
+      "label_status": "awaiting independent human label; underlying complaint unverified",
+      "split": "holdout",
+      "related_event_group": "homeowners_complaint_episodes",
+      "target_subject": "Unspecified homeowners insurer in the post",
+      "identity_validation_sources": [],
+      "exclusion_reason_for_formal_scoring": "No adjudicated direction label and no paired frozen model prediction; eligible input is not a scored result."
+    },
+    {
+      "event_id": "complaint_auto_claim_denial_20241116",
+      "event_type": "individual_complaint_episode",
+      "identity_basis": "Original non-crosspost complaint post by a distinct author; personal details and comments excluded; claim unverified.",
+      "summary": "A public post title reports a disputed auto claim denial. Personal circumstances are omitted; allegation unverified.",
+      "data_mode": "real_historical_public_post",
+      "source_ref": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+      "archive_post_id": "1gshw33",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "use_scope": "Local offline preparation; title only and redacted complaint summary. No author or body retained, no external redistribution. Complaint truth remains unverified.",
+      "public_or_visible_at": "2024-11-16T07:07:57Z",
+      "archive_witness_at": "2024-11-16T07:08:12Z",
+      "archive_lag_seconds": 15,
+      "cutoff": "2024-11-16T07:38:12Z",
+      "cutoff_status": "qualified_title_only_historical_archive_witness",
+      "input_file": "data/evaluation/final-benchmark/inputs/qualified-inputs-v2.json",
+      "input_record_ids": [
+        "reddit_archived_post_1gshw33"
+      ],
+      "observation_window": {
+        "start_exclusive": "2024-11-16T07:38:12Z",
+        "end_inclusive": "2024-11-23T07:38:12Z",
+        "status": "provisional_7_day_rule_pending_V2_Q05"
+      },
+      "label_status": "awaiting independent human label; underlying complaint unverified",
+      "split": "holdout",
+      "related_event_group": "individual_complaint_episodes",
+      "target_subject": "Unspecified auto insurer in the post",
+      "identity_validation_sources": [],
+      "exclusion_reason_for_formal_scoring": "No adjudicated direction label and no paired frozen model prediction; eligible input is not a scored result."
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_inspection_20241011",
+      "event_type": "individual_complaint_episode",
+      "identity_basis": "Original non-crosspost complaint post by a distinct author; underlying claim unverified.",
+      "summary": "A public post title reports a non-renewal after disputed inspection findings; property details omitted, allegation unverified.",
+      "data_mode": "real_historical_public_post",
+      "source_ref": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+      "archive_post_id": "1g1kc9b",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "use_scope": "Local offline preparation; title only and redacted complaint summary. No author or body retained, no external redistribution. Complaint truth remains unverified.",
+      "public_or_visible_at": "2024-10-11T21:16:20Z",
+      "archive_witness_at": "2024-10-11T21:16:37Z",
+      "archive_lag_seconds": 17,
+      "cutoff": "2024-10-11T21:46:37Z",
+      "cutoff_status": "qualified_title_only_historical_archive_witness",
+      "input_file": "data/evaluation/final-benchmark/inputs/qualified-inputs-v2.json",
+      "input_record_ids": [
+        "reddit_archived_post_1g1kc9b"
+      ],
+      "observation_window": {
+        "start_exclusive": "2024-10-11T21:46:37Z",
+        "end_inclusive": "2024-10-18T21:46:37Z",
+        "status": "provisional_7_day_rule_pending_V2_Q05"
+      },
+      "label_status": "awaiting independent human label; underlying complaint unverified",
+      "split": "holdout",
+      "related_event_group": "homeowners_complaint_episodes",
+      "target_subject": "Unspecified homeowners insurer in the post",
+      "identity_validation_sources": [],
+      "exclusion_reason_for_formal_scoring": "No adjudicated direction label and no paired frozen model prediction; eligible input is not a scored result."
+    },
+    {
+      "event_id": "complaint_home_policy_claim_20240113",
+      "event_type": "individual_complaint_episode",
+      "identity_basis": "Original non-crosspost complaint post by a distinct author; personal details and comments excluded; claim unverified.",
+      "summary": "A public post title links a homeowners policy ending with a claim and difficulty obtaining replacement coverage; details omitted, allegation unverified.",
+      "data_mode": "real_historical_public_post",
+      "source_ref": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+      "archive_post_id": "195twpp",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "use_scope": "Local offline preparation; title only and redacted complaint summary. No author or body retained, no external redistribution. Complaint truth remains unverified.",
+      "public_or_visible_at": "2024-01-13T18:01:20Z",
+      "archive_witness_at": "2024-01-13T18:01:40Z",
+      "archive_lag_seconds": 20,
+      "cutoff": "2024-01-13T18:31:40Z",
+      "cutoff_status": "qualified_title_only_historical_archive_witness",
+      "input_file": "data/evaluation/final-benchmark/inputs/qualified-inputs-v2.json",
+      "input_record_ids": [
+        "reddit_archived_post_195twpp"
+      ],
+      "observation_window": {
+        "start_exclusive": "2024-01-13T18:31:40Z",
+        "end_inclusive": "2024-01-20T18:31:40Z",
+        "status": "provisional_7_day_rule_pending_V2_Q05"
+      },
+      "label_status": "awaiting independent human label; underlying complaint unverified",
+      "split": "holdout",
+      "related_event_group": "homeowners_complaint_episodes",
+      "target_subject": "Unspecified homeowners insurer in the post",
+      "identity_validation_sources": [],
+      "exclusion_reason_for_formal_scoring": "No adjudicated direction label and no paired frozen model prediction; eligible input is not a scored result."
+    },
+    {
+      "event_id": "complaint_auto_cancellation_notice_20241003",
+      "event_type": "individual_complaint_episode",
+      "identity_basis": "Original non-crosspost complaint post by a distinct author; personal details and comments excluded; claim unverified.",
+      "summary": "A public post title reports a discovered auto policy cancellation and uncertainty about notice; details omitted, allegation unverified.",
+      "data_mode": "real_historical_public_post",
+      "source_ref": "data/evaluation/final-benchmark/manifests/archive-post-evidence-v1.json",
+      "archive_post_id": "1fvdpul",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "use_scope": "Local offline preparation; title only and redacted complaint summary. No author or body retained, no external redistribution. Complaint truth remains unverified.",
+      "public_or_visible_at": "2024-10-03T17:51:05Z",
+      "archive_witness_at": "2024-10-03T17:51:23Z",
+      "archive_lag_seconds": 18,
+      "cutoff": "2024-10-03T18:21:23Z",
+      "cutoff_status": "qualified_title_only_historical_archive_witness",
+      "input_file": "data/evaluation/final-benchmark/inputs/qualified-inputs-v2.json",
+      "input_record_ids": [
+        "reddit_archived_post_1fvdpul"
+      ],
+      "observation_window": {
+        "start_exclusive": "2024-10-03T18:21:23Z",
+        "end_inclusive": "2024-10-10T18:21:23Z",
+        "status": "provisional_7_day_rule_pending_V2_Q05"
+      },
+      "label_status": "awaiting independent human label; underlying complaint unverified",
+      "split": "holdout",
+      "related_event_group": "individual_complaint_episodes",
+      "target_subject": "Unspecified auto insurer in the post",
+      "identity_validation_sources": [],
+      "exclusion_reason_for_formal_scoring": "No adjudicated direction label and no paired frozen model prediction; eligible input is not a scored result."
+    }
+  ],
+  "qualified_event_ids": [
+    "unh_change_cyberattack_20240222",
+    "fnf_cyberattack_20231123",
+    "aflac_cybersecurity_incident_20250620",
+    "allianz_life_data_breach_20250727",
+    "anthem_anesthesia_proposal_20241204",
+    "cigna_algorithm_denial_lawsuit_20230725",
+    "unitedhealth_algorithm_care_lawsuit_20231115",
+    "humana_algorithm_care_lawsuit_20231214",
+    "complaint_health_claim_review_20240818",
+    "complaint_home_nonrenewal_20241229",
+    "complaint_home_coverage_after_termination_20240430",
+    "complaint_home_nonrenewal_20231018",
+    "complaint_health_claim_rejections_20241211",
+    "complaint_home_nonrenewal_20240524",
+    "complaint_home_nonrenewal_20231010",
+    "complaint_home_nonrenewal_20240625",
+    "complaint_auto_claim_denial_20241116",
+    "complaint_home_nonrenewal_inspection_20241011",
+    "complaint_home_policy_claim_20240113",
+    "complaint_auto_cancellation_notice_20241003"
+  ],
+  "statistics": {
+    "candidate_event_clusters_total": 22,
+    "candidate_event_clusters_cutoff_qualified": 20,
+    "candidate_event_clusters_cutoff_ineligible": 2,
+    "new_public_source_event_clusters": 19,
+    "new_company_level_events": 7,
+    "new_individual_complaint_episodes": 12,
+    "distinct_authors_among_complaint_posts": 12,
+    "crossposted_complaint_posts": 0,
+    "archive_witness_lag_seconds_min": 13,
+    "archive_witness_lag_seconds_max": 20,
+    "sentiment_units_with_two_matching_existing_annotations_including_limited_development": 1,
+    "strict_double_blind_sentiment_units_verified": 0,
+    "new_independent_sentiment_annotations_pending": 38,
+    "events_with_adjudicated_direction_labels": 0,
+    "events_ready_for_formal_scored_benchmark": 0,
+    "cutoff_qualified_gap_to_target_20": 0,
+    "formal_scored_event_gap_to_target_20": 20,
+    "development_events": 1,
+    "holdout_events": 19,
+    "future_labels_or_results_in_input": 0
+  },
+  "data_limitations": [
+    "The 12 complaint posts are independently authored but their underlying claims are not independently verified.",
+    "Archive evidence is metadata/title, not historical page bytes.",
+    "A single headline per new event limits sentiment and trend labeling context.",
+    "The 7-day outcome window is provisional pending V2-Q05."
+  ]
+}

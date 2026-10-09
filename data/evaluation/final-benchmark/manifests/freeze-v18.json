@@ -1,0 +1,24 @@
+{
+  "schema": "riskshield.final_benchmark.freeze.v18",
+  "dataset_version": "final-benchmark-evidence-v18-2026-10-08",
+  "created_at_utc": "2026-10-08T14:31:44+00:00",
+  "base_freeze_v17_sha256": "bb21a00dab0f380ec7b2edea819f5078d6d823d5f1aab067fba80f1ad690fd70",
+  "freeze_is_self_hashed": false,
+  "files": [
+    {
+      "path": "data/evaluation/final-benchmark/labels/human-sentiment-submissions-v18.json",
+      "bytes": 5995,
+      "sha256": "5f96fb51c90a007698ae4e6424987078d5075fddc8c7cb6d610f8c225739dd20"
+    },
+    {
+      "path": "data/evaluation/final-benchmark/manifests/candidate-status-v18.json",
+      "bytes": 3738,
+      "sha256": "6e14c23e719c36bfd59e8d47aef594daad9d2b1642d5d8befbd544010274e82e"
+    }
+  ],
+  "notes": [
+    "Append-only second-rater submission for five existing exact title units; v1-v17 files remain unchanged.",
+    "All five unit labels agree with the v16 first pass. The annotator self-reports no exposure to predictions or the first answers; exposure is not independently audited.",
+    "Fourteen summary/text-scope-unverified responses, one development response, zero trajectory labels, and zero formal score-ready events remain unchanged."
+  ]
+}

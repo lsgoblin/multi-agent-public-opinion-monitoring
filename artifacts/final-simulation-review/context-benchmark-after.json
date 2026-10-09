@@ -1,0 +1,41 @@
+{
+  "benchmark": "context-build-only-from-frozen-synthetic-500x30-sqlite",
+  "phase": "after",
+  "source": "data/research/day3_synthetic_bailian_500x30_20261007.sqlite3",
+  "source_sha256": "04b5a65a5553e246fdf729c991861773ee1a0d3d5647da8dd86a3580811741e9",
+  "run_id": "run_50789c8d2dfe4260b682",
+  "python": "3.12.4",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "rounds_per_repeat": 30,
+  "agents_per_round": 500,
+  "repeats": [
+    {
+      "repeat": 1,
+      "wall_seconds": 3.535521,
+      "observations": 15000
+    },
+    {
+      "repeat": 2,
+      "wall_seconds": 3.152087,
+      "observations": 15000
+    },
+    {
+      "repeat": 3,
+      "wall_seconds": 3.101592,
+      "observations": 15000
+    },
+    {
+      "repeat": 4,
+      "wall_seconds": 3.147925,
+      "observations": 15000
+    },
+    {
+      "repeat": 5,
+      "wall_seconds": 3.149308,
+      "observations": 15000
+    }
+  ],
+  "median_wall_seconds": 3.149308,
+  "profile_repeat_1": "         4868620 function calls (4868607 primitive calls) in 3.389 seconds\n\n   Ordered by: cumulative time\n   List reduced from 93 to 15 due to restriction <15>\n\n   ncalls  tottime  percall  cumtime  percall filename:lineno(function)\n       30    1.767    0.059    3.389    0.113 D:\\test\\\u591a\u667a\u80fd\u4f53\u4eff\u771f\u8206\u60c5\u76d1\u6d4b\u4e0e\u6295\u8bc9\u9884\u8b66\\src\\riskshield\\day3.py:297(_context)\n    30000    0.099    0.000    0.865    0.000 {method 'sort' of 'list' objects}\n   403657    0.283    0.000    0.764    0.000 D:\\test\\\u591a\u667a\u80fd\u4f53\u4eff\u771f\u8206\u60c5\u76d1\u6d4b\u4e0e\u6295\u8bc9\u9884\u8b66\\src\\riskshield\\day3.py:340(<lambda>)\n   122384    0.066    0.000    0.407    0.000 C:\\Users\\\u674e\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\__init__.py:299(loads)\n   122384    0.169    0.000    0.310    0.000 C:\\Users\\\u674e\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\decoder.py:332(decode)\n   403657    0.218    0.000    0.218    0.000 {method 'intersection' of 'set' objects}\n   418657    0.163    0.000    0.163    0.000 {method 'split' of 'str' objects}\n   628657    0.109    0.000    0.109    0.000 {method 'lower' of 'str' objects}\n    15000    0.015    0.000    0.078    0.000 {built-in method builtins.sum}\n   120000    0.045    0.000    0.063    0.000 D:\\test\\\u591a\u667a\u80fd\u4f53\u4eff\u771f\u8206\u60c5\u76d1\u6d4b\u4e0e\u6295\u8bc9\u9884\u8b66\\src\\riskshield\\day3.py:326(<genexpr>)\n   423127    0.060    0.000    0.060    0.000 {method 'setdefault' of 'dict' objects}\n   244768    0.058    0.000    0.058    0.000 {method 'match' of 're.Pattern' objects}\n   122384    0.050    0.000    0.050    0.000 C:\\Users\\\u674e\\AppData\\Local\\Programs\\Python\\Python312\\Lib\\json\\decoder.py:343(raw_decode)\n   453177    0.047    0.000    0.047    0.000 {method 'append' of 'list' objects}\n631129/631124    0.046    0.000    0.046    0.000 {built-in method builtins.len}\n\n\n",
+  "constraints": "Reads a temporary copy; no model/network calls. Timed region is repeated _context only."
+}

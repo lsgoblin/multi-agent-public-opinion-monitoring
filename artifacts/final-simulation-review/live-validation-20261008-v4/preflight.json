@@ -1,0 +1,185 @@
+{
+  "pilot_c4": {
+    "preflight_status": "configuration_passed",
+    "budget_status": "within_limit",
+    "network_requests": 0,
+    "model_calls": 0,
+    "region": "cn-beijing",
+    "dedicated_key_configured": true,
+    "agent_count": 25,
+    "rounds": 2,
+    "role_offset": 0,
+    "decision_opportunities": 50,
+    "agents_by_model": {
+      "qwen-turbo": 10,
+      "qwen-flash": 15
+    },
+    "opportunities_by_model": {
+      "qwen-turbo": 20,
+      "qwen-flash": 30
+    },
+    "reservation_cny_by_model": {
+      "qwen-turbo": "0.0455220",
+      "qwen-flash": "0.0442260"
+    },
+    "maximum_sanitized_input_upper_bound_tokens_by_model": {
+      "qwen-turbo": 7267,
+      "qwen-flash": 7268
+    },
+    "route_maximum_reservation_cny_by_model": {
+      "qwen-turbo": "0.0510720",
+      "qwen-flash": "0.0483840"
+    },
+    "configured_prices_cny_per_million": {
+      "qwen-turbo": {
+        "input": "0.3",
+        "cached_input": "0.06",
+        "output": "0.6",
+        "max_input_tokens": 8192,
+        "max_output_tokens": 160,
+        "local_price_version_label_configured": true
+      },
+      "qwen-flash": {
+        "input": "0.15",
+        "cached_input": "0.03",
+        "output": "1.5",
+        "max_input_tokens": 8192,
+        "max_output_tokens": 256,
+        "local_price_version_label_configured": true
+      }
+    },
+    "total_conservative_reservation_cny": "0.0897480",
+    "reservation_basis": "Fixed Northstar v1 graph evidence; 3 messages x 160 chars, 3 memories x 120 chars; worst escaped JSON fields plus 128 protocol allowance; output max_tokens unchanged. A shared per-round budget gate reserves this envelope before dispatch.",
+    "task_budget_cny": "0.10",
+    "remaining_budget_cny": "0.0102520",
+    "price_labels_present": [
+      "qwen-flash",
+      "qwen-turbo"
+    ],
+    "price_verification": "pending_manual_comparison_with_current_official_Beijing_prices; local price version labels are not proof of official verification",
+    "live_authorized": false,
+    "g3_passed": false
+  },
+  "pilot_c8": {
+    "preflight_status": "configuration_passed",
+    "budget_status": "within_limit",
+    "network_requests": 0,
+    "model_calls": 0,
+    "region": "cn-beijing",
+    "dedicated_key_configured": true,
+    "agent_count": 25,
+    "rounds": 2,
+    "role_offset": 0,
+    "decision_opportunities": 50,
+    "agents_by_model": {
+      "qwen-turbo": 10,
+      "qwen-flash": 15
+    },
+    "opportunities_by_model": {
+      "qwen-turbo": 20,
+      "qwen-flash": 30
+    },
+    "reservation_cny_by_model": {
+      "qwen-turbo": "0.0455220",
+      "qwen-flash": "0.0442260"
+    },
+    "maximum_sanitized_input_upper_bound_tokens_by_model": {
+      "qwen-turbo": 7267,
+      "qwen-flash": 7268
+    },
+    "route_maximum_reservation_cny_by_model": {
+      "qwen-turbo": "0.0510720",
+      "qwen-flash": "0.0483840"
+    },
+    "configured_prices_cny_per_million": {
+      "qwen-turbo": {
+        "input": "0.3",
+        "cached_input": "0.06",
+        "output": "0.6",
+        "max_input_tokens": 8192,
+        "max_output_tokens": 160,
+        "local_price_version_label_configured": true
+      },
+      "qwen-flash": {
+        "input": "0.15",
+        "cached_input": "0.03",
+        "output": "1.5",
+        "max_input_tokens": 8192,
+        "max_output_tokens": 256,
+        "local_price_version_label_configured": true
+      }
+    },
+    "total_conservative_reservation_cny": "0.0897480",
+    "reservation_basis": "Fixed Northstar v1 graph evidence; 3 messages x 160 chars, 3 memories x 120 chars; worst escaped JSON fields plus 128 protocol allowance; output max_tokens unchanged. A shared per-round budget gate reserves this envelope before dispatch.",
+    "task_budget_cny": "0.10",
+    "remaining_budget_cny": "0.0102520",
+    "price_labels_present": [
+      "qwen-flash",
+      "qwen-turbo"
+    ],
+    "price_verification": "pending_manual_comparison_with_current_official_Beijing_prices; local price version labels are not proof of official verification",
+    "live_authorized": false,
+    "g3_passed": false
+  },
+  "full_c4": {
+    "preflight_status": "configuration_passed",
+    "budget_status": "within_limit",
+    "network_requests": 0,
+    "model_calls": 0,
+    "region": "cn-beijing",
+    "dedicated_key_configured": true,
+    "agent_count": 500,
+    "rounds": 30,
+    "role_offset": 0,
+    "decision_opportunities": 15000,
+    "agents_by_model": {
+      "qwen-turbo": 200,
+      "qwen-flash": 300
+    },
+    "opportunities_by_model": {
+      "qwen-turbo": 6000,
+      "qwen-flash": 9000
+    },
+    "reservation_cny_by_model": {
+      "qwen-turbo": "13.6566000",
+      "qwen-flash": "13.2678000"
+    },
+    "maximum_sanitized_input_upper_bound_tokens_by_model": {
+      "qwen-turbo": 7267,
+      "qwen-flash": 7268
+    },
+    "route_maximum_reservation_cny_by_model": {
+      "qwen-turbo": "15.3216000",
+      "qwen-flash": "14.5152000"
+    },
+    "configured_prices_cny_per_million": {
+      "qwen-turbo": {
+        "input": "0.3",
+        "cached_input": "0.06",
+        "output": "0.6",
+        "max_input_tokens": 8192,
+        "max_output_tokens": 160,
+        "local_price_version_label_configured": true
+      },
+      "qwen-flash": {
+        "input": "0.15",
+        "cached_input": "0.03",
+        "output": "1.5",
+        "max_input_tokens": 8192,
+        "max_output_tokens": 256,
+        "local_price_version_label_configured": true
+      }
+    },
+    "total_conservative_reservation_cny": "26.9244000",
+    "reservation_basis": "Fixed Northstar v1 graph evidence; 3 messages x 160 chars, 3 memories x 120 chars; worst escaped JSON fields plus 128 protocol allowance; output max_tokens unchanged. A shared per-round budget gate reserves this envelope before dispatch.",
+    "task_budget_cny": "28.94607442",
+    "remaining_budget_cny": "2.02167442",
+    "price_labels_present": [
+      "qwen-flash",
+      "qwen-turbo"
+    ],
+    "price_verification": "pending_manual_comparison_with_current_official_Beijing_prices; local price version labels are not proof of official verification",
+    "live_authorized": false,
+    "g3_passed": false
+  }
+}

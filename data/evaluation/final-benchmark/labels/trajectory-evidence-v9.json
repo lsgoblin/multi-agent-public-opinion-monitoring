@@ -1,0 +1,67 @@
+{
+  "schema": "riskshield.final_benchmark.trajectory_evidence.v9",
+  "dataset_version": "final-benchmark-trajectory-supplement-v9-2026-10-08",
+  "base_freeze_v20_sha256": "f9da39749de815f192eb98a25aab898314bb22a7858ed76000d02fcc8b1dd155",
+  "evidence_purpose": "Supplementary future-observation evidence only; never use as cutoff input, graph material, agent memory, or prediction prompt.",
+  "reviewed_at_utc": "2026-10-08T15:37:12Z",
+  "review_time_precision_note": "Exact web-tool retrieval timestamps were not captured per page; this is the time at which the evidence review was recorded. The forum exposes calendar dates for replies but not a verified timezone in the rendered view.",
+  "records": [
+    {
+      "event_id": "state_farm_ca_new_business_pause_20230526",
+      "event_identity": "One State Farm General decision to pause new California property/casualty applications, distinct from the March 2024 nonrenewal action.",
+      "source_family": "Insurance Forums P&C forum; independent from Reddit and Hacker News.",
+      "audience_scope": "The forum is organized for insurance agents and brokers; its participants are not a representative sample of the general public.",
+      "source_title": "State Farm Halts Home Insurance in California - WSJ",
+      "source_thread_url": "https://www.insurance-forums.com/community/threads/state-farm-halts-home-insurance-in-california-wsj.110855/",
+      "source_version": "Public rendered thread pages 2 and 3 reviewed 2026-10-08; no raw page-byte snapshot or exact per-page capture timestamp retained.",
+      "thread_start_date_as_displayed": "2023-05-26",
+      "source_observation_excerpt": {
+        "page_2_url": "https://www.insurance-forums.com/community/threads/state-farm-halts-home-insurance-in-california-wsj.110855/page-2",
+        "page_2_post_range": "#11-#20",
+        "page_2_calendar_counts_as_displayed": {"2023-05-29": 5, "2023-05-30": 3, "2023-05-31": 2},
+        "page_3_url": "https://www.insurance-forums.com/community/threads/state-farm-halts-home-insurance-in-california-wsj.110855/page-3",
+        "page_3_post_range": "#21-#30",
+        "page_3_calendar_counts_as_displayed": {"2023-05-31": 3, "2023-06-01": 4, "2023-06-02": 3},
+        "displayed_post_count": 20,
+        "event_relevant_post_count": null,
+        "relevance_note": "Posts discuss the State Farm pause and California home-insurance market, but several shift to general underwriting, rates, or rebuilding topics. No complete post-by-post event relevance coding was completed; displayed counts are not counts of event-relevant units."
+      },
+      "provisional_window_assessment": {
+        "basis": "For preparation only, using the existing D0-excluded seven-day proposal with 2023-05-26 as D0; this is not a newly approved scoring window.",
+        "baseline_dates": "2023-05-19 through 2023-05-25",
+        "baseline_status": "unknown; no exhaustive same-query Insurance Forums baseline was retrieved. The target thread begins on D0 and does not establish absence of other baseline discussion.",
+        "observation_dates": "2023-05-27 through 2023-06-02",
+        "dates_with_excerpted_thread_posts": 5,
+        "observation_coverage": "Incomplete: accessible pages show May 29, May 30, May 31, June 1, and June 2; May 27-28 are not evidenced here. This excerpt is below the proposed 6/7 valid-day requirement.",
+        "direction": "unknown",
+        "reason": "No comparable baseline series, incomplete observation coverage, no complete event relevance coding, and no independent human direction labels."
+      },
+      "baseline_search_log": {
+        "method": "Public web search; not an exhaustive forum archive query.",
+        "queries": [
+          "site:insurance-forums.com/community/threads California home insurance after:2023-05-18 before:2023-05-26",
+          "site:insurance-forums.com/community/threads California insurance homeowners May 2023 before:2023-05-26",
+          "site:insurance-forums.com/community/threads State Farm California homeowners insurance May 2023 -110855"
+        ],
+        "result": "No fixed, same-query D-7..D-1 source series was identified. Results included the target thread and later/older unrelated California insurance threads.",
+        "interpretation": "Search failure is not evidence of zero baseline discussion; baseline remains unknown."
+      },
+      "access_and_exclusion_log": [
+        {
+          "requested_pages": ["page 1", "page 4", "page 5"],
+          "result": "web retrieval returned HTTP 403 for each requested page",
+          "handling": "Stopped; did not retry, authenticate, or bypass access restrictions."
+        }
+      ],
+      "eligibility": {
+        "cutoff_input_added": false,
+        "supplementary_post_cutoff_evidence_added": true,
+        "formal_trajectory_evidence_qualified": false,
+        "formal_score_ready_event": false,
+        "trend_human_labels": 0,
+        "disposition": "Retain as a partial supplementary observation source; do not admit to scoring denominator."
+      }
+    }
+  ],
+  "counting_warning": "One forum thread and its posts are one source family and one event context. Page/post count is not event count, not whole-platform sentiment, and not proof of escalation or calming."
+}

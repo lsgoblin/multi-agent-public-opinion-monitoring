@@ -1,0 +1,85 @@
+{
+  "schema": "riskshield.final_benchmark.replacement_candidate_screen.v23",
+  "dataset_version": "final-benchmark-state-farm-nonrenewal-screen-v23-2026-10-09",
+  "reviewed_at_utc": "2026-10-08T16:17:20Z",
+  "base_freeze_v22_sha256": "f850031d0d59a561216cc0b08149c4fc7bf6ae4b383b15416a91ce3340871bd0",
+  "selection_rule": "Apply frozen final-scoring-protocol-v2 without relaxing formal thresholds; select on event identity and evidence completeness, not expected prediction correctness.",
+  "candidate": {
+    "candidate_id": "state_farm_ca_nonrenewals_20240320",
+    "candidate_status": "screened_not_admitted",
+    "event_summary": "State Farm announced nonrenewal/withdrawal affecting approximately 72,000 existing California property policies in March 2024.",
+    "identity_assessment": {
+      "relation_to_existing": "Distinct action from the May 2023 pause on new applications: this candidate concerns nonrenewal of existing policies. It remains linked to the same broader California insurance-market retreat; keep separate only as a distinct announcement/policy action, subject to main-agent identity review.",
+      "independent_event_identity_admitted": false
+    },
+    "cutoff_assessment": {
+      "provisional_event_date": "2024-03-20",
+      "time_evidence": "The contemporaneous Insurance Journal page displays March 20, 2024 but no publication time in the retrieved view. The official State Farm page currently contains later material and does not establish its March 2024 page version.",
+      "fixed_historical_version_and_visible_time_verified": false,
+      "cutoff_input_created": false
+    },
+    "followup_evidence": {
+      "provisional_observation_dates_if_d0_2024_03_20": "2024-03-21 through 2024-03-27",
+      "insurance_forums": {
+        "thread_url": "https://www.insurance-forums.com/community/threads/state-farm-and-their-difficult-decision-in-california-non-renewals.112837/",
+        "thread_start_date": "2024-03-21",
+        "visible_pages_reviewed": [
+          "page 1",
+          "page 2",
+          "page 3"
+        ],
+        "within_provisional_window_excerpt": "Page 1 covers posts #1-#10; the rendered/indexed entries show posts from March 21 through March 25. Page 2 starts at post #11 on March 28, after the provisional seven-day window.",
+        "event_relevance_coded": false,
+        "daily_comparable_series": false,
+        "audience_scope": "Insurance agents and brokers; not representative of the general public."
+      },
+      "reddit": {
+        "examples": [
+          "https://www.reddit.com/r/InsuranceProfessional/comments/1bjuvmp/state_farm_to_pull_out_of_72000_california_home/",
+          "https://www.reddit.com/r/California/comments/1bkdzco/major_california_property_insurer_decides_to_not/"
+        ],
+        "visible_dates": "Search results show posts dated March 21, 2024.",
+        "fixed_query_daily_baseline_and_observation_series": false
+      },
+      "hacker_news": "A targeted exact-phrase search did not surface a usable series; search non-results are not evidence of zero discussion."
+    },
+    "baseline_assessment": {
+      "same_query_baseline_series_verified": false,
+      "reason": "No fixed-query, daily pre-event baseline series from the same source families was collected in this screen."
+    },
+    "qualification": {
+      "candidate_source_families_with_public_examples": 2,
+      "comparable_source_families_meeting_v2": 0,
+      "cutoff_input_qualified": false,
+      "trend_evidence_qualified": false,
+      "human_trend_labels": 0,
+      "formal_score_ready": false,
+      "direction": "unknown"
+    },
+    "disposition": "Keep as a replacement lead only. Do not add to formal event counts or E handoff.",
+    "exclusion_reasons": [
+      "No fixed historical cutoff version with verifiable public visibility time.",
+      "No comparable same-query baseline.",
+      "Forum excerpt is not a complete daily series and event relevance is not coded.",
+      "Reddit examples are not a full time series; two example posts do not establish a comparable source family.",
+      "Possible linkage to the broader State Farm California retreat requires event-identity review."
+    ],
+    "sources": [
+      {
+        "title": "State Farm Nonrenewing 30K California Homeowners, Renters",
+        "url": "https://www.insurancejournal.com/news/west/2024/03/20/765883.htm",
+        "source_role": "contemporaneous event description; displayed publication date only, no time in retrieved page"
+      },
+      {
+        "title": "State Farm and the California Insurance Marketplace",
+        "url": "https://newsroom.statefarm.com/state-farm-in-california-understanding-the-issues/",
+        "source_role": "company context; current page includes post-2024 updates and is not used as frozen cutoff input"
+      },
+      {
+        "title": "State Farm and their “Difficult Decision” in California [non-renewals]",
+        "url": "https://www.insurance-forums.com/community/threads/state-farm-and-their-difficult-decision-in-california-non-renewals.112837/",
+        "source_role": "post-cutoff discussion example; pages 1-3 rendered in public review"
+      }
+    ]
+  }
+}

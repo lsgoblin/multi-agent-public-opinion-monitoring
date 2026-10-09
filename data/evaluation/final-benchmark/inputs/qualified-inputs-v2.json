@@ -1,0 +1,525 @@
+{
+  "schema": "riskshield.final_benchmark.inputs.v2",
+  "dataset_version": "final-benchmark-public-history-v2-2026-10-08",
+  "data_mode": "real_historical_public_sources",
+  "use_scope": "User-authorized local offline public-source research; no paid model calls, external redistribution, real notifications, or deployment.",
+  "label_access": "none; no future outcomes, human labels, model answers, post bodies, or comments",
+  "time_protocol": {
+    "new_sources": "Arctic Shift retrieved_on + 30 minutes; title-only immutable snapshot",
+    "existing_unh": "Retained v1 limited SEC disclosure observation point."
+  },
+  "events": [
+    {
+      "event_id": "unh_change_cyberattack_20240222",
+      "split": "development",
+      "observation_point": "SEC original disclosure independently witnessed; Optum status update is older context from the same event",
+      "cutoff": "2024-02-22T16:48:39-05:00",
+      "cutoff_rule": "SEC disclosure first independently witnessed at 2024-02-22T16:18:39-05:00 plus 30 minutes",
+      "cutoff_limit": "This is the SEC-disclosure observation point, not the first public appearance of the whole cyber incident. It is eligible only under the existing limited Day 1/Day 5 cutoff convention.",
+      "target_subject": "UnitedHealth Group",
+      "event_summary_at_cutoff": "UnitedHealth Group disclosed unauthorized access to some Change Healthcare systems and isolation of affected systems. An earlier Optum status update described a network interruption and disconnection of affected systems. The disruption duration was uncertain at the SEC disclosure point.",
+      "sources": [
+        {
+          "record_id": "unh-sec-20240222-initial",
+          "source_version": "unh-v2-2026-10-02-archived-visibility",
+          "publisher": "UnitedHealth Group via SEC EDGAR",
+          "source_url": "https://www.sec.gov/Archives/edgar/data/731766/000073176624000045/unh-20240221.htm",
+          "published_at": "2024-02-22T16:08:47-05:00",
+          "available_at": "2024-02-22T16:18:39-05:00",
+          "time_evidence": "Arctic Shift archived a public post pointing to SEC accession 0000731766-24-000045 by 2024-02-22T16:18:39-05:00; archive did not preserve full SEC HTML bytes.",
+          "content_kind": "human_summary_of_original_filing",
+          "title": "Form 8-K: Change Healthcare cybersecurity incident",
+          "summary": "UnitedHealth Group reported unauthorized access to some Change Healthcare IT systems, isolation of affected systems, and an unknown disruption duration."
+        },
+        {
+          "record_id": "optum-status-20240221-cyber-update",
+          "source_version": "unh-day2-multisource-2026-10-04-v1",
+          "publisher": "Optum Solutions Status",
+          "source_url": "https://status.changehealthcare.com/incidents/hqpjz25fn3n7",
+          "source_update_id": "9j1b644m46kx",
+          "published_at": "2024-02-21T16:27:23-05:00",
+          "available_at": "2024-02-21T22:52:21-05:00",
+          "time_evidence": "Arctic Shift archived a public post linking this incident page by 2024-02-21T22:52:21-05:00; the selected update ID, pre-cutoff edit time and body hash come from the official status API. The archive does not preserve the full update body.",
+          "content_kind": "human_summary_of_selected_update",
+          "title": "Change Healthcare cybersecurity network interruption",
+          "summary": "Optum reported a network interruption associated with a cybersecurity issue, disconnected affected systems, and expected the disruption to continue at least through that day."
+        }
+      ]
+    },
+    {
+      "event_id": "fnf_cyberattack_20231123",
+      "event_type": "corporate_incident",
+      "split": "holdout",
+      "related_event_group": "insurance_sector_cyber",
+      "target_subject": "Fidelity National Financial",
+      "cutoff": "2023-11-23T14:29:55Z",
+      "cutoff_rule": "Arctic Shift historical archive witness 2023-11-23T13:59:55Z plus 30 minutes; title-only input",
+      "event_summary_at_cutoff": "Archived headline: Fidelity National Financial shuts down its network following a cybersecurity incident.",
+      "content_limits": "One immutable title/headline snapshot only; no body, comments, post-cutoff updates, or later results.",
+      "sources": [
+        {
+          "record_id": "reddit_archived_post_1821s44",
+          "publisher": "Public Reddit post archived by Arctic Shift",
+          "source_version": "arctic-shift-title-snapshot-v1",
+          "captured_at": "2023-11-23T13:59:55Z",
+          "post_created_at": "2023-11-23T13:59:40Z",
+          "subreddit": "technology",
+          "title_or_redacted_headline": "Fidelity National Financial shuts down network in wake of cybersecurity incident",
+          "content_kind": "immutable_title_or_redacted_title_summary",
+          "time_evidence": "Arctic Shift retrieved_on field; API documentation in archive evidence manifest",
+          "source_text_is_user_allegation": false
+        }
+      ]
+    },
+    {
+      "event_id": "aflac_cybersecurity_incident_20250620",
+      "event_type": "corporate_incident",
+      "split": "holdout",
+      "related_event_group": "insurance_sector_cyber",
+      "target_subject": "Aflac Incorporated",
+      "cutoff": "2025-06-20T13:16:30Z",
+      "cutoff_rule": "Arctic Shift historical archive witness 2025-06-20T12:46:30Z plus 30 minutes; title-only input",
+      "event_summary_at_cutoff": "Archived headline reports a cybersecurity incident affecting Aflac.",
+      "content_limits": "One immutable title/headline snapshot only; no body, comments, post-cutoff updates, or later results.",
+      "sources": [
+        {
+          "record_id": "reddit_archived_post_1lg33ey",
+          "publisher": "Public Reddit post archived by Arctic Shift",
+          "source_version": "arctic-shift-title-snapshot-v1",
+          "captured_at": "2025-06-20T12:46:30Z",
+          "post_created_at": "2025-06-20T12:46:13Z",
+          "subreddit": "cybersecurity",
+          "title_or_redacted_headline": "Aflac [AFL] hit with a cybersecurity breach",
+          "content_kind": "immutable_title_or_redacted_title_summary",
+          "time_evidence": "Arctic Shift retrieved_on field; API documentation in archive evidence manifest",
+          "source_text_is_user_allegation": false
+        }
+      ]
+    },
+    {
+      "event_id": "allianz_life_data_breach_20250727",
+      "event_type": "corporate_incident",
+      "split": "holdout",
+      "related_event_group": "insurance_sector_cyber",
+      "target_subject": "Allianz Life Insurance Company of North America",
+      "cutoff": "2025-07-27T01:07:54Z",
+      "cutoff_rule": "Arctic Shift historical archive witness 2025-07-27T00:37:54Z plus 30 minutes; title-only input",
+      "event_summary_at_cutoff": "Archived headline reports a data breach affecting Allianz Life customers.",
+      "content_limits": "One immutable title/headline snapshot only; no body, comments, post-cutoff updates, or later results.",
+      "sources": [
+        {
+          "record_id": "reddit_archived_post_1ma8wfj",
+          "publisher": "Public Reddit post archived by Arctic Shift",
+          "source_version": "arctic-shift-title-snapshot-v1",
+          "captured_at": "2025-07-27T00:37:54Z",
+          "post_created_at": "2025-07-27T00:37:37Z",
+          "subreddit": "cybersecurity",
+          "title_or_redacted_headline": "Allianz Life reports a customer data breach",
+          "content_kind": "immutable_title_or_redacted_title_summary",
+          "time_evidence": "Arctic Shift retrieved_on field; API documentation in archive evidence manifest",
+          "source_text_is_user_allegation": false
+        }
+      ]
+    },
+    {
+      "event_id": "anthem_anesthesia_proposal_20241204",
+      "event_type": "corporate_policy_controversy",
+      "split": "holdout",
+      "related_event_group": "health_insurer_policy_controversies",
+      "target_subject": "Anthem Blue Cross Blue Shield",
+      "cutoff": "2024-12-04T18:29:34Z",
+      "cutoff_rule": "Arctic Shift historical archive witness 2024-12-04T17:59:34Z plus 30 minutes; title-only input",
+      "event_summary_at_cutoff": "Archived headline reports an Anthem proposal concerning reimbursement for anesthesia duration.",
+      "content_limits": "One immutable title/headline snapshot only; no body, comments, post-cutoff updates, or later results.",
+      "sources": [
+        {
+          "record_id": "reddit_archived_post_1h6mj0x",
+          "publisher": "Public Reddit post archived by Arctic Shift",
+          "source_version": "arctic-shift-title-snapshot-v1",
+          "captured_at": "2024-12-04T17:59:34Z",
+          "post_created_at": "2024-12-04T17:59:16Z",
+          "subreddit": "anesthesiology",
+          "title_or_redacted_headline": "Anthem anesthesia reimbursement proposal draws criticism",
+          "content_kind": "immutable_title_or_redacted_title_summary",
+          "time_evidence": "Arctic Shift retrieved_on field; API documentation in archive evidence manifest",
+          "source_text_is_user_allegation": false
+        }
+      ]
+    },
+    {
+      "event_id": "cigna_algorithm_denial_lawsuit_20230725",
+      "event_type": "corporate_litigation_controversy",
+      "split": "holdout",
+      "related_event_group": "health_insurer_policy_controversies",
+      "target_subject": "Cigna",
+      "cutoff": "2023-07-25T16:23:54Z",
+      "cutoff_rule": "Arctic Shift historical archive witness 2023-07-25T15:53:54Z plus 30 minutes; title-only input",
+      "event_summary_at_cutoff": "Archived headline reports a lawsuit alleging use of an algorithm to deny health coverage.",
+      "content_limits": "One immutable title/headline snapshot only; no body, comments, post-cutoff updates, or later results.",
+      "sources": [
+        {
+          "record_id": "reddit_archived_post_159ce8g",
+          "publisher": "Public Reddit post archived by Arctic Shift",
+          "source_version": "arctic-shift-title-snapshot-v1",
+          "captured_at": "2023-07-25T15:53:54Z",
+          "post_created_at": "2023-07-25T15:53:39Z",
+          "subreddit": "technology",
+          "title_or_redacted_headline": "Cigna Sued Over Algorithm Allegedly Used To Deny Coverage To Hundreds Of Thousands Of Patients",
+          "content_kind": "immutable_title_or_redacted_title_summary",
+          "time_evidence": "Arctic Shift retrieved_on field; API documentation in archive evidence manifest",
+          "source_text_is_user_allegation": false
+        }
+      ]
+    },
+    {
+      "event_id": "unitedhealth_algorithm_care_lawsuit_20231115",
+      "event_type": "corporate_litigation_controversy",
+      "split": "holdout",
+      "related_event_group": "health_insurer_policy_controversies",
+      "target_subject": "UnitedHealth Group / UnitedHealthcare",
+      "cutoff": "2023-11-15T21:52:18Z",
+      "cutoff_rule": "Arctic Shift historical archive witness 2023-11-15T21:22:18Z plus 30 minutes; title-only input",
+      "event_summary_at_cutoff": "Archived headline reports a class action concerning alleged algorithmic care denials in Medicare Advantage.",
+      "content_limits": "One immutable title/headline snapshot only; no body, comments, post-cutoff updates, or later results.",
+      "sources": [
+        {
+          "record_id": "reddit_archived_post_17w461q",
+          "publisher": "Public Reddit post archived by Arctic Shift",
+          "source_version": "arctic-shift-title-snapshot-v1",
+          "captured_at": "2023-11-15T21:22:18Z",
+          "post_created_at": "2023-11-15T21:22:01Z",
+          "subreddit": "Health",
+          "title_or_redacted_headline": "UnitedHealth faces class action lawsuit over algorithmic care denials in Medicare Advantage plans",
+          "content_kind": "immutable_title_or_redacted_title_summary",
+          "time_evidence": "Arctic Shift retrieved_on field; API documentation in archive evidence manifest",
+          "source_text_is_user_allegation": false
+        }
+      ]
+    },
+    {
+      "event_id": "humana_algorithm_care_lawsuit_20231214",
+      "event_type": "corporate_litigation_controversy",
+      "split": "holdout",
+      "related_event_group": "health_insurer_policy_controversies",
+      "target_subject": "Humana",
+      "cutoff": "2023-12-14T08:20:02Z",
+      "cutoff_rule": "Arctic Shift historical archive witness 2023-12-14T07:50:02Z plus 30 minutes; title-only input",
+      "event_summary_at_cutoff": "Archived headline reports a lawsuit alleging use of an AI tool in care-denial decisions; an unsupported percentage in the source headline is omitted.",
+      "content_limits": "One immutable title/headline snapshot only; no body, comments, post-cutoff updates, or later results.",
+      "sources": [
+        {
+          "record_id": "reddit_archived_post_18i3k2f",
+          "publisher": "Public Reddit post archived by Arctic Shift",
+          "source_version": "arctic-shift-title-snapshot-v1",
+          "captured_at": "2023-12-14T07:50:02Z",
+          "post_created_at": "2023-12-14T07:49:45Z",
+          "subreddit": "technology",
+          "title_or_redacted_headline": "Humana lawsuit alleges use of an AI tool in care-denial decisions",
+          "content_kind": "immutable_title_or_redacted_title_summary",
+          "time_evidence": "Arctic Shift retrieved_on field; API documentation in archive evidence manifest",
+          "source_text_is_user_allegation": false
+        }
+      ]
+    },
+    {
+      "event_id": "complaint_health_claim_review_20240818",
+      "event_type": "individual_complaint_episode",
+      "split": "holdout",
+      "related_event_group": "individual_complaint_episodes",
+      "target_subject": "Unspecified health insurer in the post",
+      "cutoff": "2024-08-18T14:46:54Z",
+      "cutoff_rule": "Arctic Shift historical archive witness 2024-08-18T14:16:54Z plus 30 minutes; title-only input",
+      "event_summary_at_cutoff": "A public post title reports that an insurer would not review a claim; this records the complaint post, not proof of its allegation.",
+      "content_limits": "One immutable title/headline snapshot only; no body, comments, post-cutoff updates, or later results.",
+      "sources": [
+        {
+          "record_id": "reddit_archived_post_1evaapp",
+          "publisher": "Public Reddit post archived by Arctic Shift",
+          "source_version": "arctic-shift-title-snapshot-v1",
+          "captured_at": "2024-08-18T14:16:54Z",
+          "post_created_at": "2024-08-18T14:16:39Z",
+          "subreddit": "HealthInsurance",
+          "title_or_redacted_headline": "Insurance claim review complaint",
+          "content_kind": "immutable_title_or_redacted_title_summary",
+          "time_evidence": "Arctic Shift retrieved_on field; API documentation in archive evidence manifest",
+          "source_text_is_user_allegation": true
+        }
+      ]
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20241229",
+      "event_type": "individual_complaint_episode",
+      "split": "holdout",
+      "related_event_group": "homeowners_complaint_episodes",
+      "target_subject": "Unspecified homeowners insurer in the post",
+      "cutoff": "2024-12-29T22:22:11Z",
+      "cutoff_rule": "Arctic Shift historical archive witness 2024-12-29T21:52:11Z plus 30 minutes; title-only input",
+      "event_summary_at_cutoff": "A public post title reports a homeowners policy non-renewal; this records the complaint post, not proof of its allegation.",
+      "content_limits": "One immutable title/headline snapshot only; no body, comments, post-cutoff updates, or later results.",
+      "sources": [
+        {
+          "record_id": "reddit_archived_post_1hp6wa2",
+          "publisher": "Public Reddit post archived by Arctic Shift",
+          "source_version": "arctic-shift-title-snapshot-v1",
+          "captured_at": "2024-12-29T21:52:11Z",
+          "post_created_at": "2024-12-29T21:51:54Z",
+          "subreddit": "homeowners",
+          "title_or_redacted_headline": "Homeowners policy non-renewal complaint",
+          "content_kind": "immutable_title_or_redacted_title_summary",
+          "time_evidence": "Arctic Shift retrieved_on field; API documentation in archive evidence manifest",
+          "source_text_is_user_allegation": true
+        }
+      ]
+    },
+    {
+      "event_id": "complaint_home_coverage_after_termination_20240430",
+      "event_type": "individual_complaint_episode",
+      "split": "holdout",
+      "related_event_group": "homeowners_complaint_episodes",
+      "target_subject": "Unspecified homeowners insurer in the post",
+      "cutoff": "2024-04-30T23:41:09Z",
+      "cutoff_rule": "Arctic Shift historical archive witness 2024-04-30T23:11:09Z plus 30 minutes; title-only input",
+      "event_summary_at_cutoff": "A public post title asks about obtaining homeowners coverage after a policy ended; the allegation is unverified.",
+      "content_limits": "One immutable title/headline snapshot only; no body, comments, post-cutoff updates, or later results.",
+      "sources": [
+        {
+          "record_id": "reddit_archived_post_1ch6tu5",
+          "publisher": "Public Reddit post archived by Arctic Shift",
+          "source_version": "arctic-shift-title-snapshot-v1",
+          "captured_at": "2024-04-30T23:11:09Z",
+          "post_created_at": "2024-04-30T23:10:53Z",
+          "subreddit": "Insurance",
+          "title_or_redacted_headline": "Request for homeowners coverage after policy termination",
+          "content_kind": "immutable_title_or_redacted_title_summary",
+          "time_evidence": "Arctic Shift retrieved_on field; API documentation in archive evidence manifest",
+          "source_text_is_user_allegation": true
+        }
+      ]
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20231018",
+      "event_type": "individual_complaint_episode",
+      "split": "holdout",
+      "related_event_group": "homeowners_complaint_episodes",
+      "target_subject": "Unspecified homeowners insurer in the post",
+      "cutoff": "2023-10-18T00:35:59Z",
+      "cutoff_rule": "Arctic Shift historical archive witness 2023-10-18T00:05:59Z plus 30 minutes; title-only input",
+      "event_summary_at_cutoff": "A public post title reports a homeowners policy non-renewal. Only the original poster's episode is counted.",
+      "content_limits": "One immutable title/headline snapshot only; no body, comments, post-cutoff updates, or later results.",
+      "sources": [
+        {
+          "record_id": "reddit_archived_post_17acu1c",
+          "publisher": "Public Reddit post archived by Arctic Shift",
+          "source_version": "arctic-shift-title-snapshot-v1",
+          "captured_at": "2023-10-18T00:05:59Z",
+          "post_created_at": "2023-10-18T00:05:46Z",
+          "subreddit": "Insurance",
+          "title_or_redacted_headline": "Homeowners policy non-renewal complaint",
+          "content_kind": "immutable_title_or_redacted_title_summary",
+          "time_evidence": "Arctic Shift retrieved_on field; API documentation in archive evidence manifest",
+          "source_text_is_user_allegation": true
+        }
+      ]
+    },
+    {
+      "event_id": "complaint_health_claim_rejections_20241211",
+      "event_type": "individual_complaint_episode",
+      "split": "holdout",
+      "related_event_group": "individual_complaint_episodes",
+      "target_subject": "Unspecified health insurer in the post",
+      "cutoff": "2024-12-11T19:40:51Z",
+      "cutoff_rule": "Arctic Shift historical archive witness 2024-12-11T19:10:51Z plus 30 minutes; title-only input",
+      "event_summary_at_cutoff": "A public post title reports rejected insurance claims; the reason and underlying claim are unverified.",
+      "content_limits": "One immutable title/headline snapshot only; no body, comments, post-cutoff updates, or later results.",
+      "sources": [
+        {
+          "record_id": "reddit_archived_post_1hc1bcc",
+          "publisher": "Public Reddit post archived by Arctic Shift",
+          "source_version": "arctic-shift-title-snapshot-v1",
+          "captured_at": "2024-12-11T19:10:51Z",
+          "post_created_at": "2024-12-11T19:10:36Z",
+          "subreddit": "HealthInsurance",
+          "title_or_redacted_headline": "Health insurance claim rejection complaint",
+          "content_kind": "immutable_title_or_redacted_title_summary",
+          "time_evidence": "Arctic Shift retrieved_on field; API documentation in archive evidence manifest",
+          "source_text_is_user_allegation": true
+        }
+      ]
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20240524",
+      "event_type": "individual_complaint_episode",
+      "split": "holdout",
+      "related_event_group": "homeowners_complaint_episodes",
+      "target_subject": "Unspecified homeowners insurer in the post",
+      "cutoff": "2024-05-24T15:53:22Z",
+      "cutoff_rule": "Arctic Shift historical archive witness 2024-05-24T15:23:22Z plus 30 minutes; title-only input",
+      "event_summary_at_cutoff": "A public post title reports a homeowners non-renewal concern; this is one poster's complaint, not a market-wide event.",
+      "content_limits": "One immutable title/headline snapshot only; no body, comments, post-cutoff updates, or later results.",
+      "sources": [
+        {
+          "record_id": "reddit_archived_post_1cznbtx",
+          "publisher": "Public Reddit post archived by Arctic Shift",
+          "source_version": "arctic-shift-title-snapshot-v1",
+          "captured_at": "2024-05-24T15:23:22Z",
+          "post_created_at": "2024-05-24T15:23:05Z",
+          "subreddit": "houston",
+          "title_or_redacted_headline": "Homeowners non-renewal complaint",
+          "content_kind": "immutable_title_or_redacted_title_summary",
+          "time_evidence": "Arctic Shift retrieved_on field; API documentation in archive evidence manifest",
+          "source_text_is_user_allegation": true
+        }
+      ]
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20231010",
+      "event_type": "individual_complaint_episode",
+      "split": "holdout",
+      "related_event_group": "homeowners_complaint_episodes",
+      "target_subject": "Unspecified homeowners insurer in the post",
+      "cutoff": "2023-10-10T14:41:29Z",
+      "cutoff_rule": "Arctic Shift historical archive witness 2023-10-10T14:11:29Z plus 30 minutes; title-only input",
+      "event_summary_at_cutoff": "A public post title reports a homeowners non-renewal. Only the original poster's episode is counted.",
+      "content_limits": "One immutable title/headline snapshot only; no body, comments, post-cutoff updates, or later results.",
+      "sources": [
+        {
+          "record_id": "reddit_archived_post_174m8f9",
+          "publisher": "Public Reddit post archived by Arctic Shift",
+          "source_version": "arctic-shift-title-snapshot-v1",
+          "captured_at": "2023-10-10T14:11:29Z",
+          "post_created_at": "2023-10-10T14:11:15Z",
+          "subreddit": "Insurance",
+          "title_or_redacted_headline": "Homeowners policy non-renewal complaint",
+          "content_kind": "immutable_title_or_redacted_title_summary",
+          "time_evidence": "Arctic Shift retrieved_on field; API documentation in archive evidence manifest",
+          "source_text_is_user_allegation": true
+        }
+      ]
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_20240625",
+      "event_type": "individual_complaint_episode",
+      "split": "holdout",
+      "related_event_group": "homeowners_complaint_episodes",
+      "target_subject": "Unspecified homeowners insurer in the post",
+      "cutoff": "2024-06-25T13:24:24Z",
+      "cutoff_rule": "Arctic Shift historical archive witness 2024-06-25T12:54:24Z plus 30 minutes; title-only input",
+      "event_summary_at_cutoff": "A public post title reports that a homeowners policy would not be renewed; the allegation is unverified.",
+      "content_limits": "One immutable title/headline snapshot only; no body, comments, post-cutoff updates, or later results.",
+      "sources": [
+        {
+          "record_id": "reddit_archived_post_1do5am8",
+          "publisher": "Public Reddit post archived by Arctic Shift",
+          "source_version": "arctic-shift-title-snapshot-v1",
+          "captured_at": "2024-06-25T12:54:24Z",
+          "post_created_at": "2024-06-25T12:54:09Z",
+          "subreddit": "Insurance",
+          "title_or_redacted_headline": "Homeowners policy non-renewal complaint",
+          "content_kind": "immutable_title_or_redacted_title_summary",
+          "time_evidence": "Arctic Shift retrieved_on field; API documentation in archive evidence manifest",
+          "source_text_is_user_allegation": true
+        }
+      ]
+    },
+    {
+      "event_id": "complaint_auto_claim_denial_20241116",
+      "event_type": "individual_complaint_episode",
+      "split": "holdout",
+      "related_event_group": "individual_complaint_episodes",
+      "target_subject": "Unspecified auto insurer in the post",
+      "cutoff": "2024-11-16T07:38:12Z",
+      "cutoff_rule": "Arctic Shift historical archive witness 2024-11-16T07:08:12Z plus 30 minutes; title-only input",
+      "event_summary_at_cutoff": "A public post title reports a disputed auto claim denial. Personal circumstances are omitted; allegation unverified.",
+      "content_limits": "One immutable title/headline snapshot only; no body, comments, post-cutoff updates, or later results.",
+      "sources": [
+        {
+          "record_id": "reddit_archived_post_1gshw33",
+          "publisher": "Public Reddit post archived by Arctic Shift",
+          "source_version": "arctic-shift-title-snapshot-v1",
+          "captured_at": "2024-11-16T07:08:12Z",
+          "post_created_at": "2024-11-16T07:07:57Z",
+          "subreddit": "Insurance",
+          "title_or_redacted_headline": "Auto insurance claim denial complaint",
+          "content_kind": "immutable_title_or_redacted_title_summary",
+          "time_evidence": "Arctic Shift retrieved_on field; API documentation in archive evidence manifest",
+          "source_text_is_user_allegation": true
+        }
+      ]
+    },
+    {
+      "event_id": "complaint_home_nonrenewal_inspection_20241011",
+      "event_type": "individual_complaint_episode",
+      "split": "holdout",
+      "related_event_group": "homeowners_complaint_episodes",
+      "target_subject": "Unspecified homeowners insurer in the post",
+      "cutoff": "2024-10-11T21:46:37Z",
+      "cutoff_rule": "Arctic Shift historical archive witness 2024-10-11T21:16:37Z plus 30 minutes; title-only input",
+      "event_summary_at_cutoff": "A public post title reports a non-renewal after disputed inspection findings; property details omitted, allegation unverified.",
+      "content_limits": "One immutable title/headline snapshot only; no body, comments, post-cutoff updates, or later results.",
+      "sources": [
+        {
+          "record_id": "reddit_archived_post_1g1kc9b",
+          "publisher": "Public Reddit post archived by Arctic Shift",
+          "source_version": "arctic-shift-title-snapshot-v1",
+          "captured_at": "2024-10-11T21:16:37Z",
+          "post_created_at": "2024-10-11T21:16:20Z",
+          "subreddit": "Insurance",
+          "title_or_redacted_headline": "Homeowners non-renewal after disputed inspection",
+          "content_kind": "immutable_title_or_redacted_title_summary",
+          "time_evidence": "Arctic Shift retrieved_on field; API documentation in archive evidence manifest",
+          "source_text_is_user_allegation": true
+        }
+      ]
+    },
+    {
+      "event_id": "complaint_home_policy_claim_20240113",
+      "event_type": "individual_complaint_episode",
+      "split": "holdout",
+      "related_event_group": "homeowners_complaint_episodes",
+      "target_subject": "Unspecified homeowners insurer in the post",
+      "cutoff": "2024-01-13T18:31:40Z",
+      "cutoff_rule": "Arctic Shift historical archive witness 2024-01-13T18:01:40Z plus 30 minutes; title-only input",
+      "event_summary_at_cutoff": "A public post title links a homeowners policy ending with a claim and difficulty obtaining replacement coverage; details omitted, allegation unverified.",
+      "content_limits": "One immutable title/headline snapshot only; no body, comments, post-cutoff updates, or later results.",
+      "sources": [
+        {
+          "record_id": "reddit_archived_post_195twpp",
+          "publisher": "Public Reddit post archived by Arctic Shift",
+          "source_version": "arctic-shift-title-snapshot-v1",
+          "captured_at": "2024-01-13T18:01:40Z",
+          "post_created_at": "2024-01-13T18:01:20Z",
+          "subreddit": "Insurance",
+          "title_or_redacted_headline": "Homeowners policy and replacement coverage complaint",
+          "content_kind": "immutable_title_or_redacted_title_summary",
+          "time_evidence": "Arctic Shift retrieved_on field; API documentation in archive evidence manifest",
+          "source_text_is_user_allegation": true
+        }
+      ]
+    },
+    {
+      "event_id": "complaint_auto_cancellation_notice_20241003",
+      "event_type": "individual_complaint_episode",
+      "split": "holdout",
+      "related_event_group": "individual_complaint_episodes",
+      "target_subject": "Unspecified auto insurer in the post",
+      "cutoff": "2024-10-03T18:21:23Z",
+      "cutoff_rule": "Arctic Shift historical archive witness 2024-10-03T17:51:23Z plus 30 minutes; title-only input",
+      "event_summary_at_cutoff": "A public post title reports a discovered auto policy cancellation and uncertainty about notice; details omitted, allegation unverified.",
+      "content_limits": "One immutable title/headline snapshot only; no body, comments, post-cutoff updates, or later results.",
+      "sources": [
+        {
+          "record_id": "reddit_archived_post_1fvdpul",
+          "publisher": "Public Reddit post archived by Arctic Shift",
+          "source_version": "arctic-shift-title-snapshot-v1",
+          "captured_at": "2024-10-03T17:51:23Z",
+          "post_created_at": "2024-10-03T17:51:05Z",
+          "subreddit": "Insurance",
+          "title_or_redacted_headline": "Auto policy cancellation and notice complaint",
+          "content_kind": "immutable_title_or_redacted_title_summary",
+          "time_evidence": "Arctic Shift retrieved_on field; API documentation in archive evidence manifest",
+          "source_text_is_user_allegation": true
+        }
+      ]
+    }
+  ]
+}

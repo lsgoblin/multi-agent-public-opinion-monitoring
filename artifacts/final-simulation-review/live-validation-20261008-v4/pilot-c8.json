@@ -1,0 +1,4473 @@
+{
+  "created_at": "2026-10-08T23:14:22.274879+08:00",
+  "purpose": "Pure synthetic Northstar concurrency pilot; 25 agents x 2 rounds at concurrency 8.",
+  "authorization_label": "current-user-explicit-authorization-2026-10-08",
+  "provider": "alibaba-cloud-bailian",
+  "region": "cn-beijing",
+  "data_mode": "synthetic",
+  "outbound_field_names": [
+    "agent",
+    "round",
+    "local_state",
+    "fictional_evidence",
+    "received_simulated_messages",
+    "own_simulated_memory",
+    "allowed_citation_ids"
+  ],
+  "configured_agents": 25,
+  "role_offset": 0,
+  "target_rounds": 2,
+  "expected_decisions": 50,
+  "max_calls": 50,
+  "calls_attempted": 50,
+  "run_budget_cny": "0.10",
+  "complete_task_cap_cny": "30.00",
+  "backend": {
+    "type": "BailianBackend",
+    "provider": "alibaba-cloud-bailian",
+    "region": "cn-beijing",
+    "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+    "thinking": "disabled",
+    "role_models": {
+      "netizen": "qwen-turbo",
+      "customer": "qwen-turbo",
+      "media": "qwen-flash",
+      "kol": "qwen-flash",
+      "regulator": "qwen-flash"
+    },
+    "routes": {
+      "qwen-turbo": {
+        "price_version": "official-docs-2026-10-06-beijing",
+        "input_cny_per_million": "0.3",
+        "cached_input_cny_per_million": "0.06",
+        "output_cny_per_million": "0.6",
+        "max_input_tokens": 8192,
+        "max_output_tokens": 160,
+        "input_bound_method": "utf8_bytes_plus_protocol_allowance",
+        "reservation_cny": "0.0025536"
+      },
+      "qwen-flash": {
+        "price_version": "official-docs-2026-10-06-beijing",
+        "input_cny_per_million": "0.15",
+        "cached_input_cny_per_million": "0.03",
+        "output_cny_per_million": "1.5",
+        "max_input_tokens": 8192,
+        "max_output_tokens": 256,
+        "input_bound_method": "utf8_bytes_plus_protocol_allowance",
+        "reservation_cny": "0.0016128"
+      }
+    }
+  },
+  "budget_preflight": {
+    "preflight_status": "configuration_passed",
+    "budget_status": "within_limit",
+    "network_requests": 0,
+    "model_calls": 0,
+    "region": "cn-beijing",
+    "dedicated_key_configured": true,
+    "agent_count": 25,
+    "rounds": 2,
+    "role_offset": 0,
+    "decision_opportunities": 50,
+    "agents_by_model": {
+      "qwen-turbo": 10,
+      "qwen-flash": 15
+    },
+    "opportunities_by_model": {
+      "qwen-turbo": 20,
+      "qwen-flash": 30
+    },
+    "reservation_cny_by_model": {
+      "qwen-turbo": "0.0455220",
+      "qwen-flash": "0.0442260"
+    },
+    "maximum_sanitized_input_upper_bound_tokens_by_model": {
+      "qwen-turbo": 7267,
+      "qwen-flash": 7268
+    },
+    "route_maximum_reservation_cny_by_model": {
+      "qwen-turbo": "0.0510720",
+      "qwen-flash": "0.0483840"
+    },
+    "configured_prices_cny_per_million": {
+      "qwen-turbo": {
+        "input": "0.3",
+        "cached_input": "0.06",
+        "output": "0.6",
+        "max_input_tokens": 8192,
+        "max_output_tokens": 160,
+        "local_price_version_label_configured": true
+      },
+      "qwen-flash": {
+        "input": "0.15",
+        "cached_input": "0.03",
+        "output": "1.5",
+        "max_input_tokens": 8192,
+        "max_output_tokens": 256,
+        "local_price_version_label_configured": true
+      }
+    },
+    "total_conservative_reservation_cny": "0.0897480",
+    "reservation_basis": "Fixed Northstar v1 graph evidence; 3 messages x 160 chars, 3 memories x 120 chars; worst escaped JSON fields plus 128 protocol allowance; output max_tokens unchanged. A shared per-round budget gate reserves this envelope before dispatch.",
+    "task_budget_cny": "0.10",
+    "remaining_budget_cny": "0.0102520",
+    "price_labels_present": [
+      "qwen-flash",
+      "qwen-turbo"
+    ],
+    "price_verification": "pending_manual_comparison_with_current_official_Beijing_prices; local price version labels are not proof of official verification",
+    "live_authorized": false,
+    "g3_passed": false
+  },
+  "run_id": "run_f15ef1b2a41c4cef818b",
+  "run_status": "complete",
+  "completed_rounds": 2,
+  "actual_participants": 25,
+  "valid_decisions": 50,
+  "failed_decisions": 0,
+  "not_dispatched_decisions": 0,
+  "completed_without_failures": true,
+  "all_decisions_valid": true,
+  "task_status": "complete",
+  "stop_reason": null,
+  "estimated_cost_cny": "0.00619086",
+  "usage": {
+    "prompt_tokens": 13942,
+    "cached_input_tokens": 256,
+    "completion_tokens": 2907,
+    "unknown_usage_calls": 0,
+    "by_model": {
+      "qwen-flash": {
+        "calls": 30,
+        "prompt_tokens": 8432,
+        "cached_input_tokens": 0,
+        "completion_tokens": 1767,
+        "unknown_usage_calls": 0,
+        "reserved_cny": "0.0442110",
+        "cost_cny": "0.00391530",
+        "price_version": "official-docs-2026-10-06-beijing",
+        "actual_models": {
+          "qwen-flash": 30
+        }
+      },
+      "qwen-turbo": {
+        "calls": 20,
+        "prompt_tokens": 5510,
+        "cached_input_tokens": 256,
+        "completion_tokens": 1140,
+        "unknown_usage_calls": 0,
+        "reserved_cny": "0.0455190",
+        "cost_cny": "0.00227556",
+        "price_version": "official-docs-2026-10-06-beijing",
+        "actual_models": {
+          "qwen-turbo": 20
+        }
+      }
+    }
+  },
+  "rounds": [
+    {
+      "configured_agents": 25,
+      "decision_requests": 25,
+      "model_decision_agents": 25,
+      "dispatched_requests": 25,
+      "not_dispatched_requests": 0,
+      "local_state_update_agents": 25,
+      "valid_decisions": 25,
+      "active_decisions": 1,
+      "failed_decisions": 0,
+      "messages": 3,
+      "reserved_cny": "0.0448650",
+      "reserved_by_model": {
+        "qwen-turbo": "0.0227595",
+        "qwen-flash": "0.0221055"
+      },
+      "cost_cny": "0.00293070",
+      "cost_by_model": {
+        "qwen-turbo": "0.0010797",
+        "qwen-flash": "0.00185100"
+      },
+      "performance": {
+        "state_read_seconds": 0.0004304999893065542,
+        "graph_read_seconds": 0.0002978999982587993,
+        "message_read_seconds": 0.00023999999393709004,
+        "memory_read_seconds": 5.459999374579638e-05,
+        "observation_build_seconds": 0.0001905000099213794,
+        "pricing_and_existing_action_read_seconds": 0.0013736999972024933,
+        "budget_preflight_seconds": 8.799994247965515e-06,
+        "scheduler_and_drain_wall_seconds": 7.283589900005609,
+        "request_ledger_persist_cumulative_seconds": 0.026449699988006614,
+        "backend_call_cumulative_seconds": 49.859499800004414,
+        "response_validation_cumulative_seconds": 0.0011118999536847696,
+        "observed_max_in_flight": 8,
+        "maximum_submitted_futures": 8,
+        "dispatched_this_round": 25,
+        "state_message_memory_calculation_seconds": 0.0003797999961534515,
+        "round_started_at": "2026-10-08T23:14:08.092164+08:00",
+        "phase_timing_note": "monotonic durations; per-request worker times overlap and are cumulative",
+        "sqlite_persist_seconds": 0.004571800003759563,
+        "round_wall_seconds": 7.29311250000319,
+        "round_finished_at": "2026-10-08T23:14:15.384901+08:00"
+      },
+      "elapsed_seconds": 7.293,
+      "round": 1
+    },
+    {
+      "configured_agents": 25,
+      "decision_requests": 25,
+      "model_decision_agents": 25,
+      "dispatched_requests": 25,
+      "not_dispatched_requests": 0,
+      "local_state_update_agents": 25,
+      "valid_decisions": 25,
+      "active_decisions": 3,
+      "failed_decisions": 0,
+      "messages": 9,
+      "reserved_cny": "0.0448650",
+      "reserved_by_model": {
+        "qwen-turbo": "0.0227595",
+        "qwen-flash": "0.0221055"
+      },
+      "cost_cny": "0.00326016",
+      "cost_by_model": {
+        "qwen-turbo": "0.00119586",
+        "qwen-flash": "0.00206430"
+      },
+      "performance": {
+        "state_read_seconds": 0.0004585999995470047,
+        "graph_read_seconds": 0.0002961999998660758,
+        "message_read_seconds": 0.00026960000104736537,
+        "memory_read_seconds": 9.90999978967011e-05,
+        "observation_build_seconds": 0.0002826999989338219,
+        "pricing_and_existing_action_read_seconds": 0.0018191999988630414,
+        "budget_preflight_seconds": 9.199997293762863e-06,
+        "scheduler_and_drain_wall_seconds": 6.8074369999958435,
+        "request_ledger_persist_cumulative_seconds": 0.024988300006953068,
+        "backend_call_cumulative_seconds": 30.804230300025665,
+        "response_validation_cumulative_seconds": 0.0012828000035369769,
+        "observed_max_in_flight": 8,
+        "maximum_submitted_futures": 8,
+        "dispatched_this_round": 25,
+        "state_message_memory_calculation_seconds": 0.00026300000899937004,
+        "round_started_at": "2026-10-08T23:14:15.391402+08:00",
+        "phase_timing_note": "monotonic durations; per-request worker times overlap and are cumulative",
+        "sqlite_persist_seconds": 0.004375499993329868,
+        "round_wall_seconds": 6.817845900004613,
+        "round_finished_at": "2026-10-08T23:14:22.208665+08:00"
+      },
+      "elapsed_seconds": 6.818,
+      "round": 2
+    }
+  ],
+  "performance": {
+    "capture_enabled": true,
+    "timing_clock": "time.perf_counter for durations; local ISO wall time for correlation",
+    "advance_invocations": 1,
+    "invocation_wall_seconds_sum": 14.129652,
+    "first_invocation_started_at": "2026-10-08T23:14:08.086949+08:00",
+    "last_invocation_ended_at": "2026-10-08T23:14:22.216627+08:00",
+    "completed_requests": 50,
+    "valid_decisions": 50,
+    "failed_dispatched_requests": 0,
+    "not_dispatched": 0,
+    "unknown_usage_calls": 0,
+    "completed_request_throughput_per_second": 3.538658,
+    "effective_decision_throughput_per_second": 3.538658,
+    "request_elapsed_seconds": {
+      "p50": 1.120005,
+      "p95": 4.328856,
+      "p99": 6.31557
+    },
+    "backend_elapsed_seconds": {
+      "p50": 1.119844,
+      "p95": 4.32881,
+      "p99": 6.315483
+    },
+    "queue_seconds": {
+      "p50": 0.00012,
+      "p95": 0.000498,
+      "p99": 0.000788
+    },
+    "maximum_observed_in_flight": 8,
+    "by_model": {
+      "qwen-turbo": {
+        "requests": 20,
+        "valid": 20,
+        "failed": 0,
+        "not_dispatched": 0,
+        "unknown_usage": 0,
+        "cost_cny": "0.00227556",
+        "failure_categories": {},
+        "backend_seconds": {
+          "p50": 1.310509,
+          "p95": 4.286571,
+          "p99": 5.906895
+        },
+        "queue_seconds": {
+          "p50": 0.000156,
+          "p95": 0.000498,
+          "p99": 0.000788
+        },
+        "request_elapsed_seconds": {
+          "p50": 1.310583,
+          "p95": 4.28662,
+          "p99": 5.906954
+        },
+        "success_rate": 1.0
+      },
+      "qwen-flash": {
+        "requests": 30,
+        "valid": 30,
+        "failed": 0,
+        "not_dispatched": 0,
+        "unknown_usage": 0,
+        "cost_cny": "0.00391530",
+        "failure_categories": {},
+        "backend_seconds": {
+          "p50": 1.04109,
+          "p95": 4.32881,
+          "p99": 6.315483
+        },
+        "queue_seconds": {
+          "p50": 9.6e-05,
+          "p95": 0.000316,
+          "p99": 0.00059
+        },
+        "request_elapsed_seconds": {
+          "p50": 1.041194,
+          "p95": 4.328856,
+          "p99": 6.31557
+        },
+        "success_rate": 1.0
+      }
+    },
+    "invocations": [
+      {
+        "call_id": 1,
+        "run_id": "run_f15ef1b2a41c4cef818b",
+        "started_at": "2026-10-08T23:14:08.086949+08:00",
+        "ended_at": "2026-10-08T23:14:22.216627+08:00",
+        "wall_seconds": 14.129652200004784,
+        "dispatched_requests": 50,
+        "valid_decisions": 50,
+        "stop_reason": null
+      }
+    ],
+    "note": "backend_elapsed_seconds times the backend method, including adapter, transport and response parsing; it is not provider inference time. Concurrent request durations overlap; invocation wall is the throughput denominator. Captured invocations exclude idle time between calls."
+  },
+  "request_performance": [
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0000",
+      "requested_model": "qwen-turbo",
+      "queued_at": "2026-10-08T23:14:08.095164+08:00",
+      "started_at": "2026-10-08T23:14:08.095164+08:00",
+      "ended_at": "2026-10-08T23:14:14.002994+08:00",
+      "queue_seconds": 0.0003178000042680651,
+      "backend_seconds": 5.906894600004307,
+      "validation_seconds": 4.0400002035312355e-05,
+      "request_elapsed_seconds": 5.906953600002453,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001089",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 53,
+        "prompt_tokens": 257,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 310,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0001",
+      "requested_model": "qwen-turbo",
+      "queued_at": "2026-10-08T23:14:08.096164+08:00",
+      "started_at": "2026-10-08T23:14:08.096164+08:00",
+      "ended_at": "2026-10-08T23:14:10.485473+08:00",
+      "queue_seconds": 0.0004978000069968402,
+      "backend_seconds": 2.389430600000196,
+      "validation_seconds": 3.479998849797994e-05,
+      "request_elapsed_seconds": 2.3894824999879347,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001068",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 50,
+        "prompt_tokens": 256,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 306,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0002",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:08.096164+08:00",
+      "started_at": "2026-10-08T23:14:08.097171+08:00",
+      "ended_at": "2026-10-08T23:14:14.412547+08:00",
+      "queue_seconds": 0.00017809998826123774,
+      "backend_seconds": 6.315482599995448,
+      "validation_seconds": 7.089998689480126e-05,
+      "request_elapsed_seconds": 6.3155695000023115,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.00012465",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 58,
+        "prompt_tokens": 251,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 309,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0003",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:08.097171+08:00",
+      "started_at": "2026-10-08T23:14:08.097171+08:00",
+      "ended_at": "2026-10-08T23:14:11.733904+08:00",
+      "queue_seconds": 0.00014819999341852963,
+      "backend_seconds": 3.6365779000043403,
+      "validation_seconds": 7.229999755509198e-05,
+      "request_elapsed_seconds": 3.636666000005789,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001353",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 65,
+        "prompt_tokens": 252,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 317,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0004",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:08.097171+08:00",
+      "started_at": "2026-10-08T23:14:08.097171+08:00",
+      "ended_at": "2026-10-08T23:14:10.213752+08:00",
+      "queue_seconds": 0.00015140000323299319,
+      "backend_seconds": 2.1170020999998087,
+      "validation_seconds": 4.6999994083307683e-05,
+      "request_elapsed_seconds": 2.1170648999977857,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.00012345",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 57,
+        "prompt_tokens": 253,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 310,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0005",
+      "requested_model": "qwen-turbo",
+      "queued_at": "2026-10-08T23:14:08.097171+08:00",
+      "started_at": "2026-10-08T23:14:08.097171+08:00",
+      "ended_at": "2026-10-08T23:14:12.383968+08:00",
+      "queue_seconds": 0.00014089999604038894,
+      "backend_seconds": 4.286570899988874,
+      "validation_seconds": 3.759999526664615e-05,
+      "request_elapsed_seconds": 4.286620099999709,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001089",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 53,
+        "prompt_tokens": 257,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 310,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0006",
+      "requested_model": "qwen-turbo",
+      "queued_at": "2026-10-08T23:14:08.097171+08:00",
+      "started_at": "2026-10-08T23:14:08.097171+08:00",
+      "ended_at": "2026-10-08T23:14:10.345870+08:00",
+      "queue_seconds": 0.00018540000019129366,
+      "backend_seconds": 2.2482921999908285,
+      "validation_seconds": 4.329999501351267e-05,
+      "request_elapsed_seconds": 2.2483500999951502,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001041",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 46,
+        "prompt_tokens": 255,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 301,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0007",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:08.097171+08:00",
+      "started_at": "2026-10-08T23:14:08.098170+08:00",
+      "ended_at": "2026-10-08T23:14:10.486472+08:00",
+      "queue_seconds": 0.0001196000084746629,
+      "backend_seconds": 2.388582100000349,
+      "validation_seconds": 1.4599994756281376e-05,
+      "request_elapsed_seconds": 2.3886104999983218,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001248",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 58,
+        "prompt_tokens": 252,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 310,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0008",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:10.214760+08:00",
+      "started_at": "2026-10-08T23:14:10.214760+08:00",
+      "ended_at": "2026-10-08T23:14:11.440977+08:00",
+      "queue_seconds": 8.159999561030418e-05,
+      "backend_seconds": 1.2268181999970693,
+      "validation_seconds": 6.359998951666057e-05,
+      "request_elapsed_seconds": 1.2269031000032555,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.00012915",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 61,
+        "prompt_tokens": 251,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 312,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0009",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:10.345870+08:00",
+      "started_at": "2026-10-08T23:14:10.345870+08:00",
+      "ended_at": "2026-10-08T23:14:11.422119+08:00",
+      "queue_seconds": 6.769999163225293e-05,
+      "backend_seconds": 1.0757309000036912,
+      "validation_seconds": 3.440000000409782e-05,
+      "request_elapsed_seconds": 1.075774700002512,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0000993",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 41,
+        "prompt_tokens": 252,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 293,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0010",
+      "requested_model": "qwen-turbo",
+      "queued_at": "2026-10-08T23:14:10.486472+08:00",
+      "started_at": "2026-10-08T23:14:10.486472+08:00",
+      "ended_at": "2026-10-08T23:14:11.298898+08:00",
+      "queue_seconds": 0.0002911999908974394,
+      "backend_seconds": 0.8123779000015929,
+      "validation_seconds": 4.3499996536411345e-05,
+      "request_elapsed_seconds": 0.8124296000023605,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001083",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 53,
+        "prompt_tokens": 255,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 308,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0011",
+      "requested_model": "qwen-turbo",
+      "queued_at": "2026-10-08T23:14:10.487390+08:00",
+      "started_at": "2026-10-08T23:14:10.487390+08:00",
+      "ended_at": "2026-10-08T23:14:11.410524+08:00",
+      "queue_seconds": 0.00015219999477267265,
+      "backend_seconds": 0.9233544000016991,
+      "validation_seconds": 3.809999907389283e-05,
+      "request_elapsed_seconds": 0.9234069000085583,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001089",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 54,
+        "prompt_tokens": 255,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 309,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0012",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:11.298898+08:00",
+      "started_at": "2026-10-08T23:14:11.298898+08:00",
+      "ended_at": "2026-10-08T23:14:12.091213+08:00",
+      "queue_seconds": 8.080000407062471e-05,
+      "backend_seconds": 0.7920950999978231,
+      "validation_seconds": 4.230000195093453e-05,
+      "request_elapsed_seconds": 0.7921611000056146,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.00013065",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 62,
+        "prompt_tokens": 251,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 313,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0013",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:11.410524+08:00",
+      "started_at": "2026-10-08T23:14:11.410524+08:00",
+      "ended_at": "2026-10-08T23:14:12.320030+08:00",
+      "queue_seconds": 7.349999214056879e-05,
+      "backend_seconds": 0.9091536000050837,
+      "validation_seconds": 4.650000482797623e-05,
+      "request_elapsed_seconds": 0.9092171000083908,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001248",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 58,
+        "prompt_tokens": 252,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 310,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0014",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:11.422119+08:00",
+      "started_at": "2026-10-08T23:14:11.422119+08:00",
+      "ended_at": "2026-10-08T23:14:12.227897+08:00",
+      "queue_seconds": 0.00018760000239126384,
+      "backend_seconds": 0.8057501000002958,
+      "validation_seconds": 6.940000457689166e-05,
+      "request_elapsed_seconds": 0.8058378999994602,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001248",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 58,
+        "prompt_tokens": 252,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 310,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0015",
+      "requested_model": "qwen-turbo",
+      "queued_at": "2026-10-08T23:14:11.446876+08:00",
+      "started_at": "2026-10-08T23:14:11.446876+08:00",
+      "ended_at": "2026-10-08T23:14:13.848595+08:00",
+      "queue_seconds": 0.00015619999612681568,
+      "backend_seconds": 2.40090500000224,
+      "validation_seconds": 3.940000897273421e-05,
+      "request_elapsed_seconds": 2.4009671000094386,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001077",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 51,
+        "prompt_tokens": 257,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 308,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0016",
+      "requested_model": "qwen-turbo",
+      "queued_at": "2026-10-08T23:14:11.733904+08:00",
+      "started_at": "2026-10-08T23:14:11.733904+08:00",
+      "ended_at": "2026-10-08T23:14:13.548048+08:00",
+      "queue_seconds": 9.709999721962959e-05,
+      "backend_seconds": 1.8139550000050804,
+      "validation_seconds": 3.0199997127056122e-05,
+      "request_elapsed_seconds": 1.814007799999672,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001086",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 54,
+        "prompt_tokens": 254,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 308,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0017",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:12.091787+08:00",
+      "started_at": "2026-10-08T23:14:12.091787+08:00",
+      "ended_at": "2026-10-08T23:14:12.854005+08:00",
+      "queue_seconds": 0.00010940000356640667,
+      "backend_seconds": 0.7621968000021297,
+      "validation_seconds": 3.819999983534217e-05,
+      "request_elapsed_seconds": 0.762254799992661,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0000978",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 40,
+        "prompt_tokens": 252,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 292,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0018",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:12.227897+08:00",
+      "started_at": "2026-10-08T23:14:12.227897+08:00",
+      "ended_at": "2026-10-08T23:14:13.373720+08:00",
+      "queue_seconds": 9.610000415705144e-05,
+      "backend_seconds": 1.1453553000028478,
+      "validation_seconds": 6.419999408535659e-05,
+      "request_elapsed_seconds": 1.1454315000009956,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001248",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 58,
+        "prompt_tokens": 252,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 310,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0019",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:12.320030+08:00",
+      "started_at": "2026-10-08T23:14:12.320030+08:00",
+      "ended_at": "2026-10-08T23:14:13.546618+08:00",
+      "queue_seconds": 8.410000009462237e-05,
+      "backend_seconds": 1.2270659000059823,
+      "validation_seconds": 6.770000618416816e-05,
+      "request_elapsed_seconds": 1.2271455000009155,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.00012495",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 58,
+        "prompt_tokens": 253,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 311,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0020",
+      "requested_model": "qwen-turbo",
+      "queued_at": "2026-10-08T23:14:12.383968+08:00",
+      "started_at": "2026-10-08T23:14:12.383968+08:00",
+      "ended_at": "2026-10-08T23:14:14.134173+08:00",
+      "queue_seconds": 5.8900011936202645e-05,
+      "backend_seconds": 1.7498197999957483,
+      "validation_seconds": 3.4199998481199145e-05,
+      "request_elapsed_seconds": 1.749876599991694,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001089",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 53,
+        "prompt_tokens": 257,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 310,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0021",
+      "requested_model": "qwen-turbo",
+      "queued_at": "2026-10-08T23:14:12.854005+08:00",
+      "started_at": "2026-10-08T23:14:12.854005+08:00",
+      "ended_at": "2026-10-08T23:14:13.948665+08:00",
+      "queue_seconds": 6.489999941550195e-05,
+      "backend_seconds": 1.0946629000100074,
+      "validation_seconds": 3.260000084992498e-05,
+      "request_elapsed_seconds": 1.0947111999994377,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001086",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 53,
+        "prompt_tokens": 256,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 309,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0022",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:13.373720+08:00",
+      "started_at": "2026-10-08T23:14:13.373720+08:00",
+      "ended_at": "2026-10-08T23:14:14.200578+08:00",
+      "queue_seconds": 0.00012139999307692051,
+      "backend_seconds": 0.8263571999996202,
+      "validation_seconds": 4.0700004319660366e-05,
+      "request_elapsed_seconds": 0.826411600006395,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001338",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 64,
+        "prompt_tokens": 252,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 316,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0023",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:13.555665+08:00",
+      "started_at": "2026-10-08T23:14:13.555665+08:00",
+      "ended_at": "2026-10-08T23:14:14.745456+08:00",
+      "queue_seconds": 0.00022599998919758946,
+      "backend_seconds": 1.1892605999892112,
+      "validation_seconds": 3.479998849797994e-05,
+      "request_elapsed_seconds": 1.1893196000019088,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001248",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 58,
+        "prompt_tokens": 252,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 310,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 1,
+      "agent_id": "agent_0024",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:13.555665+08:00",
+      "started_at": "2026-10-08T23:14:13.556978+08:00",
+      "ended_at": "2026-10-08T23:14:15.372588+08:00",
+      "queue_seconds": 0.0005902999982936308,
+      "backend_seconds": 1.8158081000001403,
+      "validation_seconds": 3.120000474154949e-05,
+      "request_elapsed_seconds": 1.8158590000093682,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.00012795",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 60,
+        "prompt_tokens": 253,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 313,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0000",
+      "requested_model": "qwen-turbo",
+      "queued_at": "2026-10-08T23:14:15.394405+08:00",
+      "started_at": "2026-10-08T23:14:15.395403+08:00",
+      "ended_at": "2026-10-08T23:14:16.845704+08:00",
+      "queue_seconds": 0.00027879999834112823,
+      "backend_seconds": 1.450511600007303,
+      "validation_seconds": 4.980000085197389e-05,
+      "request_elapsed_seconds": 1.4505792000127258,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001257",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 61,
+        "prompt_tokens": 297,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 358,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0001",
+      "requested_model": "qwen-turbo",
+      "queued_at": "2026-10-08T23:14:15.395403+08:00",
+      "started_at": "2026-10-08T23:14:15.395403+08:00",
+      "ended_at": "2026-10-08T23:14:16.270882+08:00",
+      "queue_seconds": 0.00032479999936185777,
+      "backend_seconds": 0.8748646000021836,
+      "validation_seconds": 4.270000499673188e-05,
+      "request_elapsed_seconds": 0.8749206000065897,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001245",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 61,
+        "prompt_tokens": 293,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 354,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0002",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:15.396403+08:00",
+      "started_at": "2026-10-08T23:14:15.396797+08:00",
+      "ended_at": "2026-10-08T23:14:16.267191+08:00",
+      "queue_seconds": 0.00027319999935571104,
+      "backend_seconds": 0.8706608000065899,
+      "validation_seconds": 3.860000288113952e-05,
+      "request_elapsed_seconds": 0.8707169999979669,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.00015195",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 64,
+        "prompt_tokens": 373,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 437,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0003",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:15.396797+08:00",
+      "started_at": "2026-10-08T23:14:15.397303+08:00",
+      "ended_at": "2026-10-08T23:14:16.438445+08:00",
+      "queue_seconds": 0.00019619999511633068,
+      "backend_seconds": 1.0410902000003261,
+      "validation_seconds": 8.499999239575118e-05,
+      "request_elapsed_seconds": 1.0411936000018613,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.000135",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 60,
+        "prompt_tokens": 300,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 360,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0004",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:15.397303+08:00",
+      "started_at": "2026-10-08T23:14:15.397894+08:00",
+      "ended_at": "2026-10-08T23:14:16.343312+08:00",
+      "queue_seconds": 0.00024229999689850956,
+      "backend_seconds": 0.9454739000066184,
+      "validation_seconds": 3.959999594371766e-05,
+      "request_elapsed_seconds": 0.945531999997911,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.00013245",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 59,
+        "prompt_tokens": 293,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 352,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0005",
+      "requested_model": "qwen-turbo",
+      "queued_at": "2026-10-08T23:14:15.397894+08:00",
+      "started_at": "2026-10-08T23:14:15.397894+08:00",
+      "ended_at": "2026-10-08T23:14:16.517993+08:00",
+      "queue_seconds": 0.00025440000172238797,
+      "backend_seconds": 1.1198435000114841,
+      "validation_seconds": 0.00014109999756328762,
+      "request_elapsed_seconds": 1.1200054000073578,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001263",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 62,
+        "prompt_tokens": 297,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 359,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0006",
+      "requested_model": "qwen-turbo",
+      "queued_at": "2026-10-08T23:14:15.399128+08:00",
+      "started_at": "2026-10-08T23:14:15.400246+08:00",
+      "ended_at": "2026-10-08T23:14:16.710280+08:00",
+      "queue_seconds": 0.0007875000010244548,
+      "backend_seconds": 1.3105085999995936,
+      "validation_seconds": 5.77000027988106e-05,
+      "request_elapsed_seconds": 1.3105833000008715,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001224",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 60,
+        "prompt_tokens": 288,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 348,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0007",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:15.400246+08:00",
+      "started_at": "2026-10-08T23:14:15.400246+08:00",
+      "ended_at": "2026-10-08T23:14:16.769606+08:00",
+      "queue_seconds": 0.00031630000739824027,
+      "backend_seconds": 1.3695634000032442,
+      "validation_seconds": 4.569999873638153e-05,
+      "request_elapsed_seconds": 1.3696236999967368,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.00013095",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 58,
+        "prompt_tokens": 293,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 351,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0008",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:16.267191+08:00",
+      "started_at": "2026-10-08T23:14:16.267191+08:00",
+      "ended_at": "2026-10-08T23:14:17.141627+08:00",
+      "queue_seconds": 7.509998977184296e-05,
+      "backend_seconds": 0.8742210000054911,
+      "validation_seconds": 4.6899993321858346e-05,
+      "request_elapsed_seconds": 0.8742782000044826,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.00013275",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 59,
+        "prompt_tokens": 295,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 354,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0009",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:16.270882+08:00",
+      "started_at": "2026-10-08T23:14:16.270882+08:00",
+      "ended_at": "2026-10-08T23:14:17.067824+08:00",
+      "queue_seconds": 7.100000220816582e-05,
+      "backend_seconds": 0.7969768000039039,
+      "validation_seconds": 4.549999721348286e-05,
+      "request_elapsed_seconds": 0.7970447999978205,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.00013365",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 60,
+        "prompt_tokens": 291,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 351,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0010",
+      "requested_model": "qwen-turbo",
+      "queued_at": "2026-10-08T23:14:16.343312+08:00",
+      "started_at": "2026-10-08T23:14:16.343312+08:00",
+      "ended_at": "2026-10-08T23:14:17.385080+08:00",
+      "queue_seconds": 6.70000008540228e-05,
+      "backend_seconds": 1.0415380999911577,
+      "validation_seconds": 3.6999990697950125e-05,
+      "request_elapsed_seconds": 1.0415959999954794,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001254",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 61,
+        "prompt_tokens": 296,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 357,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0011",
+      "requested_model": "qwen-turbo",
+      "queued_at": "2026-10-08T23:14:16.438445+08:00",
+      "started_at": "2026-10-08T23:14:16.438445+08:00",
+      "ended_at": "2026-10-08T23:14:17.529066+08:00",
+      "queue_seconds": 0.00010509999992791563,
+      "backend_seconds": 1.090520400000969,
+      "validation_seconds": 4.810000245925039e-05,
+      "request_elapsed_seconds": 1.090592700013076,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001278",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 65,
+        "prompt_tokens": 296,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 361,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0012",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:16.517993+08:00",
+      "started_at": "2026-10-08T23:14:16.517993+08:00",
+      "ended_at": "2026-10-08T23:14:17.332699+08:00",
+      "queue_seconds": 0.0001036000030580908,
+      "backend_seconds": 0.8142048000008799,
+      "validation_seconds": 4.359999729786068e-05,
+      "request_elapsed_seconds": 0.814266499990481,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001374",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 62,
+        "prompt_tokens": 296,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 358,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0013",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:16.710280+08:00",
+      "started_at": "2026-10-08T23:14:16.710280+08:00",
+      "ended_at": "2026-10-08T23:14:17.456431+08:00",
+      "queue_seconds": 8.270000398624688e-05,
+      "backend_seconds": 0.7463788999884855,
+      "validation_seconds": 0.0001686000032350421,
+      "request_elapsed_seconds": 0.74656590000086,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.00010845",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 43,
+        "prompt_tokens": 293,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 336,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0014",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:16.769606+08:00",
+      "started_at": "2026-10-08T23:14:16.769606+08:00",
+      "ended_at": "2026-10-08T23:14:18.040818+08:00",
+      "queue_seconds": 7.439999899361283e-05,
+      "backend_seconds": 1.270246699990821,
+      "validation_seconds": 3.819999983534217e-05,
+      "request_elapsed_seconds": 1.2703044999943813,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.00014895",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 70,
+        "prompt_tokens": 293,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 363,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0015",
+      "requested_model": "qwen-turbo",
+      "queued_at": "2026-10-08T23:14:16.852694+08:00",
+      "started_at": "2026-10-08T23:14:16.852694+08:00",
+      "ended_at": "2026-10-08T23:14:17.865746+08:00",
+      "queue_seconds": 0.0001841000048443675,
+      "backend_seconds": 1.0127881999942474,
+      "validation_seconds": 4.1399995097890496e-05,
+      "request_elapsed_seconds": 1.0128525999898557,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.00006306",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 60,
+        "prompt_tokens": 295,
+        "prompt_tokens_details": {
+          "cached_tokens": 256
+        },
+        "total_tokens": 355,
+        "cached_input_tokens": 256
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0016",
+      "requested_model": "qwen-turbo",
+      "queued_at": "2026-10-08T23:14:17.067824+08:00",
+      "started_at": "2026-10-08T23:14:17.067824+08:00",
+      "ended_at": "2026-10-08T23:14:18.501170+08:00",
+      "queue_seconds": 8.089999028015882e-05,
+      "backend_seconds": 1.4330977000063285,
+      "validation_seconds": 3.5500008380040526e-05,
+      "request_elapsed_seconds": 1.4331517000100575,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001278",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 65,
+        "prompt_tokens": 296,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 361,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0017",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:17.142191+08:00",
+      "started_at": "2026-10-08T23:14:17.142191+08:00",
+      "ended_at": "2026-10-08T23:14:18.011535+08:00",
+      "queue_seconds": 7.940000796224922e-05,
+      "backend_seconds": 0.8696651000063866,
+      "validation_seconds": 4.2400002712383866e-05,
+      "request_elapsed_seconds": 0.8697212999977637,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.00014565",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 68,
+        "prompt_tokens": 291,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 359,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0018",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:17.332699+08:00",
+      "started_at": "2026-10-08T23:14:17.332699+08:00",
+      "ended_at": "2026-10-08T23:14:18.870957+08:00",
+      "queue_seconds": 9.299999510403723e-05,
+      "backend_seconds": 1.5382720999914454,
+      "validation_seconds": 3.989999822806567e-05,
+      "request_elapsed_seconds": 1.5383337999955984,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.00013095",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 58,
+        "prompt_tokens": 293,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 351,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0019",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:17.385080+08:00",
+      "started_at": "2026-10-08T23:14:17.385080+08:00",
+      "ended_at": "2026-10-08T23:14:18.312677+08:00",
+      "queue_seconds": 9.250000584870577e-05,
+      "backend_seconds": 0.9273113999952329,
+      "validation_seconds": 3.600001218728721e-05,
+      "request_elapsed_seconds": 0.9273661999905016,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001521",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 72,
+        "prompt_tokens": 294,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 366,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0020",
+      "requested_model": "qwen-turbo",
+      "queued_at": "2026-10-08T23:14:17.456431+08:00",
+      "started_at": "2026-10-08T23:14:17.458006+08:00",
+      "ended_at": "2026-10-08T23:14:19.150124+08:00",
+      "queue_seconds": 0.00015749999147374183,
+      "backend_seconds": 1.692271100007929,
+      "validation_seconds": 3.480000304989517e-05,
+      "request_elapsed_seconds": 1.692328400007682,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001263",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 62,
+        "prompt_tokens": 297,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 359,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0021",
+      "requested_model": "qwen-turbo",
+      "queued_at": "2026-10-08T23:14:17.529066+08:00",
+      "started_at": "2026-10-08T23:14:17.529066+08:00",
+      "ended_at": "2026-10-08T23:14:18.501170+08:00",
+      "queue_seconds": 8.359999628737569e-05,
+      "backend_seconds": 0.9722044999944046,
+      "validation_seconds": 1.8499995348975062e-05,
+      "request_elapsed_seconds": 0.9722435000003316,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001266",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 63,
+        "prompt_tokens": 296,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 359,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0022",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:17.865746+08:00",
+      "started_at": "2026-10-08T23:14:17.865746+08:00",
+      "ended_at": "2026-10-08T23:14:22.195232+08:00",
+      "queue_seconds": 9.169999975711107e-05,
+      "backend_seconds": 4.328809500002535,
+      "validation_seconds": 3.510000533424318e-05,
+      "request_elapsed_seconds": 4.328856300009647,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.00014055",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 64,
+        "prompt_tokens": 297,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 361,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0023",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:18.018028+08:00",
+      "started_at": "2026-10-08T23:14:18.018028+08:00",
+      "ended_at": "2026-10-08T23:14:19.585858+08:00",
+      "queue_seconds": 0.0001638999965507537,
+      "backend_seconds": 1.5673396000056528,
+      "validation_seconds": 3.460000152699649e-05,
+      "request_elapsed_seconds": 1.56739650000236,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001386",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 55,
+        "prompt_tokens": 374,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 429,
+        "cached_input_tokens": 0
+      }
+    },
+    {
+      "run_id": "run_f15ef1b2a41c4cef818b",
+      "round_number": 2,
+      "agent_id": "agent_0024",
+      "requested_model": "qwen-flash",
+      "queued_at": "2026-10-08T23:14:18.040818+08:00",
+      "started_at": "2026-10-08T23:14:18.040818+08:00",
+      "ended_at": "2026-10-08T23:14:18.886593+08:00",
+      "queue_seconds": 8.060000254772604e-05,
+      "backend_seconds": 0.845867800002452,
+      "validation_seconds": 3.650000144261867e-05,
+      "request_elapsed_seconds": 0.8459231000015279,
+      "status": "valid",
+      "failure_category": null,
+      "dispatch_evidence": "prepared_for_dispatch",
+      "cost_cny": "0.0001449",
+      "usage_unknown": 0,
+      "usage": {
+        "completion_tokens": 59,
+        "prompt_tokens": 376,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 435,
+        "cached_input_tokens": 0
+      }
+    }
+  ],
+  "timing": {
+    "event_input_started_at": "2026-10-08T23:14:08.069470+08:00",
+    "simulation_started_at": "2026-10-08T23:14:08.086949+08:00",
+    "simulation_ended_at": "2026-10-08T23:14:22.229958+08:00",
+    "simulation_elapsed_seconds": 14.142568899987964,
+    "report_generation_started_at": "2026-10-08T23:14:22.229958+08:00",
+    "report_generation_ended_at": "2026-10-08T23:14:22.268577+08:00",
+    "report_generation_elapsed_seconds": 0.03827419999288395,
+    "event_input_to_report_artifact_elapsed_seconds": 14.205598000000464,
+    "event_input_to_report_artifact_ended_at": "2026-10-08T23:14:22.274879+08:00",
+    "clock": "time.perf_counter monotonic durations; local ISO timestamps for correlation",
+    "event_input_boundary": "immediately before loading the fixed synthetic case and graph"
+  },
+  "source_manifest": {
+    "git_head": "17495e6400d8352c84722a4cb374200d8f12b02f",
+    "source_sha256": {
+      "experiments/day3_bailian_synthetic_run.py": "51944d344990e83c6921ea04a21e39531a342f90ad8a959ebb5b4194db854506",
+      "experiments/day3_bailian_synthetic_backend.py": "fc0faada6a4f1bd5cf5f93ff371698110481f8627a0404823d73d5bdeb797f3a",
+      "src/riskshield/day3.py": "c78404e242bb18d3d179da5865cbae1227fc1ed3f13717fe249d8e11849d17c7",
+      "src/riskshield/day4_alerts.py": "62a13dca72506be591c2f086298afaec77681cb7d23ea812c6022c92ec08d874",
+      "src/riskshield/day4_report.py": "4bfc52367fbc81b77dbcd65d0a3d175f4dc04a177c146ea0ad510677307e1b3d",
+      "src/riskshield/schemas.py": "8d90cbd605475ce0cd3c891a8b0df250b6ff252e3967303dac83f169ef4d67e5",
+      "src/riskshield/store.py": "88ff4349ce8b527c82b7352b4e479d59aa7147e648fed7244eccc4361ee216b9",
+      "tests/fixtures/day3_synthetic_case.py": "8845dab1e7590f8404b3a04ddb484a4c5f01dc45c0138c63be942e22aee1fc9b",
+      "pyproject.toml": "47cb0450cbbc5fe7416fac2930e5bcd3820ee97f2c2ded126ec92c0adf40ed28",
+      "uv.lock": "0e6e5d30e5c81e80fc0f104b870490c1e34575180b565f3ec3c661552a42996c"
+    },
+    "system_prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+    "python_version": "3.12.4"
+  },
+  "input_hashes": {
+    "synthetic_case_version": "day3-synthetic-v1",
+    "graph_sha256": "ce423df6f23383735d2f21bc49eb9877de55b054724a266947107fe4dad79752",
+    "initial_agents_state_sha256": "41ecbdb478ff87e51f115b3d8f66cbdaf7231f647cf6c18f114ac430a8811ebf",
+    "backend_configuration_sha256": "d549d117fff33ded69dcaca9f065be35b766716442e4c85a38617766381c56a6"
+  },
+  "five_module_report": {
+    "status": "generated",
+    "report_id": "report_9fc20f499eb0a8c17cb7e6c7",
+    "module_names": [
+      "emotion_evolution",
+      "key_nodes",
+      "propagation",
+      "recommendations",
+      "risk"
+    ],
+    "data_mode": "synthetic",
+    "execution_mode": "BailianBackend",
+    "report_sha256": "f1511178b4dc83ed5c0c6206df2febe8f925766eb81da4f540747998264fe31d",
+    "path": "D:\\test\\多智能体仿真舆情监测与投诉预警\\artifacts\\final-simulation-review\\live-validation-20261008-v4\\pilot-c8.five-module-report.json",
+    "alert_id": "alert_3a46e11dbcdb3d025d69fa87dbe7676d",
+    "alert_status": "provisional_offline_assessment"
+  },
+  "trajectory": [
+    {
+      "round": 1,
+      "agent_id": "agent_0000",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0000",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "Agent is aware of the service notice and is observing the situation."
+      },
+      "usage": {
+        "completion_tokens": 53,
+        "prompt_tokens": 257,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 310,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-turbo",
+      "actual_model": "qwen-turbo",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0022758",
+      "cost_cny": "0.0001089",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1169,
+        "max_output_tokens": 160,
+        "prepared_payload_canonical_json_sha256": "fc758a3cb12422206ff01852896e61c2696ee32beab1a34fa80bc8bbd502253c",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "72814d77c77e7098b0b46f803a91af68619e6f002af93efedc1bb1f82c71513c",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 1,
+      "agent_id": "agent_0001",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0001",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "Agent reviews the service notice to understand the situation."
+      },
+      "usage": {
+        "completion_tokens": 50,
+        "prompt_tokens": 256,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 306,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-turbo",
+      "actual_model": "qwen-turbo",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0022761",
+      "cost_cny": "0.0001068",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1170,
+        "max_output_tokens": 160,
+        "prepared_payload_canonical_json_sha256": "62d5712d268cbdafc64d9a985057abe0a3a8d10aa802b56dc4cf0a3a3155198c",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "80932caf4aa3af5305ebc76fac1e1334711007a7c5d1632986df8b2c663a0c97",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 1,
+      "agent_id": "agent_0002",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0002",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "The service interruption is reported, but no further details are available yet."
+      },
+      "usage": {
+        "completion_tokens": 58,
+        "prompt_tokens": 251,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 309,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014736",
+      "cost_cny": "0.00012465",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1166,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "f92ef4a76ec04a3c2b5df09e5589071b37aeb9235ab4879befb5f7bf92e7bdb2",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "9fc9da7a91d5cea05f015d7489c98d0b58a6d158a5f063af61c550a46258b719",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 1,
+      "agent_id": "agent_0003",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0003",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "The service interruption is noted, but no immediate action is required as it's a temporary issue under investigation."
+      },
+      "usage": {
+        "completion_tokens": 65,
+        "prompt_tokens": 252,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 317,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014733",
+      "cost_cny": "0.0001353",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1166,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "0ed4116e0903c41054b415096c90ff5aef196740ea2ff9c7f3dca069792357aa",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "175833cf1de0e93ccd12bcc80aea212b7286406d56a731c42d840fb578c1e4d2",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 1,
+      "agent_id": "agent_0004",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0004",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "The service interruption is reported, so monitoring for updates is prudent."
+      },
+      "usage": {
+        "completion_tokens": 57,
+        "prompt_tokens": 253,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 310,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014742",
+      "cost_cny": "0.00012345",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1171,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "b71f5ab6f6dcb5f6689809dba67c37343f330ffe3a14ea68e3397d544dff280b",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "dfd13c7f0d8f1206aa2a47ddd8bfdbc6638785accf72b6d2f200f683f03403d6",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 1,
+      "agent_id": "agent_0005",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0005",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "Agent observes the service notice to understand potential impact on their activities."
+      },
+      "usage": {
+        "completion_tokens": 53,
+        "prompt_tokens": 257,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 310,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-turbo",
+      "actual_model": "qwen-turbo",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0022758",
+      "cost_cny": "0.0001089",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1169,
+        "max_output_tokens": 160,
+        "prepared_payload_canonical_json_sha256": "c78a270bb1b56eb36a8a62849dfecb896f64699b8b652aea898751479ea44671",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "4b9bd685dee265ee44466977f6cb7641c576b4e06b3b272af5732e205c06d359",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 1,
+      "agent_id": "agent_0006",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0006",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "Agent acknowledges service disruption notice."
+      },
+      "usage": {
+        "completion_tokens": 46,
+        "prompt_tokens": 255,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 301,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-turbo",
+      "actual_model": "qwen-turbo",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0022761",
+      "cost_cny": "0.0001041",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1170,
+        "max_output_tokens": 160,
+        "prepared_payload_canonical_json_sha256": "583ddd49ec77e244eb9a20be272e53a442a7e4c9e52c5cd943c950274c945f38",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "6788b51840f1f390821fb54a27b23ab9acd6323236f5e229e1185f9411697092",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 1,
+      "agent_id": "agent_0007",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0007",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "The service interruption is reported, but no further details are available yet."
+      },
+      "usage": {
+        "completion_tokens": 58,
+        "prompt_tokens": 252,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 310,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014736",
+      "cost_cny": "0.0001248",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1168,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "782c7ad1a7346aa47af4106b5b26ecb3626b2a93efb1981d4e0cea6db8a1c60c",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "2932a1ad2a790dbedaddf077d07e550033df7987c58ebaaece28ddaff4539c58",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 1,
+      "agent_id": "agent_0008",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0008",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "The service interruption is noted; no immediate action needed as the issue is under investigation."
+      },
+      "usage": {
+        "completion_tokens": 61,
+        "prompt_tokens": 251,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 312,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014733",
+      "cost_cny": "0.00012915",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1165,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "4be6ff9777be27345ea12bac55d576ecfed92a96358e0df1dd5745757943f453",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "d92ba4ddef7f3d5dada78b1af7621917463a4a6ce5f11d5cf6c1c4cd3e463474",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 1,
+      "agent_id": "agent_0009",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0009",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "Assessing the impact of the service interruption on regulatory oversight."
+      },
+      "usage": {
+        "completion_tokens": 41,
+        "prompt_tokens": 252,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 293,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014742",
+      "cost_cny": "0.0000993",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1170,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "4b63829d9eadeaf137d7975c48a2c9a1731eea8ddf46e5309785075abdb2c6e3",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "c7b8b6700be01c61cad3968172677179b76529547469eb9f31d7e592b9ec8959",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 1,
+      "agent_id": "agent_0010",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0010",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "Agent is aware of the service notice and is observing the situation."
+      },
+      "usage": {
+        "completion_tokens": 53,
+        "prompt_tokens": 255,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 308,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-turbo",
+      "actual_model": "qwen-turbo",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0022758",
+      "cost_cny": "0.0001083",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1168,
+        "max_output_tokens": 160,
+        "prepared_payload_canonical_json_sha256": "f16608853614cca4e6ba1458fed2a146f119cd6f5627aef6b1a28d9269532ee5",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "371d9f19c999cb77707a872f146040a16d8634e790ca66a7336ee29c767c206a",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 1,
+      "agent_id": "agent_0011",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0011",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "Agent is informed of a service disruption and chooses to observe the situation."
+      },
+      "usage": {
+        "completion_tokens": 54,
+        "prompt_tokens": 255,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 309,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-turbo",
+      "actual_model": "qwen-turbo",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0022761",
+      "cost_cny": "0.0001089",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1169,
+        "max_output_tokens": 160,
+        "prepared_payload_canonical_json_sha256": "4304a6d1bf854aa779216e01f0956aab82c753aaf2f2cecaafa2ab2ccf8b7a37",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "6bfa457e77b722c39f34536c38b70e45428d94b59a7a5922237f75fb73f4e838",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 1,
+      "agent_id": "agent_0012",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0012",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "The service interruption is reported, and no further action is needed until more information is available."
+      },
+      "usage": {
+        "completion_tokens": 62,
+        "prompt_tokens": 251,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 313,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014736",
+      "cost_cny": "0.00013065",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1167,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "99577f3d64b205e65eb39560b26da1e5e4d40ad7ff3fb39696570dbee12360ee",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "646bf4e58f9c67c0879e6be7055753f0b2e8a1892aeddfc1162f6585a052eefa",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 1,
+      "agent_id": "agent_0013",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0013",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "The service interruption is reported, and no further action is needed yet."
+      },
+      "usage": {
+        "completion_tokens": 58,
+        "prompt_tokens": 252,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 310,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014733",
+      "cost_cny": "0.0001248",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1165,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "ead38bf51d7757459b0a9a2dd8597ebc6e421debe7af0285c2e310e0d195d347",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "1d57f14b6759da8401f183459f747426393f71223fa49c787ab313f7dcca5765",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 1,
+      "agent_id": "agent_0014",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0014",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "The service interruption is reported, and no further action is needed yet."
+      },
+      "usage": {
+        "completion_tokens": 58,
+        "prompt_tokens": 252,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 310,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014742",
+      "cost_cny": "0.0001248",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1170,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "ddf122bc0f18fe11526825ce424695d117e854127ac2bf7c66e45e21b076511e",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "7ffb1fc251686dfc7fd52c116533045d0a67aa3fbd752ab241ffbbc64c08c5bb",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 1,
+      "agent_id": "agent_0015",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0015",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "Agent reviews service notice to understand potential impact on community."
+      },
+      "usage": {
+        "completion_tokens": 51,
+        "prompt_tokens": 257,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 308,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-turbo",
+      "actual_model": "qwen-turbo",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0022758",
+      "cost_cny": "0.0001077",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1169,
+        "max_output_tokens": 160,
+        "prepared_payload_canonical_json_sha256": "00bb84f98c03e2cb2006a393bec6847e6d72a82206528ad4e6b00ce1cd4f2d94",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "b2430b267e4b89353cd7e723726443ab3177271dfaec7e712aab2e61d4fbee38",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 1,
+      "agent_id": "agent_0016",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0016",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "Agent is informed of a service disruption and chooses to observe the situation."
+      },
+      "usage": {
+        "completion_tokens": 54,
+        "prompt_tokens": 254,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 308,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-turbo",
+      "actual_model": "qwen-turbo",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0022761",
+      "cost_cny": "0.0001086",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1168,
+        "max_output_tokens": 160,
+        "prepared_payload_canonical_json_sha256": "1878f12b37bccb559d87083cfc01d40cdf23a868ec5ed9ea55ebd0d6a61d570e",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "54bd38c9350ed0b1cc52f61a87d35bc0d3ea3e58113e958b6855157de471f97c",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 1,
+      "agent_id": "agent_0017",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0017",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "Awaiting further details on the service interruption before taking action."
+      },
+      "usage": {
+        "completion_tokens": 40,
+        "prompt_tokens": 252,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 292,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014736",
+      "cost_cny": "0.0000978",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1168,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "f7e400e152503683d9868160057d047fbdf8f28adef0e3224785eeaf5356a6b7",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "23f38d7883bddc00da238fc3fe20db43a50ca6b391c82ae8fb6b7d81d14d90a0",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 1,
+      "agent_id": "agent_0018",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0018",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "The service interruption is reported, but no further details are available yet."
+      },
+      "usage": {
+        "completion_tokens": 58,
+        "prompt_tokens": 252,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 310,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014733",
+      "cost_cny": "0.0001248",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1165,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "d0f4d4b446bed0f713d614b752cc65b8be22019f9f0006973ca351ff34f7288d",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "6c655ec7ba9b6f47ef9612f0211481e7082236f7052d9760c929c8d30a717813",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 1,
+      "agent_id": "agent_0019",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0019",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "The service interruption is reported, and no further action is needed yet."
+      },
+      "usage": {
+        "completion_tokens": 58,
+        "prompt_tokens": 253,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 311,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014742",
+      "cost_cny": "0.00012495",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1171,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "fd0516d7d98b4807e7b1ac792c1ae6d07637edd3c5ccef97aac4eba76951be19",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "ff3e461b3b8b72ebfc197631f0846bac34ea658b37014d8912f3e61a1027064f",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 1,
+      "agent_id": "agent_0020",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0020",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "Agent observes the service notice to understand potential impacts on their activities."
+      },
+      "usage": {
+        "completion_tokens": 53,
+        "prompt_tokens": 257,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 310,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-turbo",
+      "actual_model": "qwen-turbo",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0022758",
+      "cost_cny": "0.0001089",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1169,
+        "max_output_tokens": 160,
+        "prepared_payload_canonical_json_sha256": "c34d72f7e209666d1504ffffc8b4b90b913e889e90b5853b8d5909397102bd22",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "41560e15a619425c038850a534555b45d7fe0261c939b2fa00accd139ca01024",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 1,
+      "agent_id": "agent_0021",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0021",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "Agent observes the service notice to understand potential impact on their experience."
+      },
+      "usage": {
+        "completion_tokens": 53,
+        "prompt_tokens": 256,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 309,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-turbo",
+      "actual_model": "qwen-turbo",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0022761",
+      "cost_cny": "0.0001086",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1170,
+        "max_output_tokens": 160,
+        "prepared_payload_canonical_json_sha256": "5a501b4a9e2551ea162283376eeeff9fcd8f14d48a12f76574d238b195761ca9",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "7605aab8e631a5827d4467e8f3f3a0b20a09613737cb474f9bb81c4c8d38d795",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 1,
+      "agent_id": "agent_0022",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0022",
+        "action": "share",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "The service interruption is relevant to public awareness; sharing ensures timely dissemination of the fictional test service status."
+      },
+      "usage": {
+        "completion_tokens": 64,
+        "prompt_tokens": 252,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 316,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014736",
+      "cost_cny": "0.0001338",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1167,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "3a7289ca13e45090e513a21504065bb452a0cddc0208829c531f7eb791aed1f2",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "12e1dccbc275b418e5ffd5705cf03c0f7663bdc2cad041c1deb40aea8653b961",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 1,
+      "agent_id": "agent_0023",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0023",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "The service interruption is reported, but no further details are available yet."
+      },
+      "usage": {
+        "completion_tokens": 58,
+        "prompt_tokens": 252,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 310,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014733",
+      "cost_cny": "0.0001248",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1165,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "ddc0e506398e25463bcbe47a8ddd55d8ba094da57d98e1ec151b1953ad0811f0",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "445784fd1685d9518755cfd73a899b94e2078248731b27d5414e87ad6d6706a0",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 1,
+      "agent_id": "agent_0024",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": []
+      },
+      "decision": {
+        "agent_id": "agent_0024",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "The service interruption is reported, so monitoring for updates is appropriate before taking action."
+      },
+      "usage": {
+        "completion_tokens": 60,
+        "prompt_tokens": 253,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 313,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014742",
+      "cost_cny": "0.00012795",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1171,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "c8747e7924a6a5846347a033df8130bcaa562116a2ac0bf77af7f6846a771e7c",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "5760c9f3d5c23bb0eb52bf499d211afde387e57455652f42460adb5ef2868515",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_allowed_citation_ids_sha256": "6a23f58966f25fbb40559c50cb3610752f9b44f409b18c18133aabd783f01845"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0000",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": [
+          "mem_1_agent_0000"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0000",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice",
+          "mem_1_agent_0000"
+        ],
+        "reason": "Agent is monitoring the service disruption and current situation."
+      },
+      "usage": {
+        "completion_tokens": 61,
+        "prompt_tokens": 297,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 358,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-turbo",
+      "actual_model": "qwen-turbo",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0022758",
+      "cost_cny": "0.0001257",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1309,
+        "max_output_tokens": 160,
+        "prepared_payload_canonical_json_sha256": "621eeae729f20f55b3f366e5d7f78d2099db8342d5515eaa33da9b1dd43efb69",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "4613994695765fbc59b8ce4b48fdfb187ee4b6b72d05349e97a94a5b49deb9a8",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "5b6c3bb2972f2fdbf182693eef2c5c8e2e195e3419cbd351b88246d298c22dbf",
+        "frozen_allowed_citation_ids_sha256": "7fb00c2f2de356b8cff72fc1168726568c9de1c585fc61171ee5d0225654b283"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0001",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": [
+          "mem_1_agent_0001"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0001",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice",
+          "mem_1_agent_0001"
+        ],
+        "reason": "Agent reviews the service notice to understand the situation."
+      },
+      "usage": {
+        "completion_tokens": 61,
+        "prompt_tokens": 293,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 354,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-turbo",
+      "actual_model": "qwen-turbo",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0022761",
+      "cost_cny": "0.0001245",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1303,
+        "max_output_tokens": 160,
+        "prepared_payload_canonical_json_sha256": "89a38b1a1a8f1b40e8fd9417819770c102c9de2e691d31d19d2ebf4a835b0c8e",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "d413770b092ea0be181a595e7f2485a1a7283be8bcc99d8aceecb0f21ffd18e2",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "bb72fd89d86cb88227b652a200abe59b10ad7fcf58e180e97fa5aa33df452a22",
+        "frozen_allowed_citation_ids_sha256": "91282e8c1ce678055ea4d2d98e9002b05b519b82a79df94b177620590420de20"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0002",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [
+          "msg_1_agent_0022_agent_0002"
+        ],
+        "memories": [
+          "mem_1_agent_0002"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0002",
+        "action": "share",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "The service interruption is relevant to public awareness; sharing ensures timely dissemination of the fictional test service status."
+      },
+      "usage": {
+        "completion_tokens": 64,
+        "prompt_tokens": 373,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 437,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014736",
+      "cost_cny": "0.00015195",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1622,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "8befeeca06343a5df54385d26b925c6b0f0f96539879426b6cea755df53ecce3",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "c12f209cc8cc67784e93958b17fd641848a4268f83d8c5c7997e9a497f5eb435",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "df82ac9005bf2fa6b64d8a85c8faa9ff462b3d27d178e4b678443c0ede34a3d3",
+        "frozen_own_simulated_memory_sha256": "f11c59dfcf531d2af71a6f70ac5724560e5dbcb266daab029aa89b32b0e56554",
+        "frozen_allowed_citation_ids_sha256": "567e07bcfa641b5d468a944f8ad35cf28dab8129c0e02834628d4ad4f5b0fd06"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0003",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": [
+          "mem_1_agent_0003"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0003",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "The service interruption is temporary and under investigation, so no immediate action is needed."
+      },
+      "usage": {
+        "completion_tokens": 60,
+        "prompt_tokens": 300,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 360,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014733",
+      "cost_cny": "0.000135",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1350,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "be5a84000827cab76670f15e0ffae483463b349dc07cc10be9338d3c83eeccc8",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "5e036fffbdd6ae7364d2c3bd6f65123b53af9eb4eef3bd794a4857b29dbcaf15",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "e866377176c770d273765e31c815a0815d93551a0c552f71ff3020942f8f5604",
+        "frozen_allowed_citation_ids_sha256": "a40fcce284f506ecd94be8aec1ccce1ec81bb6c66a9ea37245ed3b4542cf958b"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0004",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": [
+          "mem_1_agent_0004"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0004",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "The service interruption is reported; monitoring for updates is prudent per my memory."
+      },
+      "usage": {
+        "completion_tokens": 59,
+        "prompt_tokens": 293,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 352,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014742",
+      "cost_cny": "0.00013245",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1318,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "230228ad95d1071a1d95a94a5ac2e14f0c1ce89de77022a53b917bae46c12f4c",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "440a45bdfd193be0561502edaadb41d57c0b74154ecf506a86abf78680375a15",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "908db3a825b38df0f37bf3b4338ed36db087b4fe012745c5b5c4d970a69303d8",
+        "frozen_allowed_citation_ids_sha256": "55ad7e5ba6eaac23292a9e792282e7fffe90f0eedbaa2bb1b7ff429482589c6f"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0005",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": [
+          "mem_1_agent_0005"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0005",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice",
+          "mem_1_agent_0005"
+        ],
+        "reason": "Agent reviews service notice and prior observation to assess impact."
+      },
+      "usage": {
+        "completion_tokens": 62,
+        "prompt_tokens": 297,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 359,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-turbo",
+      "actual_model": "qwen-turbo",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0022758",
+      "cost_cny": "0.0001263",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1326,
+        "max_output_tokens": 160,
+        "prepared_payload_canonical_json_sha256": "a75daeae392c68a86b262420e91524669c262fa065e865fc2fae4068cd020b3a",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "a81d530019048300875d6124d1327bbc9b1762c1ef1643470e8c236ca0aa3c65",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "be42010e4c63d30c3ed69b2e1eb949427548c8d43b619b6afa5db4d457cf354a",
+        "frozen_allowed_citation_ids_sha256": "a38a09e28744245f0fa5d3b971db03e756b639fb62b7f5226a1cb0859aa93c56"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0006",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": [
+          "mem_1_agent_0006"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0006",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice",
+          "mem_1_agent_0006"
+        ],
+        "reason": "Agent acknowledges service disruption notice and previous observation."
+      },
+      "usage": {
+        "completion_tokens": 60,
+        "prompt_tokens": 288,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 348,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-turbo",
+      "actual_model": "qwen-turbo",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0022761",
+      "cost_cny": "0.0001224",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1287,
+        "max_output_tokens": 160,
+        "prepared_payload_canonical_json_sha256": "cccb3510f29331e9b66d47e0d47a2091bd03f03794e4f3f75cae53c39e7ec3c7",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "3ffd61ba8df12649e0b90efb9c7d793a3671db80d963b609db6cd460f3c5c53a",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "e4a711ba976ced4d829f9e73dcb90077b377e607af25a33b84db2eefee70cc33",
+        "frozen_allowed_citation_ids_sha256": "72dfd40e08cb36b4f3fbdb6006a27f9a33c1b045bc1ab817a57a7b7b098ad9ff"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0007",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": [
+          "mem_1_agent_0007"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0007",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "The service interruption is reported, but no further details are available yet."
+      },
+      "usage": {
+        "completion_tokens": 58,
+        "prompt_tokens": 293,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 351,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014736",
+      "cost_cny": "0.00013095",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1319,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "d4a4c91438cbe623df3647ecc97ab8537fa99d103a3f8bc978b3ee3430947e47",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "aa7716d32c20366ff0d8fe7b04fe25af4924c8590a72c0aaa50a7ec019b2f4ea",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "0c1651c5b158826153081c58b64f4f87a73ba8d2a32944f8a63963ebb1fe7efa",
+        "frozen_allowed_citation_ids_sha256": "cbd82e66ac39b106a1b9c87bf73ea5b8e5e6978ca3cee5a211aa97d9effb70d1"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0008",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": [
+          "mem_1_agent_0008"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0008",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "The service interruption is acknowledged; no immediate action required as technicians are investigating."
+      },
+      "usage": {
+        "completion_tokens": 59,
+        "prompt_tokens": 295,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 354,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014733",
+      "cost_cny": "0.00013275",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1335,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "d670242bb8ca9b6ff9d67e6046349041bbc6ca8e257241095f793c06b0b2d9c9",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "78d602a6f600ec53e415318883e8e295271f93331c054f4ba674cd0da4e365b2",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "c99237e9103a0cbb1f959a46182519902a48c1b2c52605b0135f86f0ceef0bcb",
+        "frozen_allowed_citation_ids_sha256": "a4a2601ccd983d9f4998789f66b239243391158a90582d6f0e283fe512171798"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0009",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": [
+          "mem_1_agent_0009"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0009",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "Assessing regulatory impact of the temporary service interruption reported by Northstar Insurance."
+      },
+      "usage": {
+        "completion_tokens": 60,
+        "prompt_tokens": 291,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 351,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014742",
+      "cost_cny": "0.00013365",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1315,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "ad3eafd1a3a9b644b0e52dbcd5f673eda1017495e60426f28ef182c13256d58b",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "be7733d0419edb4007f95ed7a6e2bb46d6cfe6374a187d0a5b20c43005ec2bdc",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "fe8291fa467106dc2c81807c8095e713c961589680b5dcfe23c31f68b277b81a",
+        "frozen_allowed_citation_ids_sha256": "583f4c8d590ad3c4aa8f84e2e51ff6856eed61a328afd0333e473032fd88ad37"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0010",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": [
+          "mem_1_agent_0010"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0010",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice",
+          "mem_1_agent_0010"
+        ],
+        "reason": "Agent is monitoring the service disruption and current situation."
+      },
+      "usage": {
+        "completion_tokens": 61,
+        "prompt_tokens": 296,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 357,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-turbo",
+      "actual_model": "qwen-turbo",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0022758",
+      "cost_cny": "0.0001254",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1309,
+        "max_output_tokens": 160,
+        "prepared_payload_canonical_json_sha256": "d79066bef8c09c5f8be28c14ac936942acf49b74e6fa735b2e3210e72cab0ab0",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "0025d5242c746c765f46a653ae6dfa0b96b355e789f08e305a4cf7e25d0fe9b7",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "57c2c5f6e3a34d8ebba34466e5708439cbab86df21bdd2e2031c89cd48daea39",
+        "frozen_allowed_citation_ids_sha256": "33285735a8a31473f341d2227a15456697f59c13ff15719967d88c71dd7e1b3b"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0011",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": [
+          "mem_1_agent_0011"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0011",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice",
+          "mem_1_agent_0011"
+        ],
+        "reason": "Agent is informed of a service disruption and chooses to observe the situation."
+      },
+      "usage": {
+        "completion_tokens": 65,
+        "prompt_tokens": 296,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 361,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-turbo",
+      "actual_model": "qwen-turbo",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0022761",
+      "cost_cny": "0.0001278",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1320,
+        "max_output_tokens": 160,
+        "prepared_payload_canonical_json_sha256": "f249ac240e144d5086a28d8230f7a55ca033ce5ea095cf6053e94f0be7cba6e7",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "c69da6c6de109456a71c20cfabdb0429129bd32c9a983cf5c1d551df18577952",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "4bb896c9d4f65d355f1745770627a50a05967387505be7d16de6b1c481fb41f9",
+        "frozen_allowed_citation_ids_sha256": "3a9218205608a90ac8858a9f8b2709e2181af71a30a0c3604546cc7dd0e18dfe"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0012",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": [
+          "mem_1_agent_0012"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0012",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "The service interruption is reported, and no further action is needed until more information is available."
+      },
+      "usage": {
+        "completion_tokens": 62,
+        "prompt_tokens": 296,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 358,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014736",
+      "cost_cny": "0.0001374",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1345,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "11f584f70141d4f18bb62a7010befa12c90ebc54c805de7bb6e0182e6d7911e4",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "ad65841ec920b1a1472caed1ddda8a0553cd16693328e4513dc2bcb8672785d9",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "e29dfd4269fd6a2b8171c369a262ee04b1c912786ff7f2c5814a0c8cc7beeb4b",
+        "frozen_allowed_citation_ids_sha256": "369f45d30d6ed282a1836ce94471ae2b51a11c60ba2b289a55cd339a1399f652"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0013",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": [
+          "mem_1_agent_0013"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0013",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "The service interruption is acknowledged; no immediate action required as per current information."
+      },
+      "usage": {
+        "completion_tokens": 43,
+        "prompt_tokens": 293,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 336,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014733",
+      "cost_cny": "0.00010845",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1311,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "44cc6ff229f513c0f6ed5f4debc4d47e704c3fe354e432387e2e039cd5990ced",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "98077056e9b3c70b9ae4fa14ec2b08231d029bc5eb98984af4af70b3c583b88f",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "d3366f5ab4c50800e08162e8cb76826588f413c96cd4084718a6ab71331b9a6f",
+        "frozen_allowed_citation_ids_sha256": "816e05824ddb6ac85cab67feb2acb78dfb5ee18fe5a4f3cbc9c9449d32938941"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0014",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": [
+          "mem_1_agent_0014"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0014",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice",
+          "mem_1_agent_0014"
+        ],
+        "reason": "The service interruption is acknowledged; no immediate action required per current information."
+      },
+      "usage": {
+        "completion_tokens": 70,
+        "prompt_tokens": 293,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 363,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014742",
+      "cost_cny": "0.00014895",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1316,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "05931bf59e05e7ea3a04550b57dc8860bfbc04e3405caceb422515416cf7cd4c",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "2ceaec49cc691856d26ffc2b16947fc5ba96dc852dd317d374ddb52e02133883",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "1f0b59465e09003ac8c5e63d45be465ebd75b06ec42ef4f736bd242ac58b2863",
+        "frozen_allowed_citation_ids_sha256": "a388d43ada88e0d7fa61db5d6224c6a78bbc00cbc2a78f6f49b35ea70d871c33"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0015",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": [
+          "mem_1_agent_0015"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0015",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice",
+          "mem_1_agent_0015"
+        ],
+        "reason": "Reviewing service notice to assess community impact."
+      },
+      "usage": {
+        "completion_tokens": 60,
+        "prompt_tokens": 295,
+        "prompt_tokens_details": {
+          "cached_tokens": 256
+        },
+        "total_tokens": 355,
+        "cached_input_tokens": 256
+      },
+      "requested_model": "qwen-turbo",
+      "actual_model": "qwen-turbo",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0022758",
+      "cost_cny": "0.00006306",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1314,
+        "max_output_tokens": 160,
+        "prepared_payload_canonical_json_sha256": "8cdc56e39ae27324573e1a5a448f73b370cfca2b44e5ff56cf9bcd77e8bac8c4",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "17538886e08f414090eae189532d4705ff2d679eed44d5eceabb68d6b6558f55",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "5fa1bb16f2177810d10792d430c7dd4a9732673f988e5b5c580f5a2187942c0e",
+        "frozen_allowed_citation_ids_sha256": "c5dbd7f43b2d70cc6fb753e069a9a31252ea2e30a658bbb67dc0272a0bb86a64"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0016",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": [
+          "mem_1_agent_0016"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0016",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice",
+          "mem_1_agent_0016"
+        ],
+        "reason": "Agent is informed of a service disruption and chooses to observe the situation."
+      },
+      "usage": {
+        "completion_tokens": 65,
+        "prompt_tokens": 296,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 361,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-turbo",
+      "actual_model": "qwen-turbo",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0022761",
+      "cost_cny": "0.0001278",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1320,
+        "max_output_tokens": 160,
+        "prepared_payload_canonical_json_sha256": "7e14c99668c18b03cf36cf63c3c762b55d14a75408ceba69ce5d069dccb6338d",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "5b0810233bdf1cd373bd711bb5534e55622e459a455752e4c8e25082a2e534a8",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "02e7fbbbb76fb1cb8a7c170f0609943bcc9347db98f054982dc8143dc574b2e1",
+        "frozen_allowed_citation_ids_sha256": "92311e0ee37525fbad5a003154293f9ac82cebe04d7078afecdd36f36aa5d02c"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0017",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": [
+          "mem_1_agent_0017"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0017",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice",
+          "mem_1_agent_0017"
+        ],
+        "reason": "Awaiting further details on the service interruption before taking action."
+      },
+      "usage": {
+        "completion_tokens": 68,
+        "prompt_tokens": 291,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 359,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014736",
+      "cost_cny": "0.00014565",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1314,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "098acfc09994e707836b7050b38eeb834f7b13803c83925c414a7da2a6aba391",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "a71799ae3180015b59abb9d4d06f5137aab7a48e7aae3d7c1fe3b937111462bb",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "8348df818278717ef37659dd8d0ebfb2cf46113611799f949a3de714578d42e8",
+        "frozen_allowed_citation_ids_sha256": "469b73b9f92d6ce9b8bec6409ec9065a42b86abb4bdca7895e3cb5695a268db6"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0018",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": [
+          "mem_1_agent_0018"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0018",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "The service interruption is reported, but no further details are available yet."
+      },
+      "usage": {
+        "completion_tokens": 58,
+        "prompt_tokens": 293,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 351,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014733",
+      "cost_cny": "0.00013095",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1316,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "79dc22ffacc176abb220e30cd701b3db3c4f68be299c7204cf33fb40d9b76789",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "8afd3c55b52a5d2f8724c3975551be1164902c25b552af9ed9cf1444d77eb3e9",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "bb29e9bc4593e3cbb95a6aba2ff4bb5b125fb0f390acb0ffa8138ee5aa0cbb77",
+        "frozen_allowed_citation_ids_sha256": "c8358561bfbe3479a50b4ee08cb5f41a2557a8c0da2a5d44cbbed51d422ad19a"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0019",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": [
+          "mem_1_agent_0019"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0019",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice",
+          "mem_1_agent_0019"
+        ],
+        "reason": "The service interruption is acknowledged, and no immediate action is required per current information."
+      },
+      "usage": {
+        "completion_tokens": 72,
+        "prompt_tokens": 294,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 366,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014742",
+      "cost_cny": "0.0001521",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1317,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "8586fbe4c6b6d212c92e62148da0e0336083342e67bf825def08aceecdc0dda5",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "5b708ae4352a9eedda5867dc55cbef3246ec2cdc81849066c1c4226b97689b67",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "9c33bac879e1d6a845691fc95accb83231cc38b4f19e5c97e246117bab025c43",
+        "frozen_allowed_citation_ids_sha256": "9c9293c6100aa25aba39aaa3a701c41a6a5734406f2bc29acd0fe79669a43853"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0020",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": [
+          "mem_1_agent_0020"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0020",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice",
+          "mem_1_agent_0020"
+        ],
+        "reason": "Agent reviews service notice and prior observation to assess impact."
+      },
+      "usage": {
+        "completion_tokens": 62,
+        "prompt_tokens": 297,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 359,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-turbo",
+      "actual_model": "qwen-turbo",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0022758",
+      "cost_cny": "0.0001263",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1327,
+        "max_output_tokens": 160,
+        "prepared_payload_canonical_json_sha256": "bf79c72526d21617d1601d5d5703e4ce327200f6f3402c6f1c29119e75c07b21",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "b265e189f8e0ec7971a76b8a0b01b4cb1d17562b7fc893296de6b9a47fd7dd0d",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "0f8b4b6a43f340c03488a456083f2edfd8f96b246ffe83286e2bbf998c9a1dbb",
+        "frozen_allowed_citation_ids_sha256": "9e70215a7a7512b5088a2a04f969525bc2bda37f51b09c4c5c31470c0f8e6b21"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0021",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": [
+          "mem_1_agent_0021"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0021",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice",
+          "mem_1_agent_0021"
+        ],
+        "reason": "Agent needs to stay informed about service issues affecting their experience."
+      },
+      "usage": {
+        "completion_tokens": 63,
+        "prompt_tokens": 296,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 359,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-turbo",
+      "actual_model": "qwen-turbo",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0022761",
+      "cost_cny": "0.0001266",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1327,
+        "max_output_tokens": 160,
+        "prepared_payload_canonical_json_sha256": "64b2d9fe869cb3c640d35f7fec4f5f7f8fac610812d551ab5ed74aeff075f47a",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "b4853fb2f156a242a2f1842c837c6be6a7188e003613ffeb8b28fc3d893a77b3",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "b74554fa687abc589b5282260fdf42d8e046f336f46d2055774f811111114ad8",
+        "frozen_allowed_citation_ids_sha256": "65eef6f7805b358b19e7c927bf7312020d42c609e7f1d3bbbba01cbd205b5087"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0022",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [],
+        "memories": [
+          "mem_1_agent_0022"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0022",
+        "action": "share",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "The service interruption is relevant to public awareness; sharing ensures timely dissemination of the fictional test service notice."
+      },
+      "usage": {
+        "completion_tokens": 64,
+        "prompt_tokens": 297,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 361,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014736",
+      "cost_cny": "0.00014055",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1352,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "faf323147dd92522f5db01619c33b02dc1c5774a51ffafcde2ea4a2226b81d12",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "85be0574cd89509d763840e08f27b00ab0c6855fe43f1876bb2222cbda263f90",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "frozen_own_simulated_memory_sha256": "1fc6b2d52470b3133e27f6ce2ddc238bad761ca964396b0b36527ad455fee718",
+        "frozen_allowed_citation_ids_sha256": "74a615b7f52405134ffce306a2b988f32b1c250cf251225c8bb0add34ff4aaf4"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0023",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [
+          "msg_1_agent_0022_agent_0023"
+        ],
+        "memories": [
+          "mem_1_agent_0023"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0023",
+        "action": "comment",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "The service interruption is confirmed; sharing context helps maintain public awareness and trust."
+      },
+      "usage": {
+        "completion_tokens": 55,
+        "prompt_tokens": 374,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 429,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014733",
+      "cost_cny": "0.0001386",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1621,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "675597c77e84b68f5522a66fe6da4bb1dbdef01fe0b507206783529df88a7236",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "9f2a813aeb8908485029568b770daebc4ddcbd3a766dc740a8eb158330baf2da",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "4564594aefe89ab07e16a1b78868561ddbbb5256764b488d87323628a01664ca",
+        "frozen_own_simulated_memory_sha256": "9c569881e4f230f9f49658b63f152e8f9d6d64d3b9b175d35b2c00fd46e54f41",
+        "frozen_allowed_citation_ids_sha256": "2bfc8c26061f21000977392e1000bdc0cb254f3a51add7913cfcc3e72dc2b7d6"
+      },
+      "schema_diagnostics": null
+    },
+    {
+      "round": 2,
+      "agent_id": "agent_0024",
+      "status": "valid",
+      "observation_refs": {
+        "evidence": [
+          "fictional-service-notice"
+        ],
+        "messages": [
+          "msg_1_agent_0022_agent_0024"
+        ],
+        "memories": [
+          "mem_1_agent_0024"
+        ]
+      },
+      "decision": {
+        "agent_id": "agent_0024",
+        "action": "observe",
+        "evidence_ids": [
+          "fictional-service-notice"
+        ],
+        "reason": "The service interruption is reported; monitoring for updates is appropriate before taking action."
+      },
+      "usage": {
+        "completion_tokens": 59,
+        "prompt_tokens": 376,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 435,
+        "cached_input_tokens": 0
+      },
+      "requested_model": "qwen-flash",
+      "actual_model": "qwen-flash",
+      "price_version": "official-docs-2026-10-06-beijing",
+      "reserved_cny": "0.0014742",
+      "cost_cny": "0.0001449",
+      "error": null,
+      "request_audit": {
+        "stage": "prepared_for_dispatch",
+        "hash_basis": "canonical_json_sorted_keys_utf8_of_prepared_payload_object",
+        "adapter_version": "day3-bailian-synthetic-v4",
+        "input_upper_bound_tokens": 1647,
+        "max_output_tokens": 256,
+        "prepared_payload_canonical_json_sha256": "7a818599a22f0939eb53c3ebdba33ccfa0206ccc060e609e9ae7e03ec090b83f",
+        "prompt_sha256": "4a140a50b3036a7c82e978d6d4c030ab18d374159b457568c733de08591694f2",
+        "frozen_local_state_sha256": "11da130ab9784c54fa046909da6b2b8c2d566ad6c5480f50bd988cef3863f344",
+        "frozen_fictional_evidence_sha256": "a27e9d4613b1c265164832ae9992cd9e0310ecd271768ef39017a35fb561dc8f",
+        "frozen_received_simulated_messages_sha256": "77c598c139da8a67be7d9fc4f8e25f6c15be6813bb1d44e64fe9978617344bb1",
+        "frozen_own_simulated_memory_sha256": "2bde72af1a866db30d7a379bb7f9e13823d5bad7298c0605fd4eb61a4e4c873b",
+        "frozen_allowed_citation_ids_sha256": "8f50481eaa1f576eebf4aa7908ec39594f85d78c06e65ac80d55d082176f3f2a"
+      },
+      "schema_diagnostics": null
+    }
+  ],
+  "messages": [
+    {
+      "message_id": "msg_1_agent_0022_agent_0002",
+      "round": 1,
+      "sender_id": "agent_0022",
+      "recipient_id": "agent_0002",
+      "action": "share",
+      "evidence_ids": [
+        "fictional-service-notice"
+      ],
+      "content_sha256": "71cef1bcd6d306bf8ac59bebce40e5d80f5381f2e5f558787e8507ef56e7a40d"
+    },
+    {
+      "message_id": "msg_1_agent_0022_agent_0023",
+      "round": 1,
+      "sender_id": "agent_0022",
+      "recipient_id": "agent_0023",
+      "action": "share",
+      "evidence_ids": [
+        "fictional-service-notice"
+      ],
+      "content_sha256": "71cef1bcd6d306bf8ac59bebce40e5d80f5381f2e5f558787e8507ef56e7a40d"
+    },
+    {
+      "message_id": "msg_1_agent_0022_agent_0024",
+      "round": 1,
+      "sender_id": "agent_0022",
+      "recipient_id": "agent_0024",
+      "action": "share",
+      "evidence_ids": [
+        "fictional-service-notice"
+      ],
+      "content_sha256": "71cef1bcd6d306bf8ac59bebce40e5d80f5381f2e5f558787e8507ef56e7a40d"
+    },
+    {
+      "message_id": "msg_2_agent_0002_agent_0003",
+      "round": 2,
+      "sender_id": "agent_0002",
+      "recipient_id": "agent_0003",
+      "action": "share",
+      "evidence_ids": [
+        "fictional-service-notice"
+      ],
+      "content_sha256": "71cef1bcd6d306bf8ac59bebce40e5d80f5381f2e5f558787e8507ef56e7a40d"
+    },
+    {
+      "message_id": "msg_2_agent_0002_agent_0004",
+      "round": 2,
+      "sender_id": "agent_0002",
+      "recipient_id": "agent_0004",
+      "action": "share",
+      "evidence_ids": [
+        "fictional-service-notice"
+      ],
+      "content_sha256": "71cef1bcd6d306bf8ac59bebce40e5d80f5381f2e5f558787e8507ef56e7a40d"
+    },
+    {
+      "message_id": "msg_2_agent_0002_agent_0007",
+      "round": 2,
+      "sender_id": "agent_0002",
+      "recipient_id": "agent_0007",
+      "action": "share",
+      "evidence_ids": [
+        "fictional-service-notice"
+      ],
+      "content_sha256": "71cef1bcd6d306bf8ac59bebce40e5d80f5381f2e5f558787e8507ef56e7a40d"
+    },
+    {
+      "message_id": "msg_2_agent_0022_agent_0002",
+      "round": 2,
+      "sender_id": "agent_0022",
+      "recipient_id": "agent_0002",
+      "action": "share",
+      "evidence_ids": [
+        "fictional-service-notice"
+      ],
+      "content_sha256": "c4d5f09b9f53269496a01ee81e5a6f092b4814b881ebba25ec67724781383f6a"
+    },
+    {
+      "message_id": "msg_2_agent_0022_agent_0023",
+      "round": 2,
+      "sender_id": "agent_0022",
+      "recipient_id": "agent_0023",
+      "action": "share",
+      "evidence_ids": [
+        "fictional-service-notice"
+      ],
+      "content_sha256": "c4d5f09b9f53269496a01ee81e5a6f092b4814b881ebba25ec67724781383f6a"
+    },
+    {
+      "message_id": "msg_2_agent_0022_agent_0024",
+      "round": 2,
+      "sender_id": "agent_0022",
+      "recipient_id": "agent_0024",
+      "action": "share",
+      "evidence_ids": [
+        "fictional-service-notice"
+      ],
+      "content_sha256": "c4d5f09b9f53269496a01ee81e5a6f092b4814b881ebba25ec67724781383f6a"
+    },
+    {
+      "message_id": "msg_2_agent_0023_agent_0000",
+      "round": 2,
+      "sender_id": "agent_0023",
+      "recipient_id": "agent_0000",
+      "action": "comment",
+      "evidence_ids": [
+        "fictional-service-notice"
+      ],
+      "content_sha256": "83cc19bd6df7bc6df69883d114c8901756be79037ba534e7ad3400a8808bce88"
+    },
+    {
+      "message_id": "msg_2_agent_0023_agent_0003",
+      "round": 2,
+      "sender_id": "agent_0023",
+      "recipient_id": "agent_0003",
+      "action": "comment",
+      "evidence_ids": [
+        "fictional-service-notice"
+      ],
+      "content_sha256": "83cc19bd6df7bc6df69883d114c8901756be79037ba534e7ad3400a8808bce88"
+    },
+    {
+      "message_id": "msg_2_agent_0023_agent_0024",
+      "round": 2,
+      "sender_id": "agent_0023",
+      "recipient_id": "agent_0024",
+      "action": "comment",
+      "evidence_ids": [
+        "fictional-service-notice"
+      ],
+      "content_sha256": "83cc19bd6df7bc6df69883d114c8901756be79037ba534e7ad3400a8808bce88"
+    }
+  ],
+  "limitations": [
+    "Estimated task cost is not the provider's final bill.",
+    "A complete run status alone does not prove all decisions were valid.",
+    "This synthetic run is not G3 acceptance evidence unless its separately approved scope satisfies every G3 criterion."
+  ]
+}

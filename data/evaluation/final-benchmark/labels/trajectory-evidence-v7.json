@@ -1,0 +1,391 @@
+{
+  "schema": "riskshield.final_benchmark.trajectory_evidence.v7",
+  "dataset_version": "final-benchmark-evidence-pilot-v7-2026-10-08",
+  "formal_protocol_status": "pending_main_agent_freeze",
+  "window_for_evidence_organization_only": {
+    "method": "Seven complete UTC calendar days before and after the cutoff UTC date; exclude entire cutoff date D0.",
+    "status": "Internal proposal v6, not approved.",
+    "note": "This v7 record follows the v6 D0-exclusion proposal. It supplements but does not overwrite the immutable v5 exact-cutoff windows.",
+    "windows": {
+      "fnf_cyberattack_20231123": {
+        "baseline": [
+          "2023-11-16T00:00:00Z",
+          "2023-11-23T00:00:00Z"
+        ],
+        "observation": [
+          "2023-11-24T00:00:00Z",
+          "2023-12-01T00:00:00Z"
+        ]
+      },
+      "bcbs_louisiana_elevance_sale_20240206": {
+        "baseline": [
+          "2024-01-30T00:00:00Z",
+          "2024-02-06T00:00:00Z"
+        ],
+        "observation": [
+          "2024-02-07T00:00:00Z",
+          "2024-02-14T00:00:00Z"
+        ]
+      },
+      "aflac_cybersecurity_incident_20250620": {
+        "baseline": [
+          "2025-06-13T00:00:00Z",
+          "2025-06-20T00:00:00Z"
+        ],
+        "observation": [
+          "2025-06-21T00:00:00Z",
+          "2025-06-28T00:00:00Z"
+        ]
+      }
+    }
+  },
+  "retrieval": {
+    "source": "PullPush archived Reddit search API",
+    "documentation_url": "https://pullpush.io/",
+    "endpoints": [
+      "https://api.pullpush.io/reddit/search/submission/",
+      "https://api.pullpush.io/reddit/search/comment/"
+    ],
+    "retrieved_at_utc": [
+      "2026-10-08T09:44:14.1400706Z",
+      "2026-10-08T09:44:28.1626118Z"
+    ],
+    "query_parameters": "q fixed per event; after and before set to UTC half-open window bounds; size=1000; sort_type=created_utc; sort=desc.",
+    "deduplication": "Deduplicated within each query/window by public submission/comment ID. FNF baseline duplicate submission row was removed.",
+    "retention": "Only aggregate per-UTC-day counts and query/window metadata retained. No author names, raw text, comment bodies, profile data or user IDs were retained.",
+    "coverage_limit": "No query reached the requested 1000-row cap, but this does not establish archive completeness or query recall. Counts are not a census of Reddit or public opinion."
+  },
+  "label_separation": "All post-cutoff records and measures are score-side only. They are absent from qualified-inputs-v6.json and may not enter Store, graph, memory, prompts or predictor context.",
+  "events": [
+    {
+      "event_id": "fnf_cyberattack_20231123",
+      "split": "holdout",
+      "cutoff": "2023-11-23T14:29:55Z",
+      "identity": "One FNF cybersecurity incident; SEC, Reddit, forum and news records are deduplicated under one event.",
+      "prior_records": "data/evaluation/final-benchmark/labels/trajectory-evidence-v5.json#/events/0",
+      "baseline": [
+        {
+          "metric": "reddit_submissions",
+          "source": "PullPush archived Reddit submissions search",
+          "query": "Fidelity National Financial",
+          "start_utc": "2023-11-16T00:00:00Z",
+          "end_exclusive_utc": "2023-11-23T00:00:00Z",
+          "api_rows": 9,
+          "unique_items": 8,
+          "duplicate_rows_removed": 1,
+          "days_with_results": 2,
+          "daily_utc_counts": [
+            {
+              "date": "2023-11-20",
+              "count": 1
+            },
+            {
+              "date": "2023-11-22",
+              "count": 7
+            }
+          ],
+          "result_cap_1000_reached": false,
+          "coverage_note": "Archive query only; no completeness or query-recall guarantee."
+        },
+        {
+          "metric": "reddit_comments",
+          "source": "PullPush archived Reddit comments search",
+          "query": "Fidelity National Financial",
+          "start_utc": "2023-11-16T00:00:00Z",
+          "end_exclusive_utc": "2023-11-23T00:00:00Z",
+          "api_rows": 4,
+          "unique_items": 4,
+          "duplicate_rows_removed": 0,
+          "days_with_results": 3,
+          "daily_utc_counts": [
+            {
+              "date": "2023-11-20",
+              "count": 2
+            },
+            {
+              "date": "2023-11-21",
+              "count": 1
+            },
+            {
+              "date": "2023-11-22",
+              "count": 1
+            }
+          ],
+          "result_cap_1000_reached": false,
+          "coverage_note": "Archive query only; no completeness or query-recall guarantee."
+        }
+      ],
+      "observation": [
+        {
+          "metric": "reddit_submissions",
+          "source": "PullPush archived Reddit submissions search",
+          "query": "Fidelity National Financial",
+          "start_utc": "2023-11-24T00:00:00Z",
+          "end_exclusive_utc": "2023-12-01T00:00:00Z",
+          "api_rows": 15,
+          "unique_items": 15,
+          "duplicate_rows_removed": 0,
+          "days_with_results": 5,
+          "daily_utc_counts": [
+            {
+              "date": "2023-11-24",
+              "count": 2
+            },
+            {
+              "date": "2023-11-25",
+              "count": 1
+            },
+            {
+              "date": "2023-11-27",
+              "count": 6
+            },
+            {
+              "date": "2023-11-29",
+              "count": 2
+            },
+            {
+              "date": "2023-11-30",
+              "count": 4
+            }
+          ],
+          "result_cap_1000_reached": false,
+          "coverage_note": "Archive query only; no completeness or query-recall guarantee."
+        },
+        {
+          "metric": "reddit_comments",
+          "source": "PullPush archived Reddit comments search",
+          "query": "Fidelity National Financial",
+          "start_utc": "2023-11-24T00:00:00Z",
+          "end_exclusive_utc": "2023-12-01T00:00:00Z",
+          "api_rows": 44,
+          "unique_items": 44,
+          "duplicate_rows_removed": 0,
+          "days_with_results": 4,
+          "daily_utc_counts": [
+            {
+              "date": "2023-11-27",
+              "count": 8
+            },
+            {
+              "date": "2023-11-28",
+              "count": 20
+            },
+            {
+              "date": "2023-11-29",
+              "count": 9
+            },
+            {
+              "date": "2023-11-30",
+              "count": 7
+            }
+          ],
+          "result_cap_1000_reached": false,
+          "coverage_note": "Archive query only; no completeness or query-recall guarantee."
+        }
+      ],
+      "descriptive_ratios": {
+        "submissions": 1.875,
+        "comments": 11.0
+      },
+      "limitation": "Counts rose in this archive query, but baseline covers only 2/7 submission days and 3/7 comment days; observation covers 5/7 and 4/7. Archive completeness and query recall are unknown. No sentiment inference.",
+      "direction_label": "unknown",
+      "trend_evidence_sufficient": false,
+      "formal_trajectory_eligible": false
+    },
+    {
+      "event_id": "bcbs_louisiana_elevance_sale_20240206",
+      "split": "holdout_candidate",
+      "cutoff": "2024-02-06T23:08:11Z",
+      "identity": "One Louisiana BCBS–Elevance transaction controversy; hearings, posts, reports and later pause count once.",
+      "prior_records": "data/evaluation/final-benchmark/labels/trajectory-evidence-v5.json#/events/1",
+      "baseline": [
+        {
+          "metric": "reddit_submissions",
+          "source": "PullPush archived Reddit submissions search",
+          "query": "Blue Cross Louisiana Elevance",
+          "start_utc": "2024-01-30T00:00:00Z",
+          "end_exclusive_utc": "2024-02-06T00:00:00Z",
+          "api_rows": 1,
+          "unique_items": 1,
+          "duplicate_rows_removed": 0,
+          "days_with_results": 1,
+          "daily_utc_counts": [
+            {
+              "date": "2024-02-04",
+              "count": 1
+            }
+          ],
+          "result_cap_1000_reached": false,
+          "coverage_note": "Archive query only; no completeness or query-recall guarantee."
+        },
+        {
+          "metric": "reddit_comments",
+          "source": "PullPush archived Reddit comments search",
+          "query": "Blue Cross Louisiana Elevance",
+          "start_utc": "2024-01-30T00:00:00Z",
+          "end_exclusive_utc": "2024-02-06T00:00:00Z",
+          "api_rows": 0,
+          "unique_items": 0,
+          "duplicate_rows_removed": 0,
+          "days_with_results": 0,
+          "daily_utc_counts": [],
+          "result_cap_1000_reached": false,
+          "coverage_note": "Archive query only; no completeness or query-recall guarantee."
+        }
+      ],
+      "observation": [
+        {
+          "metric": "reddit_submissions",
+          "source": "PullPush archived Reddit submissions search",
+          "query": "Blue Cross Louisiana Elevance",
+          "start_utc": "2024-02-07T00:00:00Z",
+          "end_exclusive_utc": "2024-02-14T00:00:00Z",
+          "api_rows": 3,
+          "unique_items": 3,
+          "duplicate_rows_removed": 0,
+          "days_with_results": 2,
+          "daily_utc_counts": [
+            {
+              "date": "2024-02-07",
+              "count": 2
+            },
+            {
+              "date": "2024-02-09",
+              "count": 1
+            }
+          ],
+          "result_cap_1000_reached": false,
+          "coverage_note": "Archive query only; no completeness or query-recall guarantee."
+        },
+        {
+          "metric": "reddit_comments",
+          "source": "PullPush archived Reddit comments search",
+          "query": "Blue Cross Louisiana Elevance",
+          "start_utc": "2024-02-07T00:00:00Z",
+          "end_exclusive_utc": "2024-02-14T00:00:00Z",
+          "api_rows": 0,
+          "unique_items": 0,
+          "duplicate_rows_removed": 0,
+          "days_with_results": 0,
+          "daily_utc_counts": [],
+          "result_cap_1000_reached": false,
+          "coverage_note": "Archive query only; no completeness or query-recall guarantee."
+        }
+      ],
+      "descriptive_ratios": {
+        "submissions": 3.0,
+        "comments": null
+      },
+      "limitation": "One versus three matching submissions, zero matching comments in both windows, AP historical bytes not retained, and unknown archive completeness do not support a direction.",
+      "direction_label": "unknown",
+      "trend_evidence_sufficient": false,
+      "formal_trajectory_eligible": false
+    },
+    {
+      "event_id": "aflac_cybersecurity_incident_20250620",
+      "split": "holdout",
+      "cutoff": "2025-06-20T13:16:30Z",
+      "identity": "One Aflac June 2025 incident, separate from Allianz Life.",
+      "prior_records": "data/evaluation/final-benchmark/labels/trajectory-evidence-v4.json#/events/2",
+      "baseline": [
+        {
+          "metric": "reddit_submissions",
+          "source": "PullPush archived Reddit submissions search",
+          "query": "Aflac cybersecurity",
+          "start_utc": "2025-06-13T00:00:00Z",
+          "end_exclusive_utc": "2025-06-20T00:00:00Z",
+          "api_rows": 0,
+          "unique_items": 0,
+          "duplicate_rows_removed": 0,
+          "days_with_results": 0,
+          "daily_utc_counts": [],
+          "result_cap_1000_reached": false,
+          "coverage_note": "Archive query only; no completeness or query-recall guarantee."
+        },
+        {
+          "metric": "reddit_comments",
+          "source": "PullPush archived Reddit comments search",
+          "query": "Aflac cybersecurity",
+          "start_utc": "2025-06-13T00:00:00Z",
+          "end_exclusive_utc": "2025-06-20T00:00:00Z",
+          "api_rows": 0,
+          "unique_items": 0,
+          "duplicate_rows_removed": 0,
+          "days_with_results": 0,
+          "daily_utc_counts": [],
+          "result_cap_1000_reached": false,
+          "coverage_note": "Archive query only; no completeness or query-recall guarantee."
+        }
+      ],
+      "observation": [
+        {
+          "metric": "reddit_submissions",
+          "source": "PullPush archived Reddit submissions search",
+          "query": "Aflac cybersecurity",
+          "start_utc": "2025-06-21T00:00:00Z",
+          "end_exclusive_utc": "2025-06-28T00:00:00Z",
+          "api_rows": 8,
+          "unique_items": 8,
+          "duplicate_rows_removed": 0,
+          "days_with_results": 4,
+          "daily_utc_counts": [
+            {
+              "date": "2025-06-21",
+              "count": 4
+            },
+            {
+              "date": "2025-06-23",
+              "count": 1
+            },
+            {
+              "date": "2025-06-24",
+              "count": 1
+            },
+            {
+              "date": "2025-06-27",
+              "count": 2
+            }
+          ],
+          "result_cap_1000_reached": false,
+          "coverage_note": "Archive query only; no completeness or query-recall guarantee."
+        },
+        {
+          "metric": "reddit_comments",
+          "source": "PullPush archived Reddit comments search",
+          "query": "Aflac cybersecurity",
+          "start_utc": "2025-06-21T00:00:00Z",
+          "end_exclusive_utc": "2025-06-28T00:00:00Z",
+          "api_rows": 1,
+          "unique_items": 1,
+          "duplicate_rows_removed": 0,
+          "days_with_results": 1,
+          "daily_utc_counts": [
+            {
+              "date": "2025-06-24",
+              "count": 1
+            }
+          ],
+          "result_cap_1000_reached": false,
+          "coverage_note": "Archive query only; no completeness or query-recall guarantee."
+        }
+      ],
+      "descriptive_ratios": {
+        "submissions": null,
+        "comments": null
+      },
+      "limitation": "Zero pre-event archive results do not prove no discussion. Observation covers 4/7 submission days and 1/7 comment days; archive completeness unknown.",
+      "direction_label": "unknown",
+      "trend_evidence_sufficient": false,
+      "formal_trajectory_eligible": false
+    }
+  ],
+  "statistics": {
+    "distinct_event_identities_with_same_archive_pre_post_queries": 3,
+    "per_metric_series_captured": 6,
+    "events_with_sufficient_comparable_trajectory_evidence": 0,
+    "trajectory_labels_assigned": 0,
+    "unknown_events_pending_protocol_and_coverage": 3,
+    "independent_human_trend_labels_completed": 0,
+    "formal_scoring_ready_events": 0
+  }
+}

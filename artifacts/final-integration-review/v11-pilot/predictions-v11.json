@@ -1,0 +1,18 @@
+{
+  "dataset_version": "final-benchmark-candidate-evidence-v11-2026-10-08",
+  "execution_mode": "offline_constant_escalation_baseline_v1",
+  "input_path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v11.json",
+  "input_sha256": "55755aeadedc06497a819667c8721fd93950c9c9f5f9a3a2ec1d18cadd590490",
+  "predictions": [
+    {
+      "case_id": "unitedhealth_algorithm_care_lawsuit_20231115_v11",
+      "direction": "escalation",
+      "event_id": "unitedhealth_algorithm_care_lawsuit_20231115",
+      "execution_mode": "offline_constant_escalation_baseline_v1",
+      "qualification": "engineering_baseline_only_not_formal_forecast",
+      "sentiment": null,
+      "split": "holdout_candidate"
+    }
+  ],
+  "schema": "riskshield.final_benchmark.predictions.v11"
+}

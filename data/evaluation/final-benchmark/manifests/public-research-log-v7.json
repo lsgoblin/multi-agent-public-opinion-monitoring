@@ -1,0 +1,69 @@
+{
+  "schema": "riskshield.final_benchmark.public_research_log.v7",
+  "dataset_version": "final-benchmark-evidence-pilot-v7-2026-10-08",
+  "captured_at_utc": "2026-10-08T09:44:28.1626118Z",
+  "prior_log": "data/evaluation/final-benchmark/manifests/public-research-log-v6.json",
+  "scope": "Authorized public-source review for local benchmark preparation. No paid models, account login, access bypass, external transfer or notifications.",
+  "entries": [
+    {
+      "source": "U.S. SEC EDGAR, Aflac original Form 8-K",
+      "url": "https://www.sec.gov/Archives/edgar/data/4977/000000497725000128/0000004977-25-000128.txt",
+      "document_url": "https://www.sec.gov/Archives/edgar/data/4977/000000497725000128/afl-20250620.htm",
+      "version": "Accession 0000004977-25-000128, original 8-K",
+      "time_evidence": "SEC header ACCEPTANCE-DATETIME 20250620080113 EDT = 2025-06-20T12:01:13Z; cutoff 2025-06-20T13:16:30Z.",
+      "finding": "The original filing gives pre-cutoff detail on detection, containment, early review, unknown affected-person count, potentially affected data categories and planned notices/support.",
+      "use": "Added only as a cutoff summary to qualified-inputs-v6.json. No later result included."
+    },
+    {
+      "source": "PullPush archived Reddit search API",
+      "documentation_url": "https://pullpush.io/",
+      "api_endpoints": [
+        "https://api.pullpush.io/reddit/search/submission/",
+        "https://api.pullpush.io/reddit/search/comment/"
+      ],
+      "retrieved_at_utc": [
+        "2026-10-08T09:44:14.1400706Z",
+        "2026-10-08T09:44:28.1626118Z"
+      ],
+      "fixed_queries": [
+        {
+          "event_id": "fnf_cyberattack_20231123",
+          "q": "Fidelity National Financial"
+        },
+        {
+          "event_id": "bcbs_louisiana_elevance_sale_20240206",
+          "q": "Blue Cross Louisiana Elevance"
+        },
+        {
+          "event_id": "aflac_cybersecurity_incident_20250620",
+          "q": "Aflac cybersecurity"
+        }
+      ],
+      "window_rule": "Seven full UTC dates before and after D0, excluding D0; internal proposal v6 only.",
+      "finding": "Daily unique submission/comment counts are in trajectory-evidence-v7.json. No query reached requested size 1000; FNF baseline duplicate submission row deduplicated by ID.",
+      "limit": "Archive search is not Reddit's official API or complete platform census. Query recall and historical capture completeness are unknown. No raw text, usernames, profile data or user IDs retained.",
+      "admission": "Descriptive source-specific proxy only; no trend label."
+    },
+    {
+      "source": "Bluesky public AppView search API",
+      "url": "https://public.api.bsky.app/xrpc/app.bsky.feed.searchPosts",
+      "attempted_query": "Aflac cyberattack; 2025-06-13T00:00:00Z through 2025-06-20T00:00:00Z",
+      "retrieval_time_utc": "2026-10-08",
+      "access_result": "HTTP 403 Forbidden. No retry or alternate access path used.",
+      "admission": "No data retained; access failure does not show absence of discussion."
+    },
+    {
+      "source": "Stanford Cable TV News Analyzer",
+      "url": "https://tvnews.stanford.edu/",
+      "access_result": "The query page returned ERR_CERT_DATE_INVALID in browser. No certificate warning was bypassed and no event measurements retained.",
+      "admission": "No event-specific values; v6 log records published dataset scope."
+    },
+    {
+      "source": "Internet Archive TV News Archive search page",
+      "url": "https://archive.org/details/tv?query=Fidelity+National+Financial",
+      "access_result": "Public page shell loaded but no server-rendered query results were available locally; browser query did not yield a verifiable result page.",
+      "admission": "No event counts retained."
+    }
+  ],
+  "constraints": "Post-cutoff evidence remains score-side only. Proxy counts and retrieval failures are not full public opinion, sentiment or proof of calm."
+}

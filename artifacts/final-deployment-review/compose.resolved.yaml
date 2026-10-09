@@ -1,0 +1,122 @@
+name: riskshieldagentd
+services:
+  api:
+    build:
+      context: D:\test\多智能体仿真舆情监测与投诉预警
+      dockerfile: Dockerfile
+    command:
+      - uvicorn
+      - riskshield.api:create_app
+      - --factory
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+    environment:
+      RISKSHIELD_DB: /app/runtime/riskshield.db
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)
+      timeout: 3s
+      interval: 10s
+      retries: 5
+    image: riskshield:day4-local
+    networks:
+      default: null
+    volumes:
+      - type: bind
+        source: D:\test\多智能体仿真舆情监测与投诉预警\artifacts\final-deployment-review\runtime
+        target: /app/runtime
+  local_gateway:
+    command:
+      - python
+      - -u
+      - -c
+      - |
+        import asyncio
+        from functools import partial
+
+        async def pipe(source, destination):
+            while chunk := await source.read(65536):
+                destination.write(chunk)
+                await destination.drain()
+            if destination.can_write_eof():
+                destination.write_eof()
+
+        async def relay(reader, writer, target):
+            upstream = None
+            try:
+                upstream_reader, upstream = await asyncio.open_connection(*target)
+                await asyncio.gather(
+                    pipe(reader, upstream), pipe(upstream_reader, writer)
+                )
+            except Exception as exc:
+                print(f"Local gateway {target}: {exc}", flush=True)
+            finally:
+                writer.close()
+                if upstream is not None:
+                    upstream.close()
+
+        async def main():
+            api = await asyncio.start_server(
+                partial(relay, target=("api", 8000)), "0.0.0.0", 8000
+            )
+            web = await asyncio.start_server(
+                partial(relay, target=("web", 8501)), "0.0.0.0", 8501
+            )
+            async with api, web:
+                await asyncio.gather(api.serve_forever(), web.serve_forever())
+
+        asyncio.run(main())
+    depends_on:
+      api:
+        condition: service_healthy
+        required: true
+      web:
+        condition: service_started
+        required: true
+    image: riskshield:day4-local
+    networks:
+      default: null
+      host_ingress: null
+    ports:
+      - mode: ingress
+        host_ip: 127.0.0.1
+        target: 8000
+        published: "8000"
+        protocol: tcp
+      - mode: ingress
+        host_ip: 127.0.0.1
+        target: 8501
+        published: "8501"
+        protocol: tcp
+  web:
+    command:
+      - streamlit
+      - run
+      - ui/app.py
+      - --server.address
+      - 0.0.0.0
+      - --server.port
+      - "8501"
+      - --server.headless
+      - "true"
+    depends_on:
+      api:
+        condition: service_healthy
+        required: true
+    environment:
+      RISKSHIELD_API_URL: http://api:8000
+      STREAMLIT_BROWSER_GATHER_USAGE_STATS: "false"
+    image: riskshield:day4-local
+    networks:
+      default: null
+networks:
+  default:
+    name: riskshieldagentd_default
+    internal: true
+  host_ingress:
+    name: riskshieldagentd_host_ingress

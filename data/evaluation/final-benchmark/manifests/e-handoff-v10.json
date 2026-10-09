@@ -1,0 +1,27 @@
+{
+  "schema": "riskshield.final_benchmark.e_handoff.v10",
+  "dataset_version": "final-benchmark-e-handoff-v10-2026-10-08",
+  "base_input_version": "final-benchmark-evidence-pilot-v8-2026-10-08",
+  "dispatch_status": "sent_to_existing_Agent_E_thread; prediction result pending",
+  "dispatch_target": "agentE",
+  "predictor_execution_read_allowlist": [
+    "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json"
+  ],
+  "input_sha256": "c49df7870676303950b859729c65def50d5d0042a8ca363fb425bc53a2e2027a",
+  "input_event_count": 4,
+  "input_events": [
+    {"event_id": "fnf_cyberattack_20231123", "split": "holdout"},
+    {"event_id": "bcbs_louisiana_elevance_sale_20240206", "split": "holdout_candidate"},
+    {"event_id": "aflac_cybersecurity_incident_20250620", "split": "holdout"},
+    {"event_id": "state_farm_ca_new_business_pause_20230526", "split": "holdout_candidate"}
+  ],
+  "field_mapping_document": "data/evaluation/final-benchmark/labels/e-field-mapping-v8.md",
+  "label_files_readable_by_predictor": false,
+  "score_side_may_read_after_prediction_and_input_hash_are_sealed": [
+    "data/evaluation/final-benchmark/labels/trajectory-evidence-v8.json",
+    "data/evaluation/final-benchmark/labels/blind-sentiment-packet-v6.json"
+  ],
+  "required_action": "Run or complete the E pilot using only the allowlisted cutoff input; seal output, code/config hashes, execution mode and exact input hash before reading score-side evidence.",
+  "current_status": "waiting_for_E_prediction; formal_score_ready_events=0",
+  "note": "The v10 source screen added no input rows. Do not select v9/v10 screen or labels as predictor input."
+}

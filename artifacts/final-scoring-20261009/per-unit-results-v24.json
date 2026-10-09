@@ -1,0 +1,1095 @@
+{
+  "ai_annotations_sha256": "cc178d339607d23a65e0e166822461ad4089815d81c5d3c27ee22c15d3ac3fc6",
+  "ai_sentiment_reference_units": [
+    {
+      "ai_reference_scoreable": false,
+      "annotated_at_utc": "2026-10-08T17:01:22Z",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.82,
+      "event_id": "allianz_life_data_breach_20250727",
+      "exclusion_reasons": [
+        "no_paired_E_title_level_sentiment_prediction"
+      ],
+      "formal_human_ground_truth_eligible": false,
+      "label": "neutral",
+      "needs_review": false,
+      "prediction_exposure": true,
+      "rationale_zh": "标题以事实句报告客户个人数据在网络攻击中被盗，没有对保险公司作出赞许、指责或评价。",
+      "source_material": {
+        "path": "data/evaluation/final-benchmark/labels/verified-original-titles-v19.json",
+        "pointer": "/records/0",
+        "sha256": "54a08c3543f29bd808e74b1b1998286771a26626caf9c4f68dd7f416fe0235e2"
+      },
+      "source_record_id": "reddit_archived_post_1ma8wfj",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "split": "holdout",
+      "text_sha256": "d81c3d99897c3df77303eeab47b912b03723de1fb314766c2399ce6b481ed994",
+      "unit_id": "allianz_life_data_breach_20250727"
+    },
+    {
+      "ai_reference_scoreable": false,
+      "annotated_at_utc": "2026-10-08T17:01:22Z",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.58,
+      "event_id": "unitedhealth_algorithm_care_lawsuit_20231115",
+      "exclusion_reasons": [
+        "no_paired_E_title_level_sentiment_prediction",
+        "label_outside_frozen_three_class_metric",
+        "needs_review"
+      ],
+      "formal_human_ground_truth_eligible": false,
+      "label": "uncertain",
+      "needs_review": true,
+      "prediction_exposure": true,
+      "rationale_zh": "标题报告集体诉讼及算法拒付护理的指称；仅凭标题难以区分对公司态度与对争议事实的报道框架。",
+      "source_material": {
+        "path": "data/evaluation/final-benchmark/labels/verified-original-titles-v19.json",
+        "pointer": "/records/1",
+        "sha256": "54a08c3543f29bd808e74b1b1998286771a26626caf9c4f68dd7f416fe0235e2"
+      },
+      "source_record_id": "reddit_archived_post_17w461q",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "split": "holdout",
+      "text_sha256": "75011e1aaa47fee9c541c0140fa0d436a78e749d0434adc95218d0392055d324",
+      "unit_id": "unitedhealth_algorithm_care_lawsuit_20231115"
+    },
+    {
+      "ai_reference_scoreable": false,
+      "annotated_at_utc": "2026-10-08T17:01:22Z",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.91,
+      "event_id": "complaint_health_claim_review_20240818",
+      "exclusion_reasons": [
+        "no_paired_E_title_level_sentiment_prediction"
+      ],
+      "formal_human_ground_truth_eligible": false,
+      "label": "negative",
+      "needs_review": false,
+      "prediction_exposure": true,
+      "rationale_zh": "“Won’t Review Claim”直接表达对保险公司未审查理赔的不满。",
+      "source_material": {
+        "path": "data/evaluation/final-benchmark/labels/verified-original-titles-v19.json",
+        "pointer": "/records/2",
+        "sha256": "54a08c3543f29bd808e74b1b1998286771a26626caf9c4f68dd7f416fe0235e2"
+      },
+      "source_record_id": "reddit_archived_post_1evaapp",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "split": "holdout",
+      "text_sha256": "42e8f21d29e1ddc2a972c933c0f7c7ddd8d3dd686a903a8dfa237144c8be2e0b",
+      "unit_id": "complaint_health_claim_review_20240818"
+    },
+    {
+      "ai_reference_scoreable": false,
+      "annotated_at_utc": "2026-10-08T17:01:22Z",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.72,
+      "event_id": "complaint_home_nonrenewal_20241229",
+      "exclusion_reasons": [
+        "no_paired_E_title_level_sentiment_prediction"
+      ],
+      "formal_human_ground_truth_eligible": false,
+      "label": "neutral",
+      "needs_review": false,
+      "prediction_exposure": true,
+      "rationale_zh": "标题仅点明住房保险不续保这一主题，没有显示明确赞许或批评。",
+      "source_material": {
+        "path": "data/evaluation/final-benchmark/labels/verified-original-titles-v19.json",
+        "pointer": "/records/3",
+        "sha256": "54a08c3543f29bd808e74b1b1998286771a26626caf9c4f68dd7f416fe0235e2"
+      },
+      "source_record_id": "reddit_archived_post_1hp6wa2",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "split": "holdout",
+      "text_sha256": "5bb3b904ee696dceaedd184c0ba86cf1787aae78d3465a79bead433d2ae6ab1b",
+      "unit_id": "complaint_home_nonrenewal_20241229"
+    },
+    {
+      "ai_reference_scoreable": false,
+      "annotated_at_utc": "2026-10-08T17:01:22Z",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.57,
+      "event_id": "complaint_home_coverage_after_termination_20240430",
+      "exclusion_reasons": [
+        "no_paired_E_title_level_sentiment_prediction",
+        "label_outside_frozen_three_class_metric",
+        "needs_review"
+      ],
+      "formal_human_ground_truth_eligible": false,
+      "label": "uncertain",
+      "needs_review": true,
+      "prediction_exposure": true,
+      "rationale_zh": "“after being dropped”描述不利处境，但标题没有足够上下文判断其表达的是抱怨还是中性求助。",
+      "source_material": {
+        "path": "data/evaluation/final-benchmark/labels/verified-original-titles-v19.json",
+        "pointer": "/records/4",
+        "sha256": "54a08c3543f29bd808e74b1b1998286771a26626caf9c4f68dd7f416fe0235e2"
+      },
+      "source_record_id": "reddit_archived_post_1ch6tu5",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "split": "holdout",
+      "text_sha256": "9e9cbd5f57c0e1ae2b96ab541662f4473f84dae6a7d9ae739b835b2015a89bd6",
+      "unit_id": "complaint_home_coverage_after_termination_20240430"
+    },
+    {
+      "ai_reference_scoreable": false,
+      "annotated_at_utc": "2026-10-08T17:01:22Z",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.75,
+      "event_id": "complaint_home_nonrenewal_20231018",
+      "exclusion_reasons": [
+        "no_paired_E_title_level_sentiment_prediction"
+      ],
+      "formal_human_ground_truth_eligible": false,
+      "label": "neutral",
+      "needs_review": false,
+      "prediction_exposure": true,
+      "rationale_zh": "标题只陈述房主收到不续保通知，没有明确的评价词或责备。",
+      "source_material": {
+        "path": "data/evaluation/final-benchmark/labels/verified-original-titles-v19.json",
+        "pointer": "/records/5",
+        "sha256": "54a08c3543f29bd808e74b1b1998286771a26626caf9c4f68dd7f416fe0235e2"
+      },
+      "source_record_id": "reddit_archived_post_17acu1c",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "split": "holdout",
+      "text_sha256": "6ec1e0926d44c31833e94f93f9d57a5b1e1bb499a90013ee1cecd1b22d31ac71",
+      "unit_id": "complaint_home_nonrenewal_20231018"
+    },
+    {
+      "ai_reference_scoreable": false,
+      "annotated_at_utc": "2026-10-08T17:01:22Z",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.52,
+      "event_id": "complaint_health_claim_rejections_20241211",
+      "exclusion_reasons": [
+        "no_paired_E_title_level_sentiment_prediction",
+        "label_outside_frozen_three_class_metric",
+        "needs_review"
+      ],
+      "formal_human_ground_truth_eligible": false,
+      "label": "uncertain",
+      "needs_review": true,
+      "prediction_exposure": true,
+      "rationale_zh": "“Rejected claims”过于简短，未说明主体、语气或作者态度。",
+      "source_material": {
+        "path": "data/evaluation/final-benchmark/labels/verified-original-titles-v19.json",
+        "pointer": "/records/6",
+        "sha256": "54a08c3543f29bd808e74b1b1998286771a26626caf9c4f68dd7f416fe0235e2"
+      },
+      "source_record_id": "reddit_archived_post_1hc1bcc",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "split": "holdout",
+      "text_sha256": "3b1e504141135f06aba8681d09f7bc3d725ae57ebe6f167ae011da386431df99",
+      "unit_id": "complaint_health_claim_rejections_20241211"
+    },
+    {
+      "ai_reference_scoreable": false,
+      "annotated_at_utc": "2026-10-08T17:01:22Z",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.77,
+      "event_id": "complaint_home_nonrenewal_20240524",
+      "exclusion_reasons": [
+        "no_paired_E_title_level_sentiment_prediction"
+      ],
+      "formal_human_ground_truth_eligible": false,
+      "label": "negative",
+      "needs_review": false,
+      "prediction_exposure": true,
+      "rationale_zh": "“Just another post”带有疲惫/不满语气，并把住房保险不续保呈现为反复发生的问题。",
+      "source_material": {
+        "path": "data/evaluation/final-benchmark/labels/verified-original-titles-v19.json",
+        "pointer": "/records/7",
+        "sha256": "54a08c3543f29bd808e74b1b1998286771a26626caf9c4f68dd7f416fe0235e2"
+      },
+      "source_record_id": "reddit_archived_post_1cznbtx",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "split": "holdout",
+      "text_sha256": "71ab6b0e06c5c7b03af6a9f072f8b188529435071121ed204251578643356d90",
+      "unit_id": "complaint_home_nonrenewal_20240524"
+    },
+    {
+      "ai_reference_scoreable": false,
+      "annotated_at_utc": "2026-10-08T17:01:22Z",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.7,
+      "event_id": "complaint_home_nonrenewal_20231010",
+      "exclusion_reasons": [
+        "no_paired_E_title_level_sentiment_prediction"
+      ],
+      "formal_human_ground_truth_eligible": false,
+      "label": "neutral",
+      "needs_review": false,
+      "prediction_exposure": true,
+      "rationale_zh": "标题是对住房保险不续保主题的简短陈述，没有直接情绪表达。",
+      "source_material": {
+        "path": "data/evaluation/final-benchmark/labels/verified-original-titles-v19.json",
+        "pointer": "/records/8",
+        "sha256": "54a08c3543f29bd808e74b1b1998286771a26626caf9c4f68dd7f416fe0235e2"
+      },
+      "source_record_id": "reddit_archived_post_174m8f9",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "split": "holdout",
+      "text_sha256": "323918293fadd2c8fb7cd65d4abea9aceeaf580478d18e361ab3447d268c459c",
+      "unit_id": "complaint_home_nonrenewal_20231010"
+    },
+    {
+      "ai_reference_scoreable": false,
+      "annotated_at_utc": "2026-10-08T17:01:22Z",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.73,
+      "event_id": "complaint_home_nonrenewal_20240625",
+      "exclusion_reasons": [
+        "no_paired_E_title_level_sentiment_prediction"
+      ],
+      "formal_human_ground_truth_eligible": false,
+      "label": "negative",
+      "needs_review": false,
+      "prediction_exposure": true,
+      "rationale_zh": "“not renewing me”陈述个人受到的不利处理，标题语境呈现申诉/不满。",
+      "source_material": {
+        "path": "data/evaluation/final-benchmark/labels/verified-original-titles-v19.json",
+        "pointer": "/records/9",
+        "sha256": "54a08c3543f29bd808e74b1b1998286771a26626caf9c4f68dd7f416fe0235e2"
+      },
+      "source_record_id": "reddit_archived_post_1do5am8",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "split": "holdout",
+      "text_sha256": "fc7747ee48177a6d355baba528f79325e9eb42aec77ca73f55568e0e779f1d10",
+      "unit_id": "complaint_home_nonrenewal_20240625"
+    },
+    {
+      "ai_reference_scoreable": false,
+      "annotated_at_utc": "2026-10-08T17:01:22Z",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.84,
+      "event_id": "complaint_auto_claim_denial_20241116",
+      "exclusion_reasons": [
+        "no_paired_E_title_level_sentiment_prediction"
+      ],
+      "formal_human_ground_truth_eligible": false,
+      "label": "negative",
+      "needs_review": false,
+      "prediction_exposure": true,
+      "rationale_zh": "标题突出车辆被盗、事故及保险理赔被拒，表达的是对不利拒赔结果的投诉。",
+      "source_material": {
+        "path": "data/evaluation/final-benchmark/labels/verified-original-titles-v19.json",
+        "pointer": "/records/10",
+        "sha256": "54a08c3543f29bd808e74b1b1998286771a26626caf9c4f68dd7f416fe0235e2"
+      },
+      "source_record_id": "reddit_archived_post_1gshw33",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "split": "holdout",
+      "text_sha256": "bac925e13d3743cb39b7c900e2ce5b4f2496790827e8381cf8b99ce6135ea0a9",
+      "unit_id": "complaint_auto_claim_denial_20241116"
+    },
+    {
+      "ai_reference_scoreable": false,
+      "annotated_at_utc": "2026-10-08T17:01:22Z",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.87,
+      "event_id": "complaint_home_nonrenewal_inspection_20241011",
+      "exclusion_reasons": [
+        "no_paired_E_title_level_sentiment_prediction"
+      ],
+      "formal_human_ground_truth_eligible": false,
+      "label": "negative",
+      "needs_review": false,
+      "prediction_exposure": true,
+      "rationale_zh": "“questionable”明确质疑检查结果，并把它与不续保关联，构成负面评价。",
+      "source_material": {
+        "path": "data/evaluation/final-benchmark/labels/verified-original-titles-v19.json",
+        "pointer": "/records/11",
+        "sha256": "54a08c3543f29bd808e74b1b1998286771a26626caf9c4f68dd7f416fe0235e2"
+      },
+      "source_record_id": "reddit_archived_post_1g1kc9b",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "split": "holdout",
+      "text_sha256": "9cf0ce4c21d35c118f4f04225b9ff6c0633ae456f820c5e83b41ee78045551f0",
+      "unit_id": "complaint_home_nonrenewal_inspection_20241011"
+    },
+    {
+      "ai_reference_scoreable": false,
+      "annotated_at_utc": "2026-10-08T17:01:22Z",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.86,
+      "event_id": "complaint_home_policy_claim_20240113",
+      "exclusion_reasons": [
+        "no_paired_E_title_level_sentiment_prediction"
+      ],
+      "formal_human_ground_truth_eligible": false,
+      "label": "negative",
+      "needs_review": false,
+      "prediction_exposure": true,
+      "rationale_zh": "标题称提交理赔后保单被取消、且理赔结案前无法另购保险，呈现明显不满/担忧。",
+      "source_material": {
+        "path": "data/evaluation/final-benchmark/labels/verified-original-titles-v19.json",
+        "pointer": "/records/12",
+        "sha256": "54a08c3543f29bd808e74b1b1998286771a26626caf9c4f68dd7f416fe0235e2"
+      },
+      "source_record_id": "reddit_archived_post_195twpp",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "split": "holdout",
+      "text_sha256": "f6cb97f7ebcd896e6ac460d6ea327aa5af8556017866e43ee4bf75646aef1a73",
+      "unit_id": "complaint_home_policy_claim_20240113"
+    },
+    {
+      "ai_reference_scoreable": false,
+      "annotated_at_utc": "2026-10-08T17:01:22Z",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.91,
+      "event_id": "complaint_auto_cancellation_notice_20241003",
+      "exclusion_reasons": [
+        "no_paired_E_title_level_sentiment_prediction"
+      ],
+      "formal_human_ground_truth_eligible": false,
+      "label": "negative",
+      "needs_review": false,
+      "prediction_exposure": true,
+      "rationale_zh": "标题指称保险公司取消车险却未告知，并担忧保险空档，明确呈现负面投诉和担忧。",
+      "source_material": {
+        "path": "data/evaluation/final-benchmark/labels/verified-original-titles-v19.json",
+        "pointer": "/records/13",
+        "sha256": "54a08c3543f29bd808e74b1b1998286771a26626caf9c4f68dd7f416fe0235e2"
+      },
+      "source_record_id": "reddit_archived_post_1fvdpul",
+      "source_version": "arctic-shift-title-snapshot-v1",
+      "split": "holdout",
+      "text_sha256": "f59db4e6bc3e076b5d65a565d914f223bc852e0f6095060a4f6ddcfb534893aa",
+      "unit_id": "complaint_auto_cancellation_notice_20241003"
+    },
+    {
+      "ai_reference_scoreable": false,
+      "annotated_at_utc": "2026-10-08T17:03:53Z",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.9,
+      "event_id": "bcbs_louisiana_elevance_sale_20240206",
+      "exclusion_reasons": [
+        "no_paired_E_title_level_sentiment_prediction"
+      ],
+      "formal_human_ground_truth_eligible": false,
+      "label": "neutral",
+      "needs_review": false,
+      "prediction_exposure": true,
+      "rationale_zh": "标题描述路易斯安那州非营利医保机构寻求批准出售给 Elevance，没有赞许或批评表达。",
+      "source_material": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+        "pointer": "/events/1/cutoff_sources/0/title",
+        "sha256": "c49df7870676303950b859729c65def50d5d0042a8ca363fb425bc53a2e2027a"
+      },
+      "source_record_id": "ap-bcbsla-elevance-hearing-20240206",
+      "source_version": "AP story ID 968df3fb5b53a1fb678c27afcebccbf1; original report dated 2024-02-06",
+      "split": "holdout_candidate",
+      "text_sha256": "d723d85c368a264523235aba695dc99d02ff5b2802ba4d5a877520c96a16af7b",
+      "unit_id": "ap-bcbsla-elevance-hearing-20240206"
+    },
+    {
+      "ai_reference_scoreable": false,
+      "annotated_at_utc": "2026-10-08T17:03:53Z",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.9,
+      "event_id": "state_farm_ca_new_business_pause_20230526",
+      "exclusion_reasons": [
+        "no_paired_E_title_level_sentiment_prediction"
+      ],
+      "formal_human_ground_truth_eligible": false,
+      "label": "neutral",
+      "needs_review": false,
+      "prediction_exposure": true,
+      "rationale_zh": "标题只是公司对加州新业务情况的更新标题，没有显露态度。",
+      "source_material": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v8.json",
+        "pointer": "/events/3/cutoff_sources/0/title",
+        "sha256": "c49df7870676303950b859729c65def50d5d0042a8ca363fb425bc53a2e2027a"
+      },
+      "source_record_id": "statefarm-newsroom-ca-new-business-20230526",
+      "source_version": "Official page identified by its article title and publication time; current public page queried 2026-10-08. No historical byte snapshot or revision history was retained; no updated marker was visible in the inspected page.",
+      "split": "holdout_candidate",
+      "text_sha256": "0a0528aba3a125b411a7081c0912de8f989782a93dd33ba2419eedfb729b8f83",
+      "unit_id": "statefarm-newsroom-ca-new-business-20230526"
+    },
+    {
+      "ai_reference_scoreable": false,
+      "annotated_at_utc": "2026-10-08T17:03:53Z",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.84,
+      "event_id": "windows_recall_privacy_controversy_20240607",
+      "exclusion_reasons": [
+        "no_paired_E_title_level_sentiment_prediction"
+      ],
+      "formal_human_ground_truth_eligible": false,
+      "label": "neutral",
+      "needs_review": false,
+      "prediction_exposure": true,
+      "rationale_zh": "标题说明 Recall 功能在受到批评后发生改变；它报告外部批评，没有直接赞许或批评微软。",
+      "source_material": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v13.json",
+        "pointer": "/events/0/cutoff_sources/0/title",
+        "sha256": "01193167bc59ec4e6d59c12922ad7a9e09d9886deb520c255a5e963aaa9b772c"
+      },
+      "source_record_id": "axios_recall_update_20240607_wayback_190027",
+      "source_version": "Internet Archive CDX capture 20240607190027; CDX digest Q5QVW7OJXYZNQHDA5KAQPU2MNC2445KQ; archived response retrieved 2026-10-08.",
+      "split": "holdout_candidate",
+      "text_sha256": "d1bff9a1b6ff3b705404b86286f33c453079bc87f36c1ff3ada85f96170b5dad",
+      "unit_id": "axios_recall_update_20240607_wayback_190027"
+    },
+    {
+      "ai_reference_scoreable": false,
+      "annotated_at_utc": "2026-10-08T17:03:53Z",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.9,
+      "event_id": "windows_recall_privacy_controversy_20240607",
+      "exclusion_reasons": [
+        "no_paired_E_title_level_sentiment_prediction"
+      ],
+      "formal_human_ground_truth_eligible": false,
+      "label": "neutral",
+      "needs_review": false,
+      "prediction_exposure": true,
+      "rationale_zh": "标题是对 Recall 预览功能的更新公告，没有明显情绪或评价。",
+      "source_material": {
+        "path": "data/evaluation/final-benchmark/inputs/qualified-inputs-v13.json",
+        "pointer": "/events/0/cutoff_sources/1/title",
+        "sha256": "01193167bc59ec4e6d59c12922ad7a9e09d9886deb520c255a5e963aaa9b772c"
+      },
+      "source_record_id": "hn_recall_update_item_40610469",
+      "source_version": "HN Algolia item ID 40610469; response hash fixed in the source evidence record.",
+      "split": "holdout_candidate",
+      "text_sha256": "119913c28f7458da01fda63cfbd0da0f8bb0a93d4f122b3469a5b64c8adf7d9f",
+      "unit_id": "hn_recall_update_item_40610469"
+    }
+  ],
+  "ai_trend_reference_units": [
+    {
+      "annotated_at_beijing": "2026-10-09T01:01:22+08:00",
+      "annotated_at_utc": "2026-10-08T17:01:22Z",
+      "annotator_id": "codex-root",
+      "annotator_model": "GPT-6 (Codex)",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.96,
+      "event_id": "fnf_cyberattack_20231123",
+      "evidence_material": {
+        "evidence_version": "final-benchmark-evidence-pilot-v8-2026-10-08",
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v8.json",
+        "sha256": "47a3b4191c826c53cc1005ed8960c9372a1934a3f4b87582f10118fe4457d058"
+      },
+      "evidence_sufficiency": false,
+      "formal_human_ground_truth_eligible": false,
+      "human_verified": false,
+      "label": "unknown",
+      "prediction_exposure": true,
+      "prediction_exposure_detail": "Sealed E predictions were already inspected; label assigned solely from the frozen baseline/observation evidence.",
+      "protocol_material": {
+        "path": "docs/records/final-scoring-protocol-v2.md",
+        "sha256": "cb39c32c8ec2b4823a22fab8ee6e2c36bda047cea3f605a9a7a2fa0dec5e336a"
+      },
+      "reason_zh": "基线仅覆盖 Reddit archive submissions 2/7 日、comments 3/7 日；观察窗 5/7 与 4/7，覆盖均不足，archive completeness 未知。比值不能支持升级/平息。",
+      "split": "holdout"
+    },
+    {
+      "annotated_at_beijing": "2026-10-09T01:01:22+08:00",
+      "annotated_at_utc": "2026-10-08T17:01:22Z",
+      "annotator_id": "codex-root",
+      "annotator_model": "GPT-6 (Codex)",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.96,
+      "event_id": "bcbs_louisiana_elevance_sale_20240206",
+      "evidence_material": {
+        "evidence_version": "final-benchmark-evidence-pilot-v8-2026-10-08",
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v8.json",
+        "sha256": "47a3b4191c826c53cc1005ed8960c9372a1934a3f4b87582f10118fe4457d058"
+      },
+      "evidence_sufficiency": false,
+      "formal_human_ground_truth_eligible": false,
+      "human_verified": false,
+      "label": "unknown",
+      "prediction_exposure": true,
+      "prediction_exposure_detail": "Sealed E predictions were already inspected; label assigned solely from the frozen baseline/observation evidence.",
+      "protocol_material": {
+        "path": "docs/records/final-scoring-protocol-v2.md",
+        "sha256": "cb39c32c8ec2b4823a22fab8ee6e2c36bda047cea3f605a9a7a2fa0dec5e336a"
+      },
+      "reason_zh": "基线只有 1/7 日且 comments 基线为零；观察窗只有 2/7 日且 comments 两窗均为零。零基线与窗口覆盖不足，unknown。",
+      "split": "holdout_candidate"
+    },
+    {
+      "annotated_at_beijing": "2026-10-09T01:01:22+08:00",
+      "annotated_at_utc": "2026-10-08T17:01:22Z",
+      "annotator_id": "codex-root",
+      "annotator_model": "GPT-6 (Codex)",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.96,
+      "event_id": "aflac_cybersecurity_incident_20250620",
+      "evidence_material": {
+        "evidence_version": "final-benchmark-evidence-pilot-v8-2026-10-08",
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v8.json",
+        "sha256": "47a3b4191c826c53cc1005ed8960c9372a1934a3f4b87582f10118fe4457d058"
+      },
+      "evidence_sufficiency": false,
+      "formal_human_ground_truth_eligible": false,
+      "human_verified": false,
+      "label": "unknown",
+      "prediction_exposure": true,
+      "prediction_exposure_detail": "Sealed E predictions were already inspected; label assigned solely from the frozen baseline/observation evidence.",
+      "protocol_material": {
+        "path": "docs/records/final-scoring-protocol-v2.md",
+        "sha256": "cb39c32c8ec2b4823a22fab8ee6e2c36bda047cea3f605a9a7a2fa0dec5e336a"
+      },
+      "reason_zh": "基线 posts/comments 均为零，无法形成有效比值；观察窗覆盖仅 submissions 4/7 日、comments 1/7 日且 archive completeness 未知，unknown。",
+      "split": "holdout"
+    },
+    {
+      "annotated_at_beijing": "2026-10-09T01:01:22+08:00",
+      "annotated_at_utc": "2026-10-08T17:01:22Z",
+      "annotator_id": "codex-root",
+      "annotator_model": "GPT-6 (Codex)",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.96,
+      "event_id": "state_farm_ca_new_business_pause_20230526",
+      "evidence_material": {
+        "evidence_version": "final-benchmark-evidence-pilot-v8-2026-10-08",
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v8.json",
+        "sha256": "47a3b4191c826c53cc1005ed8960c9372a1934a3f4b87582f10118fe4457d058"
+      },
+      "evidence_sufficiency": false,
+      "formal_human_ground_truth_eligible": false,
+      "human_verified": false,
+      "label": "unknown",
+      "prediction_exposure": true,
+      "prediction_exposure_detail": "Sealed E predictions were already inspected; label assigned solely from the frozen baseline/observation evidence.",
+      "protocol_material": {
+        "path": "docs/records/final-scoring-protocol-v2.md",
+        "sha256": "cb39c32c8ec2b4823a22fab8ee6e2c36bda047cea3f605a9a7a2fa0dec5e336a"
+      },
+      "reason_zh": "单一 Reddit archive/宽泛查询，搜索命中未逐条相关性编码，且无第二个可比来源族；不能据查询量变化判断公众讨论方向，unknown。",
+      "split": "holdout_candidate"
+    },
+    {
+      "annotated_at_beijing": "2026-10-09T01:01:22+08:00",
+      "annotated_at_utc": "2026-10-08T17:01:22Z",
+      "annotator_id": "codex-root",
+      "annotator_model": "GPT-6 (Codex)",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.96,
+      "event_id": "windows_recall_privacy_controversy_20240607",
+      "evidence_material": {
+        "evidence_version": "final-benchmark-candidate-evidence-v13-2026-10-08",
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v13.json",
+        "sha256": "d0dd402d2506d1b23d18de7daf6ab2a302e7ef1ca14e64861a8c70534feee536"
+      },
+      "evidence_sufficiency": false,
+      "formal_human_ground_truth_eligible": false,
+      "human_verified": false,
+      "label": "unknown",
+      "prediction_exposure": true,
+      "prediction_exposure_detail": "Sealed E predictions were already inspected; label assigned solely from the frozen baseline/observation evidence.",
+      "protocol_material": {
+        "path": "docs/records/final-scoring-protocol-v2.md",
+        "sha256": "cb39c32c8ec2b4823a22fab8ee6e2c36bda047cea3f605a9a7a2fa0dec5e336a"
+      },
+      "reason_zh": "HN 单一量化来源族；Reddit 仅举例、不可比。窗口总量下降但观察窗末日出现集中峰值，方向混合，且无合格第二来源族，unknown。",
+      "split": "holdout_candidate"
+    },
+    {
+      "annotated_at_beijing": "2026-10-09T01:03:53+08:00",
+      "annotated_at_utc": "2026-10-08T17:03:53Z",
+      "annotator_id": "codex-root",
+      "annotator_model": "GPT-6 (Codex)",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.97,
+      "event_id": "unh_change_cyberattack_20240222",
+      "evidence_material": {
+        "evidence_version": "final-benchmark-public-history-v4-2026-10-08",
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v4.json",
+        "pointer": "/events/0",
+        "sha256": "dee1d41bb77211ad828b58be3ef5311e5d48d3a9df360095600db2864cb41d5b"
+      },
+      "evidence_sufficiency": false,
+      "formal_human_ground_truth_eligible": false,
+      "human_verified": false,
+      "label": "unknown",
+      "prediction_exposure": true,
+      "prediction_exposure_detail": "Sealed E predictions were inspected before annotation; label assigned solely from frozen baseline/observation evidence.",
+      "protocol_material": {
+        "path": "docs/records/final-scoring-protocol-v2.md",
+        "sha256": "cb39c32c8ec2b4823a22fab8ee6e2c36bda047cea3f605a9a7a2fa0dec5e336a"
+      },
+      "reason_zh": "保存材料未提供可比的基线与观察窗讨论序列，trajectory-evidence-v4 也明确记为 no_comparable_followup_series；unknown。",
+      "split": "development"
+    },
+    {
+      "annotated_at_beijing": "2026-10-09T01:03:53+08:00",
+      "annotated_at_utc": "2026-10-08T17:03:53Z",
+      "annotator_id": "codex-root",
+      "annotator_model": "GPT-6 (Codex)",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.97,
+      "event_id": "allianz_life_data_breach_20250727",
+      "evidence_material": {
+        "evidence_version": "final-benchmark-public-history-v4-2026-10-08",
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v4.json",
+        "pointer": "/events/3",
+        "sha256": "dee1d41bb77211ad828b58be3ef5311e5d48d3a9df360095600db2864cb41d5b"
+      },
+      "evidence_sufficiency": false,
+      "formal_human_ground_truth_eligible": false,
+      "human_verified": false,
+      "label": "unknown",
+      "prediction_exposure": true,
+      "prediction_exposure_detail": "Sealed E predictions were inspected before annotation; label assigned solely from frozen baseline/observation evidence.",
+      "protocol_material": {
+        "path": "docs/records/final-scoring-protocol-v2.md",
+        "sha256": "cb39c32c8ec2b4823a22fab8ee6e2c36bda047cea3f605a9a7a2fa0dec5e336a"
+      },
+      "reason_zh": "冻结证据包含后续报道和消费者通知事实，但 baseline_measurement 与 later_comparable_measurement 均为空；业务/报道进展不能替代舆情走势，unknown。",
+      "split": "holdout"
+    },
+    {
+      "annotated_at_beijing": "2026-10-09T01:03:53+08:00",
+      "annotated_at_utc": "2026-10-08T17:03:53Z",
+      "annotator_id": "codex-root",
+      "annotator_model": "GPT-6 (Codex)",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.97,
+      "event_id": "anthem_anesthesia_proposal_20241204",
+      "evidence_material": {
+        "evidence_version": "final-benchmark-public-history-v4-2026-10-08",
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v4.json",
+        "pointer": "/events/4",
+        "sha256": "dee1d41bb77211ad828b58be3ef5311e5d48d3a9df360095600db2864cb41d5b"
+      },
+      "evidence_sufficiency": false,
+      "formal_human_ground_truth_eligible": false,
+      "human_verified": false,
+      "label": "unknown",
+      "prediction_exposure": true,
+      "prediction_exposure_detail": "Sealed E predictions were inspected before annotation; label assigned solely from frozen baseline/observation evidence.",
+      "protocol_material": {
+        "path": "docs/records/final-scoring-protocol-v2.md",
+        "sha256": "cb39c32c8ec2b4823a22fab8ee6e2c36bda047cea3f605a9a7a2fa0dec5e336a"
+      },
+      "reason_zh": "冻结材料未给出可比的公众讨论 baseline_measurement 与 later_comparable_measurement；仅有后续事实不足以判断升级或平息，unknown。",
+      "split": "holdout"
+    },
+    {
+      "annotated_at_beijing": "2026-10-09T01:03:53+08:00",
+      "annotated_at_utc": "2026-10-08T17:03:53Z",
+      "annotator_id": "codex-root",
+      "annotator_model": "GPT-6 (Codex)",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.97,
+      "event_id": "cigna_algorithm_denial_lawsuit_20230725",
+      "evidence_material": {
+        "evidence_version": "final-benchmark-public-history-v4-2026-10-08",
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v4.json",
+        "pointer": "/events/5",
+        "sha256": "dee1d41bb77211ad828b58be3ef5311e5d48d3a9df360095600db2864cb41d5b"
+      },
+      "evidence_sufficiency": false,
+      "formal_human_ground_truth_eligible": false,
+      "human_verified": false,
+      "label": "unknown",
+      "prediction_exposure": true,
+      "prediction_exposure_detail": "Sealed E predictions were inspected before annotation; label assigned solely from frozen baseline/observation evidence.",
+      "protocol_material": {
+        "path": "docs/records/final-scoring-protocol-v2.md",
+        "sha256": "cb39c32c8ec2b4823a22fab8ee6e2c36bda047cea3f605a9a7a2fa0dec5e336a"
+      },
+      "reason_zh": "冻结材料没有可比公众讨论基线和观察窗测量，后续诉讼报道不能替代舆情走势，unknown。",
+      "split": "holdout"
+    },
+    {
+      "annotated_at_beijing": "2026-10-09T01:03:53+08:00",
+      "annotated_at_utc": "2026-10-08T17:03:53Z",
+      "annotator_id": "codex-root",
+      "annotator_model": "GPT-6 (Codex)",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.97,
+      "event_id": "humana_algorithm_care_lawsuit_20231214",
+      "evidence_material": {
+        "evidence_version": "final-benchmark-public-history-v4-2026-10-08",
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v4.json",
+        "pointer": "/events/7",
+        "sha256": "dee1d41bb77211ad828b58be3ef5311e5d48d3a9df360095600db2864cb41d5b"
+      },
+      "evidence_sufficiency": false,
+      "formal_human_ground_truth_eligible": false,
+      "human_verified": false,
+      "label": "unknown",
+      "prediction_exposure": true,
+      "prediction_exposure_detail": "Sealed E predictions were inspected before annotation; label assigned solely from frozen baseline/observation evidence.",
+      "protocol_material": {
+        "path": "docs/records/final-scoring-protocol-v2.md",
+        "sha256": "cb39c32c8ec2b4823a22fab8ee6e2c36bda047cea3f605a9a7a2fa0dec5e336a"
+      },
+      "reason_zh": "冻结材料没有可比公众讨论 baseline_measurement 与 later_comparable_measurement；报道/诉讼事实不足以判断升级或平息，unknown。",
+      "split": "holdout"
+    },
+    {
+      "annotated_at_beijing": "2026-10-09T01:05:06+08:00",
+      "annotated_at_utc": "2026-10-08T17:05:06Z",
+      "annotator_id": "codex-root",
+      "annotator_model": "GPT-6 (Codex)",
+      "annotator_type": "ai",
+      "confidence_subjective_uncalibrated": 0.97,
+      "event_id": "unitedhealth_algorithm_care_lawsuit_20231115",
+      "evidence_material": {
+        "evidence_version": "final-benchmark-candidate-evidence-v11-2026-10-08",
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v11.json",
+        "pointer": "/events/0",
+        "sha256": "783d7310e98840ecd0a0810ec1995b8c6d9909b381c805fbb4cbd7d573fad9ed"
+      },
+      "evidence_sufficiency": false,
+      "formal_human_ground_truth_eligible": false,
+      "human_verified": false,
+      "label": "unknown",
+      "prediction_exposure": true,
+      "prediction_exposure_detail": "Sealed E outputs were already inspected; judgment used only the frozen trend evidence.",
+      "protocol_material": {
+        "path": "docs/records/final-scoring-protocol-v2.md",
+        "sha256": "cb39c32c8ec2b4823a22fab8ee6e2c36bda047cea3f605a9a7a2fa0dec5e336a"
+      },
+      "reason_zh": "冻结的 HN 序列基线与观察窗各仅 1/7 天有故事，观察窗仅 1/7 天有评论；Reddit 搜索归档覆盖未知且观察项未充分逐条编码。来源覆盖稀疏，unknown。",
+      "split": "holdout_candidate"
+    }
+  ],
+  "counts": {
+    "AI_sentiment_units_unpaired": 18,
+    "AI_trend_unknown_units": 11,
+    "formal_holdout_events": 7,
+    "human_gold_sentiment_units_unpaired": 5,
+    "v8_pilot_units": 4
+  },
+  "created_at_beijing": "2026-10-09T01:05:06+08:00",
+  "formal_holdout_events": [
+    {
+      "AI_evidence_ref": {
+        "evidence_version": "final-benchmark-evidence-pilot-v8-2026-10-08",
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v8.json",
+        "sha256": "47a3b4191c826c53cc1005ed8960c9372a1934a3f4b87582f10118fe4457d058"
+      },
+      "AI_reference_direction": "unknown",
+      "AI_reference_scoreable": false,
+      "E_prediction": null,
+      "event_id": "fnf_cyberattack_20231123",
+      "exclusion_reasons": [
+        "no_formal_eligible_sealed_E_prediction",
+        "no_qualified_trend_evidence_or_independent_human_trend_label"
+      ],
+      "execution_mode": "none_for_current_v24_formal_holdout",
+      "human_observed_direction": null,
+      "official_scoreable": false,
+      "split": "holdout"
+    },
+    {
+      "AI_evidence_ref": {
+        "evidence_version": "final-benchmark-evidence-pilot-v8-2026-10-08",
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v8.json",
+        "sha256": "47a3b4191c826c53cc1005ed8960c9372a1934a3f4b87582f10118fe4457d058"
+      },
+      "AI_reference_direction": "unknown",
+      "AI_reference_scoreable": false,
+      "E_prediction": null,
+      "event_id": "aflac_cybersecurity_incident_20250620",
+      "exclusion_reasons": [
+        "no_formal_eligible_sealed_E_prediction",
+        "no_qualified_trend_evidence_or_independent_human_trend_label"
+      ],
+      "execution_mode": "none_for_current_v24_formal_holdout",
+      "human_observed_direction": null,
+      "official_scoreable": false,
+      "split": "holdout"
+    },
+    {
+      "AI_evidence_ref": {
+        "evidence_version": "final-benchmark-public-history-v4-2026-10-08",
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v4.json",
+        "pointer": "/events/3",
+        "sha256": "dee1d41bb77211ad828b58be3ef5311e5d48d3a9df360095600db2864cb41d5b"
+      },
+      "AI_reference_direction": "unknown",
+      "AI_reference_scoreable": false,
+      "E_prediction": null,
+      "event_id": "allianz_life_data_breach_20250727",
+      "exclusion_reasons": [
+        "no_formal_eligible_sealed_E_prediction",
+        "no_qualified_trend_evidence_or_independent_human_trend_label"
+      ],
+      "execution_mode": "none_for_current_v24_formal_holdout",
+      "human_observed_direction": null,
+      "official_scoreable": false,
+      "split": "holdout"
+    },
+    {
+      "AI_evidence_ref": {
+        "evidence_version": "final-benchmark-public-history-v4-2026-10-08",
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v4.json",
+        "pointer": "/events/4",
+        "sha256": "dee1d41bb77211ad828b58be3ef5311e5d48d3a9df360095600db2864cb41d5b"
+      },
+      "AI_reference_direction": "unknown",
+      "AI_reference_scoreable": false,
+      "E_prediction": null,
+      "event_id": "anthem_anesthesia_proposal_20241204",
+      "exclusion_reasons": [
+        "no_formal_eligible_sealed_E_prediction",
+        "no_qualified_trend_evidence_or_independent_human_trend_label"
+      ],
+      "execution_mode": "none_for_current_v24_formal_holdout",
+      "human_observed_direction": null,
+      "official_scoreable": false,
+      "split": "holdout"
+    },
+    {
+      "AI_evidence_ref": {
+        "evidence_version": "final-benchmark-public-history-v4-2026-10-08",
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v4.json",
+        "pointer": "/events/5",
+        "sha256": "dee1d41bb77211ad828b58be3ef5311e5d48d3a9df360095600db2864cb41d5b"
+      },
+      "AI_reference_direction": "unknown",
+      "AI_reference_scoreable": false,
+      "E_prediction": null,
+      "event_id": "cigna_algorithm_denial_lawsuit_20230725",
+      "exclusion_reasons": [
+        "no_formal_eligible_sealed_E_prediction",
+        "no_qualified_trend_evidence_or_independent_human_trend_label"
+      ],
+      "execution_mode": "none_for_current_v24_formal_holdout",
+      "human_observed_direction": null,
+      "official_scoreable": false,
+      "split": "holdout"
+    },
+    {
+      "AI_evidence_ref": {
+        "evidence_version": "final-benchmark-candidate-evidence-v11-2026-10-08",
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v11.json",
+        "pointer": "/events/0",
+        "sha256": "783d7310e98840ecd0a0810ec1995b8c6d9909b381c805fbb4cbd7d573fad9ed"
+      },
+      "AI_reference_direction": "unknown",
+      "AI_reference_scoreable": false,
+      "E_prediction": null,
+      "event_id": "unitedhealth_algorithm_care_lawsuit_20231115",
+      "exclusion_reasons": [
+        "no_formal_eligible_sealed_E_prediction",
+        "no_qualified_trend_evidence_or_independent_human_trend_label"
+      ],
+      "execution_mode": "none_for_current_v24_formal_holdout",
+      "human_observed_direction": null,
+      "official_scoreable": false,
+      "split": "holdout"
+    },
+    {
+      "AI_evidence_ref": {
+        "evidence_version": "final-benchmark-public-history-v4-2026-10-08",
+        "path": "data/evaluation/final-benchmark/labels/trajectory-evidence-v4.json",
+        "pointer": "/events/7",
+        "sha256": "dee1d41bb77211ad828b58be3ef5311e5d48d3a9df360095600db2864cb41d5b"
+      },
+      "AI_reference_direction": "unknown",
+      "AI_reference_scoreable": false,
+      "E_prediction": null,
+      "event_id": "humana_algorithm_care_lawsuit_20231214",
+      "exclusion_reasons": [
+        "no_formal_eligible_sealed_E_prediction",
+        "no_qualified_trend_evidence_or_independent_human_trend_label"
+      ],
+      "execution_mode": "none_for_current_v24_formal_holdout",
+      "human_observed_direction": null,
+      "official_scoreable": false,
+      "split": "holdout"
+    }
+  ],
+  "human_sentiment_gold_units": [
+    {
+      "E_sentiment_prediction": null,
+      "event_id": "aflac_cybersecurity_incident_20250620",
+      "exclusion_reasons": [
+        "no_paired_E_title_level_sentiment_prediction"
+      ],
+      "execution_context": "v8 event-summary direction baseline has no sentiment; latest v13 is a different candidate event and predicts sentiment=null",
+      "human_annotators": [
+        "leos",
+        "Dick"
+      ],
+      "human_labels": "negative",
+      "official_scoreable": false,
+      "text_sha256": "8ce432e8b2a589f46d1dcfc7fc6a1951498f5e54cf2ddc08942e4969d3cb600e",
+      "title_hash_match": true,
+      "unit_id": "sent-aflac-1lg33ey"
+    },
+    {
+      "E_sentiment_prediction": null,
+      "event_id": "anthem_anesthesia_proposal_20241204",
+      "exclusion_reasons": [
+        "no_paired_E_title_level_sentiment_prediction"
+      ],
+      "execution_context": "v8 event-summary direction baseline has no sentiment; latest v13 is a different candidate event and predicts sentiment=null",
+      "human_annotators": [
+        "leos",
+        "Dick"
+      ],
+      "human_labels": "negative",
+      "official_scoreable": false,
+      "text_sha256": "05631e620cf05f3ad7d8b4d9431039f7f4da3792a7ad3d5b3732514bd8c3e87f",
+      "title_hash_match": true,
+      "unit_id": "sent-anthem-1h6mj0x"
+    },
+    {
+      "E_sentiment_prediction": null,
+      "event_id": "cigna_algorithm_denial_lawsuit_20230725",
+      "exclusion_reasons": [
+        "no_paired_E_title_level_sentiment_prediction"
+      ],
+      "execution_context": "v8 event-summary direction baseline has no sentiment; latest v13 is a different candidate event and predicts sentiment=null",
+      "human_annotators": [
+        "leos",
+        "Dick"
+      ],
+      "human_labels": "neutral",
+      "official_scoreable": false,
+      "text_sha256": "66070ca63cdad118aeeb2167308aeddca3cf0c0af5463de53bfa669230504705",
+      "title_hash_match": true,
+      "unit_id": "sent-cigna-159ce8g"
+    },
+    {
+      "E_sentiment_prediction": null,
+      "event_id": "fnf_cyberattack_20231123",
+      "exclusion_reasons": [
+        "no_paired_E_title_level_sentiment_prediction"
+      ],
+      "execution_context": "v8 event-summary direction baseline has no sentiment; latest v13 is a different candidate event and predicts sentiment=null",
+      "human_annotators": [
+        "leos",
+        "Dick"
+      ],
+      "human_labels": "neutral",
+      "official_scoreable": false,
+      "text_sha256": "68eca0236762cf36ec86ce01cc53a78fd8c1f2a5a3575938aba24561d31fa27c",
+      "title_hash_match": true,
+      "unit_id": "sent-fnf-1821s44"
+    },
+    {
+      "E_sentiment_prediction": null,
+      "event_id": "humana_algorithm_care_lawsuit_20231214",
+      "exclusion_reasons": [
+        "no_paired_E_title_level_sentiment_prediction"
+      ],
+      "execution_context": "v8 event-summary direction baseline has no sentiment; latest v13 is a different candidate event and predicts sentiment=null",
+      "human_annotators": [
+        "leos",
+        "Dick"
+      ],
+      "human_labels": "neutral",
+      "official_scoreable": false,
+      "text_sha256": "7986833675ecf2dbe19b00c2d9da8e3d82597457a7ed7600c908380d8faf43b8",
+      "title_hash_match": true,
+      "unit_id": "sent-humana-ars-20231213"
+    }
+  ],
+  "latest_v13_candidate": {
+    "AI_direction_label": "unknown",
+    "case_id": "windows_recall_privacy_controversy_20240607_v13",
+    "event_id": "windows_recall_privacy_controversy_20240607",
+    "exclusion_reasons": [
+      "holdout_candidate_not_admitted_to_formal_split",
+      "offline_constant_baseline_not_a_model_forecast",
+      "no_qualified_trajectory_evidence_or_independent_human_direction_label"
+    ],
+    "execution_mode": "offline_constant_escalation_baseline_v13",
+    "formal_score_ready": false,
+    "official_scoreable": false,
+    "prediction": "escalation",
+    "sentiment_prediction": null,
+    "split": "holdout_candidate"
+  },
+  "schema": "riskshield.final_scoring_per_unit_results.v24",
+  "v13_v24_metric_engine_output": {
+    "AI_reference_exclusion_reasons": {
+      "ai_reference_needs_review": 3,
+      "ai_reference_unit_missing_from_prediction_inputs": 18,
+      "missing_or_invalid_ai_reference_label": 3
+    },
+    "direction_exclusions": [
+      {
+        "evaluation_ids": [
+          "windows_recall_privacy_controversy_20240607_v13__direction__e-handoff-v13"
+        ],
+        "event_id": "windows_recall_privacy_controversy_20240607",
+        "reasons": [
+          "holdout_candidate_not_admitted",
+          "missing_or_unresolved_observed_direction_label"
+        ]
+      }
+    ],
+    "path": "artifacts/final-scoring-20261009/v13-v24-evaluator-final-v2.json",
+    "sentiment_exclusions": [
+      {
+        "evaluation_id": "windows_recall_privacy_controversy_20240607_v13__direction__e-handoff-v13",
+        "event_id": "windows_recall_privacy_controversy_20240607",
+        "reasons": [
+          "holdout_candidate_not_admitted",
+          "missing_sentiment_prediction",
+          "missing_separate_evaluation_label",
+          "not_an_original_title_or_post_unit"
+        ],
+        "unit_id": "event_cutoff_summary"
+      }
+    ],
+    "sha256": "c74d2a7a9b027f63d98380014b087983cc85254223d6895a29a1836ab6a56276"
+  },
+  "v8_engineering_pilot_units": [
+    {
+      "case_id": "fnf_cyberattack_20231123_v5",
+      "direction_scoreable": false,
+      "event_id": "fnf_cyberattack_20231123",
+      "exclusion_reasons": [
+        "missing_or_unresolved_observed_direction_label"
+      ],
+      "execution_mode": "offline_constant_escalation_baseline_v1",
+      "formal_v24_result": false,
+      "prediction": "escalation",
+      "sentiment_prediction": null,
+      "split": "holdout"
+    },
+    {
+      "case_id": "bcbs_louisiana_elevance_sale_20240206_v5",
+      "direction_scoreable": false,
+      "event_id": "bcbs_louisiana_elevance_sale_20240206",
+      "exclusion_reasons": [
+        "candidate_not_admitted_to_formal_split"
+      ],
+      "execution_mode": "offline_constant_escalation_baseline_v1",
+      "formal_v24_result": false,
+      "prediction": "escalation",
+      "sentiment_prediction": null,
+      "split": "holdout_candidate"
+    },
+    {
+      "case_id": "aflac_cybersecurity_incident_20250620_v6",
+      "direction_scoreable": false,
+      "event_id": "aflac_cybersecurity_incident_20250620",
+      "exclusion_reasons": [
+        "missing_or_unresolved_observed_direction_label"
+      ],
+      "execution_mode": "offline_constant_escalation_baseline_v1",
+      "formal_v24_result": false,
+      "prediction": "escalation",
+      "sentiment_prediction": null,
+      "split": "holdout"
+    },
+    {
+      "case_id": "state_farm_ca_new_business_pause_20230526_v8",
+      "direction_scoreable": false,
+      "event_id": "state_farm_ca_new_business_pause_20230526",
+      "exclusion_reasons": [
+        "candidate_not_admitted_to_formal_split"
+      ],
+      "execution_mode": "offline_constant_escalation_baseline_v1",
+      "formal_v24_result": false,
+      "prediction": "escalation",
+      "sentiment_prediction": null,
+      "split": "holdout_candidate"
+    }
+  ]
+}

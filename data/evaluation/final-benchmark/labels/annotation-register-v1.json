@@ -1,0 +1,99 @@
+{
+  "schema": "riskshield.final_benchmark.annotation_register.v1",
+  "label_version": "final-benchmark-label-preparation-v1-2026-10-08",
+  "access": "independent_scoring_only; never load into Store, graph, retrieval, Agent memory or prediction context",
+  "annotations": [
+    {
+      "event_id": "unh_change_cyberattack_20240222",
+      "record_id": "unh-sec-20240222-initial",
+      "target_subject": "UnitedHealth Group",
+      "unit": "one cutoff-source text's expressed attitude toward the named subject",
+      "existing_human_annotations": [
+        {
+          "annotator_id": "Leo",
+          "label": "neutral",
+          "recorded_at": "2026-10-02T23:57:27+08:00",
+          "review_completed_at": null,
+          "prediction_seen_before_answer": "unknown",
+          "other_annotator_answer_seen_before_answer": "unknown",
+          "provenance": "user-submitted initial human label; annotator identity and reading process not independently verified",
+          "evidence_ref": {"path": "data/research/unh_change_20240222_human_label_leo.json", "pointer": "/label"}
+        },
+        {
+          "annotator_id": "Li",
+          "label": "neutral",
+          "recorded_at": "2026-10-03T20:41:41+08:00",
+          "review_completed_at": null,
+          "prediction_seen_before_answer": false,
+          "other_annotator_answer_seen_before_answer": false,
+          "provenance": "user-reported blind second human review; reading conditions were user-confirmed, not independently observed",
+          "evidence_ref": {"path": "data/research/unh_change_20240222_human_label_li.json", "pointer": "/label"}
+        }
+      ],
+      "agreement": "neutral / neutral among two reported human annotations",
+      "disagreement_or_limit": "Historical DeepSeek probe labeled the SEC text negative; Leo's pre-answer exposure to assistant suggestions is unknown, so strict double-blind provenance is unverified.",
+      "adjudication": "No new adjudication was conducted for this dataset. Existing Day 5 limited scorer treats the two agreeing human labels as one evaluable sentiment unit; formal holdout truth remains unconfirmed.",
+      "status": "existing_two_human_labels_limited_development_unit"
+    },
+    {
+      "event_id": "unh_change_cyberattack_20240222",
+      "record_id": "optum-status-20240221-cyber-update",
+      "target_subject": "UnitedHealth Group",
+      "unit": "one selected cutoff-status update's expressed attitude toward the named subject",
+      "existing_human_annotations": [
+        {
+          "annotator_id": "nike",
+          "label": "neutral",
+          "user_reported_at": "2026-10-04T15:00:00+08:00",
+          "review_completed_at": null,
+          "prediction_seen_before_answer": "same_event_other_source_results_seen; target_record_result_not_seen",
+          "other_annotator_answer_seen_before_answer": "same_event_other_source_results_seen",
+          "provenance": "user-submitted initial human label with declared same-event exposure",
+          "evidence_ref": {"path": "data/research/unh_change_20240222_optum_human_label_nike.json", "pointer": "/label"}
+        }
+      ],
+      "agreement": null,
+      "disagreement_or_limit": "One human annotation only; same-event prior results were seen, so this is not independent benchmark truth.",
+      "adjudication": null,
+      "status": "initial_label_excluded_from_independent_truth"
+    }
+  ],
+  "event_outcomes": [
+    {
+      "event_id": "unh_change_cyberattack_20240222",
+      "window_start_exclusive": "2024-02-22T16:48:39-05:00",
+      "window_end_inclusive": "2024-02-29T16:48:39-05:00",
+      "window_status": "provisional_pending_V2_Q05",
+      "observed_direction": null,
+      "annotators": [],
+      "adjudication": null,
+      "evidence_status": "The existing March 8 partial-recovery filing is outside this provisional seven-day window and does not establish whole-event public-opinion direction.",
+      "later_evidence_ref_for_scoring_only": {"path": "data/research/unh_change_20240222_visibility.json", "pointer": "/later_evidence"},
+      "status": "undetermined"
+    },
+    {
+      "event_id": "blackcat_17374386012",
+      "window_start_exclusive": null,
+      "window_end_inclusive": null,
+      "window_status": "blocked_no_qualified_cutoff",
+      "observed_direction": null,
+      "annotators": [],
+      "adjudication": null,
+      "evidence_status": "One complaint's merchant reply and completion do not establish overall public-opinion calming; reported year of the later timeline was inferred.",
+      "later_evidence_ref_for_scoring_only": {"path": "data/public/blackcat_17374386012_event_v2.json", "pointer": "/event/public_visibility_audit"},
+      "status": "undetermined"
+    },
+    {
+      "event_id": "zongan_marketing_202403",
+      "window_start_exclusive": null,
+      "window_end_inclusive": null,
+      "window_status": "blocked_no_qualified_cutoff",
+      "observed_direction": null,
+      "annotators": [],
+      "adjudication": null,
+      "evidence_status": "Later reposts do not establish a whole-event direction or constitute new independent events.",
+      "later_evidence_ref_for_scoring_only": {"path": "data/public/za_marketing_2024.json", "pointer": "/records"},
+      "status": "undetermined"
+    }
+  ]
+}
