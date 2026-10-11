@@ -76,15 +76,23 @@ def peak_rss_bytes() -> int | None:
                     ("PeakPagefileUsage", ctypes.c_size_t),
                 ]
 
+            kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+            psapi = ctypes.WinDLL("psapi", use_last_error=True)
+            # Both signatures must be declared: the default 32-bit restype truncates
+            # the 64-bit process pseudo-handle and the call silently returns 0.
+            kernel32.GetCurrentProcess.restype = wintypes.HANDLE
+            kernel32.GetCurrentProcess.argtypes = []
+            psapi.GetProcessMemoryInfo.restype = wintypes.BOOL
+            psapi.GetProcessMemoryInfo.argtypes = [
+                wintypes.HANDLE, ctypes.POINTER(ProcessMemoryCounters), wintypes.DWORD]
             counters = ProcessMemoryCounters()
             counters.cb = ctypes.sizeof(counters)
-            process = ctypes.windll.kernel32.GetCurrentProcess()
-            if ctypes.windll.psapi.GetProcessMemoryInfo(
-                    process, ctypes.byref(counters), counters.cb):
-                return int(counters.PeakWorkingSetSize)
+            if not psapi.GetProcessMemoryInfo(kernel32.GetCurrentProcess(),
+                                              ctypes.byref(counters), counters.cb):
+                return None
+            return int(counters.PeakWorkingSetSize)
         except Exception:
             return None
-        return None
     try:
         import resource
         return int(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss) * 1024
