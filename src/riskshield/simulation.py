@@ -479,17 +479,22 @@ class Day3Simulation:
 
         ``failure_policy`` decides what one failed decision means for the whole run:
 
-        - ``"stop"`` (historical behaviour, still selected by ``stop_on_failure=True``):
-          the first failed decision aborts the run. The round is then incomplete, so
-          the run is marked ``partial`` and the remaining opportunities are recorded as
-          ``not_dispatched``. With a realistic provider transport-error rate, this makes
-          a long run stop at the first transient error while reporting nothing about the
-          work that would have followed.
-        - ``"continue"`` (default): a failed decision is recorded as a failed decision,
-          the agent that failed keeps its current local state, and the remaining rounds
-          are still attempted. The run can then reach ``status="complete"`` with
-          ``all_decisions_valid=False``, which keeps "all rounds ran" and "every decision
-          was valid" as two separate facts instead of collapsing them into ``partial``.
+        - ``"continue"`` (the default, and the same behaviour as the historical
+          ``stop_on_failure=False``): a failed decision is recorded as a failed
+          decision, the agent that failed keeps its current local state, and the
+          remaining rounds are still attempted. The run can then reach
+          ``status="complete"`` with ``all_decisions_valid=False``, which keeps "all
+          rounds ran" and "every decision was valid" as two separate facts instead of
+          collapsing them into ``partial``.
+        - ``"stop"`` (selected by ``stop_on_failure=True``): the first failed decision
+          aborts the run. The round is then incomplete, so the run is marked ``partial``
+          and the remaining opportunities are recorded as ``not_dispatched``.
+
+        The historical 500x30 attempt that stopped after 3,477/15,000 valid decisions
+        reported ``stop_reason="stop_on_failure"``, so that run was driven by a caller
+        passing ``stop_on_failure=True``; it was not the engine default. ``"stop"``
+        remains available and is recorded in ``rounds[].failure_policy.mode``, so a
+        ledger always states which policy produced it.
 
         Only the first failed decision of a round is reported in
         ``rounds[].failure_policy.stopped_by_failure``; the count is
@@ -517,9 +522,33 @@ class Day3Simulation:
 
         call_started = time.perf_counter()
         call_started_at = datetime.now().astimezone().isoformat()
-        call_dispatched = 0
-        call_valid = 0
+        # A mutable container: finish() below must observe the final counts, and a plain
+        # local would be rebound in this scope without being visible to the closure.
+        call_totals = {"dispatched": 0, "valid": 0}
         final_stop_reason = None
+
+        def finish():
+            """Close the invocation and return the summary.
+
+            Every exit path goes through here, including a round that stopped early
+            (stop signal, deadline, budget or an aborting failure) and the path for a
+            run that was already complete. Otherwise a partial run would lose its whole
+            performance record: ``_performance_summary`` returns ``None`` when no call
+            row exists, so the timing, throughput and observed concurrency of a stopped
+            run would be silently unavailable exactly when they matter most.
+            """
+            if collect_performance:
+                call_ended = time.perf_counter()
+                call_ended_at = datetime.now().astimezone().isoformat()
+                with self.store.connect() as db:
+                    db.execute(
+                        "INSERT INTO simulation_performance_calls "
+                        "(run_id, started_at, ended_at, wall_seconds, dispatched_requests, "
+                        "valid_decisions, stop_reason) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                        (run_id, call_started_at, call_ended_at,
+                         max(0.0, call_ended - call_started), call_totals["dispatched"],
+                         call_totals["valid"], final_stop_reason))
+            return self.summary(run_id)
 
         def requested_stop():
             if stop_event is not None and stop_event.is_set():
@@ -545,7 +574,7 @@ class Day3Simulation:
                            (_json(config), run_id))
             run = self._run_row(run_id)
         if run["status"] == "complete":
-            return self.summary(run_id)
+            return finish()
         target = (min(config["rounds"], run["completed_rounds"] + max_rounds)
                   if max_rounds is not None else config["rounds"])
 
@@ -973,8 +1002,8 @@ class Day3Simulation:
                                 outcomes_by_id[aid] = outcome
                                 completed_buffer.append((aid, outcome))
                                 projected_cost += outcome["cost"]
-                                call_dispatched += outcome["status"] != "not_dispatched"
-                                call_valid += outcome["status"] == "valid"
+                                call_totals["dispatched"] += outcome["status"] != "not_dispatched"
+                                call_totals["valid"] += outcome["status"] == "valid"
                                 request_backend_total += outcome["timing"]["backend_seconds"]
                                 request_validation_total += outcome["timing"]["validation_seconds"]
                                 if (outcome["error"] or "").endswith(":call_limit"):
@@ -1157,18 +1186,7 @@ class Day3Simulation:
                 final_stop_reason = "budget_exceeded"
                 break
 
-        if collect_performance:
-            call_ended = time.perf_counter()
-            call_ended_at = datetime.now().astimezone().isoformat()
-            with self.store.connect() as db:
-                db.execute(
-                    "INSERT INTO simulation_performance_calls "
-                    "(run_id, started_at, ended_at, wall_seconds, dispatched_requests, "
-                    "valid_decisions, stop_reason) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                    (run_id, call_started_at, call_ended_at,
-                     max(0.0, call_ended - call_started), call_dispatched, call_valid,
-                     final_stop_reason))
-        return self.summary(run_id)
+        return finish()
 
     @staticmethod
     def _latency_percentiles(values):

@@ -22,12 +22,15 @@ the ledger, including runs that stop early.
 import argparse
 import hashlib
 import json
+import math
 import platform
+import random
 import statistics
 import sys
 import tempfile
 import threading
 import time
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from pathlib import Path
@@ -39,13 +42,17 @@ for candidate in (REPO_ROOT, REPO_ROOT / "src"):
 
 from riskshield.simulation import (  # noqa: E402
     DEFAULT_TASK_BUDGET_CNY, Day3Simulation, DecisionPricing, DecisionResult,
+    SafeDecisionError,
 )
 from riskshield.schemas import AgentDecision  # noqa: E402
 from riskshield.store import Store  # noqa: E402
 
 BEIJING = timezone(timedelta(hours=8))
 SUBSTITUTE_NAME = "controlled_latency_substitute"
-SUBSTITUTE_VERSION = "scale-benchmark-v1"
+SUBSTITUTE_VERSION = "scale-benchmark-v2"
+
+# Fault outcomes a request can end in. "ok" is a decision the engine accepts.
+FAULT_OUTCOMES = ("ok", "rate_limited", "timeout", "invalid_output", "generic_error")
 
 
 def beijing_now() -> str:
@@ -100,12 +107,52 @@ def peak_rss_bytes() -> int | None:
         return None
 
 
-class ControlledLatencySubstitute:
-    """A substitute backend that holds each request open for a fixed time.
+@dataclass(frozen=True)
+class FaultProfile:
+    """Deterministic, seeded latency and fault injection for offline scale testing.
 
-    The decision rule is deliberately small and deterministic: it reacts to the
-    runtime message it received, else to its own memory, else to a role default.
-    Latency is the independent variable that the scale question needs.
+    Every field is an *engineering test setting*. These distributions are chosen to make
+    scheduler, timeout, admission and failure behaviour reproducible; they are not
+    measurements of any real provider and must not be reported as supplier latency.
+    """
+
+    latency_seconds: float = 0.0
+    latency_shape: str = "fixed"          # "fixed" | "lognormal"
+    latency_sigma: float = 0.9
+    latency_tail_cap: float = 10.0
+    timeout_after_seconds: float = 0.0    # >0: a request genuinely blocks this long
+    timeout_every: int = 0
+    rate_limit_per_second: float = 0.0    # >0: admission cap; excess waits then 429s
+    rate_limit_every: int = 0             # >0: every Nth request is rate limited
+    invalid_output_every: int = 0         # engine must reject the decision
+    error_every: int = 0                  # generic backend error
+    burst_error_at: tuple = ()            # consecutive call indices that all fail
+    seed: int = 20261011
+
+    def describe(self) -> dict:
+        return {
+            "latency_seconds": self.latency_seconds,
+            "latency_shape": self.latency_shape,
+            "latency_sigma": self.latency_sigma,
+            "latency_tail_cap": self.latency_tail_cap,
+            "timeout_after_seconds": self.timeout_after_seconds,
+            "timeout_every": self.timeout_every,
+            "rate_limit_per_second": self.rate_limit_per_second,
+            "rate_limit_every": self.rate_limit_every,
+            "invalid_output_every": self.invalid_output_every,
+            "error_every": self.error_every,
+            "burst_error_at": list(self.burst_error_at),
+            "seed": self.seed,
+            "is_engineering_test_configuration": True,
+        }
+
+
+class SubstituteBackend:
+    """A substitute that holds each request open, and can be told to misbehave.
+
+    The decision rule is deliberately small and deterministic: it reacts to the runtime
+    message it received, else to its own memory, else to a role default. Latency and
+    faults are the independent variables that the scale question needs.
     """
 
     mode = "test_substitute"
@@ -113,17 +160,19 @@ class ControlledLatencySubstitute:
     input_cny_per_million = Decimal("0")
     cached_input_cny_per_million = Decimal("0")
     output_cny_per_million = Decimal("0")
-    price_version = "offline-zero-cost-v1"
+    price_version = "offline-zero-cost-v2"
 
-    def __init__(self, latency_seconds: float, *, fail_every: int = 0):
-        self.latency_seconds = float(latency_seconds)
-        self.fail_every = int(fail_every)
+    def __init__(self, profile: FaultProfile | None = None):
+        self.profile = profile or FaultProfile()
         self._lock = threading.Lock()
+        self._rng = random.Random(self.profile.seed)
         self.calls = 0
         self.in_flight = 0
         self.peak_in_flight = 0
-        self.latencies: list[float] = []
-        self.sender_actions = 0
+        self.observed_latencies: list[float] = []
+        self.outcomes: dict = {name: 0 for name in FAULT_OUTCOMES}
+        self.burst_failures = 0
+        self._next_admission = 0.0
 
     def pricing(self, observation) -> DecisionPricing:
         return DecisionPricing(requested_model=SUBSTITUTE_NAME,
@@ -133,7 +182,33 @@ class ControlledLatencySubstitute:
                                cached_input_cny_per_million=Decimal("0"),
                                output_cny_per_million=Decimal("0"))
 
+    def _sample_latency(self) -> float:
+        profile = self.profile
+        base = profile.latency_seconds
+        if base <= 0 or profile.latency_shape == "fixed":
+            return max(0.0, base)
+        # Median-centred lognormal: the long tail is the point of this shape.
+        sampled = base * math.exp(self._rng.gauss(0.0, profile.latency_sigma))
+        return min(max(sampled, 0.0), base * profile.latency_tail_cap)
+
+    def _admission_wait(self) -> float:
+        """Model an external admission cap: returns the wait before a 429 is issued."""
+        profile = self.profile
+        if profile.rate_limit_per_second <= 0:
+            return 0.0
+        interval = 1.0 / profile.rate_limit_per_second
+        now = time.perf_counter()
+        with self._lock:
+            if now < self._next_admission:
+                wait = self._next_admission - now
+                self._next_admission += interval
+            else:
+                self._next_admission = now + interval
+                wait = 0.0
+        return wait
+
     def decide(self, observation) -> DecisionResult:
+        profile = self.profile
         with self._lock:
             self.calls += 1
             index = self.calls
@@ -141,35 +216,81 @@ class ControlledLatencySubstitute:
             self.peak_in_flight = max(self.peak_in_flight, self.in_flight)
         started = time.perf_counter()
         try:
-            if self.latency_seconds:
-                time.sleep(self.latency_seconds)
-            if self.fail_every and index % self.fail_every == 0:
-                raise RuntimeError("benchmark-controlled-decision-failure")
-            messages = observation["messages"]
-            memories = observation["memories"]
-            if messages:
-                action = "comment"
-                reference = messages[0]["message_id"]
-                reason = "React to the runtime message received in this round."
-            elif memories:
-                action = "seek_clarification"
-                reference = memories[0]["memory_id"]
-                reason = "React to this agent's own persisted memory."
-            else:
-                role = observation["persona"]["role"]
-                action = "share" if role in {"netizen", "media", "kol"} else "observe"
-                reference = observation["evidence"][0]["evidence_id"]
-                reason = "First-round reaction to visible cutoff evidence."
-            return DecisionResult(
-                AgentDecision(agent_id=observation["agent_id"], action=action,
-                              evidence_ids=[reference], reason=reason),
-                usage={"prompt_tokens": 0, "completion_tokens": 0},
-                model=SUBSTITUTE_NAME,
-            )
+            # Admission control first: a throttled request waits, then is rejected.
+            admission_wait = self._admission_wait()
+            if admission_wait:
+                time.sleep(admission_wait)
+                self._record("rate_limited", started)
+                raise SafeDecisionError("rate limited", category="http_status",
+                                        http_status=429)
+            if profile.rate_limit_every and index % profile.rate_limit_every == 0:
+                self._record("rate_limited", started)
+                raise SafeDecisionError("rate limited", category="http_status",
+                                        http_status=429)
+
+            latency = self._sample_latency()
+            if latency:
+                time.sleep(latency)
+
+            # A genuine block past the timeout, then a transport-style failure. This is
+            # not "returning a timeout error": the request really does wait this long.
+            if profile.timeout_every and index % profile.timeout_every == 0:
+                if profile.timeout_after_seconds > 0:
+                    time.sleep(profile.timeout_after_seconds)
+                self._record("timeout", started)
+                raise SafeDecisionError("transport timeout", category="transport")
+
+            if index in profile.burst_error_at:
+                self.burst_failures += 1
+                self._record("generic_error", started)
+                raise RuntimeError("substitute-burst-failure")
+            if profile.error_every and index % profile.error_every == 0:
+                self._record("generic_error", started)
+                raise RuntimeError("substitute-controlled-failure")
+
+            decision = self._decision(observation)
+            if profile.invalid_output_every and index % profile.invalid_output_every == 0:
+                # A syntactically fine decision citing something the agent could not see.
+                self._record("invalid_output", started)
+                return DecisionResult(
+                    AgentDecision(agent_id=observation["agent_id"], action="comment",
+                                  evidence_ids=["citation_not_visible_to_this_agent"],
+                                  reason="Malformed substitute output for fault testing."),
+                    usage={"prompt_tokens": 0, "completion_tokens": 0},
+                    model=SUBSTITUTE_NAME)
+            self._record("ok", started)
+            return decision
         finally:
             with self._lock:
                 self.in_flight -= 1
-                self.latencies.append(time.perf_counter() - started)
+
+    def _record(self, outcome: str, started: float) -> None:
+        with self._lock:
+            self.outcomes[outcome] = self.outcomes.get(outcome, 0) + 1
+            self.observed_latencies.append(time.perf_counter() - started)
+
+    def _decision(self, observation) -> DecisionResult:
+        messages = observation["messages"]
+        memories = observation["memories"]
+        if messages:
+            action = "comment"
+            reference = messages[0]["message_id"]
+            reason = "React to the runtime message received in this round."
+        elif memories:
+            action = "seek_clarification"
+            reference = memories[0]["memory_id"]
+            reason = "React to this agent's own persisted memory."
+        else:
+            role = observation["persona"]["role"]
+            action = "share" if role in {"netizen", "media", "kol"} else "observe"
+            reference = observation["evidence"][0]["evidence_id"]
+            reason = "First-round reaction to visible cutoff evidence."
+        return DecisionResult(
+            AgentDecision(agent_id=observation["agent_id"], action=action,
+                          evidence_ids=[reference], reason=reason),
+            usage={"prompt_tokens": 0, "completion_tokens": 0},
+            model=SUBSTITUTE_NAME,
+        )
 
 
 def prepare_benchmark_store(root: Path):
@@ -188,10 +309,72 @@ def line_counts(store: Store, run_id: str) -> dict:
         def count(table):
             return db.execute(f"SELECT COUNT(*) FROM {table} WHERE run_id=?",
                               (run_id,)).fetchone()[0]
+
+        duplicate_cells = db.execute(
+            "SELECT COUNT(*) FROM (SELECT round_number, agent_id FROM simulation_actions "
+            "WHERE run_id=? GROUP BY round_number, agent_id HAVING COUNT(*) > 1)",
+            (run_id,)).fetchone()[0]
         return {"actions": count("simulation_actions"),
                 "messages": count("simulation_messages"),
                 "memories": count("simulation_memories"),
-                "request_metrics": count("simulation_request_metrics")}
+                "request_metrics": count("simulation_request_metrics"),
+                "rounds": count("simulation_rounds"),
+                "duplicate_action_cells": duplicate_cells}
+
+
+def invariant_verdicts(*, result: dict, counts: dict, performance: dict,
+                       backend, concurrency: int, agents: int) -> dict:
+    """Self-checks P1 requires: no double dispatch, no runaway, no lost ledger.
+
+    A failing verdict here means the run must not be cited as scale evidence.
+    """
+    action_counts = result["action_counts"]
+    resolved = (action_counts.get("valid", 0) + action_counts.get("failed", 0)
+                + action_counts.get("not_dispatched", 0))
+    dispatched = action_counts.get("valid", 0) + action_counts.get("failed", 0)
+    return {
+        "no_duplicate_dispatch": {
+            "verdict": counts["duplicate_action_cells"] == 0,
+            "detail": "one action cell per (round, agent)",
+            "duplicate_cells": counts["duplicate_action_cells"],
+        },
+        "concurrency_within_configuration": {
+            "verdict": (backend.peak_in_flight <= concurrency and
+                        (performance.get("maximum_observed_in_flight") or 0) <= concurrency),
+            "detail": "substitute and engine in-flight peaks never exceed concurrency",
+            "configured": concurrency,
+            "substitute_peak": backend.peak_in_flight,
+            "engine_peak": performance.get("maximum_observed_in_flight"),
+        },
+        "every_opportunity_accounted_once": {
+            "verdict": resolved == counts["actions"],
+            "detail": ("valid + failed + not_dispatched equals the persisted action rows, "
+                       "so the buckets are exclusive and none is double counted"),
+            "resolved": resolved,
+            "persisted_action_rows": counts["actions"],
+            "expected_full_run": agents * result["config"]["rounds"],
+        },
+        "no_request_silently_lost": {
+            "verdict": backend.calls == dispatched,
+            "detail": ("every request the substitute actually received has a persisted "
+                       "outcome: no completed decision was dropped from the ledger"),
+            "requests_received": backend.calls,
+            "persisted_dispatched": dispatched,
+        },
+        "cost_reservation_released": {
+            "verdict": result["cost_cny"] == "0" or backend.mode == "real_model",
+            "detail": ("the zero-cost substitute must never accumulate cost; a real-model "
+                       "backend keeps its reservation by design"),
+            "cost_cny": result["cost_cny"],
+        },
+        "ledger_round_rows_match_completed_rounds": {
+            "verdict": counts["rounds"] >= result["completed_rounds"],
+            "detail": ("a stopped round may leave a partial round row, but the count can "
+                       "never be below the completed rounds"),
+            "ledger_round_rows": counts["rounds"],
+            "completed_rounds": result["completed_rounds"],
+        },
+    }
 
 
 def round_ledger(result: dict, store: Store) -> list[dict]:
@@ -225,8 +408,16 @@ def round_ledger(result: dict, store: Store) -> list[dict]:
 def run_load_level(*, agents: int, rounds: int, concurrency: int, latency_ms: float,
                    seed: int = 20261011, fail_every: int = 0,
                    failure_policy: str | None = None,
+                   profile: FaultProfile | None = None,
                    budget_cny: Decimal = DEFAULT_TASK_BUDGET_CNY) -> dict:
-    """Run one graded load level on a fresh local database and return its ledger."""
+    """Run one graded load level on a fresh local database and return its ledger.
+
+    ``profile`` is authoritative when supplied; ``latency_ms`` only builds a default
+    fixed-latency profile when no profile is given.
+    """
+    if profile is None:
+        profile = FaultProfile(latency_seconds=latency_ms / 1000.0, error_every=fail_every,
+                               seed=seed)
     with tempfile.TemporaryDirectory(prefix="scale-benchmark-") as temp:
         root = Path(temp)
         store, engine, case_id, graph_id = prepare_benchmark_store(root)
@@ -234,7 +425,7 @@ def run_load_level(*, agents: int, rounds: int, concurrency: int, latency_ms: fl
                                    concurrency=concurrency, seed=seed,
                                    budget_cny=budget_cny)
         config = engine.summary(run_id)["config"]
-        backend = ControlledLatencySubstitute(latency_ms / 1000.0, fail_every=fail_every)
+        backend = SubstituteBackend(profile)
         started = time.perf_counter()
         result = engine.advance(run_id, backend, collect_performance=True,
                                 **({"failure_policy": failure_policy}
@@ -249,6 +440,17 @@ def run_load_level(*, agents: int, rounds: int, concurrency: int, latency_ms: fl
         # Report the policy the engine actually applied, not the requested one.
         effective_policy = (ledger_rows[0]["failure_policy"]["mode"]
                             if ledger_rows else (failure_policy or "continue"))
+        latencies = sorted(backend.observed_latencies)
+
+        def percentile(fraction):
+            if not latencies:
+                return None
+            index = max(0, math.ceil(fraction * len(latencies)) - 1)
+            return round(latencies[index], 6)
+
+        verdicts = invariant_verdicts(result=result, counts=counts,
+                                      performance=performance, backend=backend,
+                                      concurrency=concurrency, agents=agents)
 
     return {
         "load": {"agents": agents, "rounds": rounds, "concurrency": concurrency,
@@ -256,6 +458,7 @@ def run_load_level(*, agents: int, rounds: int, concurrency: int, latency_ms: fl
                  "failure_policy": failure_policy or "continue",
                  "failure_policy_applied": effective_policy,
                  "decision_opportunities": requests},
+        "fault_profile": profile.describe(),
         "outcome": {
             "status": result["status"],
             "completed_rounds": result["completed_rounds"],
@@ -269,9 +472,13 @@ def run_load_level(*, agents: int, rounds: int, concurrency: int, latency_ms: fl
                 round(result["action_counts"].get("valid", 0) / wall_seconds, 3)
                 if wall_seconds else None),
             "opportunities_per_second": round(requests / wall_seconds, 3),
+            "dispatched_decisions": (result["action_counts"].get("valid", 0) +
+                                     result["action_counts"].get("failed", 0)),
+            "stopped_or_partial": result["status"] != "complete",
             "cost_cny": result["cost_cny"],
             "estimated_cost_cny": result["cost_cny"],
         },
+        "invariants": verdicts,
         "resources": {
             "peak_process_rss_bytes": rss,
             "sqlite_bytes": db_bytes,
@@ -279,12 +486,17 @@ def run_load_level(*, agents: int, rounds: int, concurrency: int, latency_ms: fl
             "substitute_peak_in_flight": backend.peak_in_flight,
             "engine_observed_max_in_flight": performance.get("maximum_observed_in_flight"),
             "substitute_call_count": backend.calls,
+            "substitute_outcomes": dict(backend.outcomes),
+            "substitute_burst_failures": backend.burst_failures,
             "substitute_latency_seconds": {
                 "configured": latency_ms / 1000.0,
-                "p50_observed": (round(statistics.median(backend.latencies), 6)
-                                 if backend.latencies else None),
-                "mean_observed": (round(statistics.fmean(backend.latencies), 6)
-                                  if backend.latencies else None),
+                "shape": profile.latency_shape,
+                "p50_observed": percentile(0.50),
+                "p95_observed": percentile(0.95),
+                "p99_observed": percentile(0.99),
+                "max_observed": round(latencies[-1], 6) if latencies else None,
+                "mean_observed": (round(statistics.fmean(latencies), 6)
+                                  if latencies else None),
             },
         },
         "performance_totals": {
@@ -379,29 +591,62 @@ def parse_levels(raw: list[str]) -> list[tuple[int, int, int, float]]:
     return levels
 
 
+def parse_burst(raw: str | None) -> tuple:
+    if not raw:
+        return ()
+    return tuple(sorted({int(part) for part in raw.split(",") if part.strip()}))
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--level", action="append", default=None,
                         help="agents:rounds:concurrency:latency_ms (repeatable)")
     parser.add_argument("--label", default="simulation-scale-load")
     parser.add_argument("--seed", type=int, default=20261011)
-    parser.add_argument("--fail-every", type=int, default=0,
-                        help="fail every Nth decision (0 disables)")
     parser.add_argument("--failure-policy", choices=["stop", "continue"], default=None)
     parser.add_argument("--out", default=None, help="ledger JSON path; stdout when omitted")
+    # Fault and latency injection. All of these are engineering test settings.
+    parser.add_argument("--latency-shape", choices=["fixed", "lognormal"],
+                        default="fixed")
+    parser.add_argument("--latency-sigma", type=float, default=0.9)
+    parser.add_argument("--latency-tail-cap", type=float, default=10.0)
+    parser.add_argument("--timeout-after-ms", type=float, default=0.0,
+                        help="a timed-out request really blocks this long before failing")
+    parser.add_argument("--timeout-every", type=int, default=0)
+    parser.add_argument("--rate-limit-per-second", type=float, default=0.0,
+                        help="admission cap; excess requests wait then get a 429")
+    parser.add_argument("--rate-limit-every", type=int, default=0)
+    parser.add_argument("--invalid-output-every", type=int, default=0)
+    parser.add_argument("--error-every", type=int, default=0)
+    parser.add_argument("--burst-error-at", default=None,
+                        help="comma-separated 1-based call indices that all fail")
     arguments = parser.parse_args(argv)
     levels = parse_levels(arguments.level) if arguments.level else DEFAULT_LEVELS
 
     measured = []
     for agents, rounds, concurrency, latency_ms in levels:
+        profile = FaultProfile(
+            latency_seconds=latency_ms / 1000.0,
+            latency_shape=arguments.latency_shape,
+            latency_sigma=arguments.latency_sigma,
+            latency_tail_cap=arguments.latency_tail_cap,
+            timeout_after_seconds=arguments.timeout_after_ms / 1000.0,
+            timeout_every=arguments.timeout_every,
+            rate_limit_per_second=arguments.rate_limit_per_second,
+            rate_limit_every=arguments.rate_limit_every,
+            invalid_output_every=arguments.invalid_output_every,
+            error_every=arguments.error_every,
+            burst_error_at=parse_burst(arguments.burst_error_at),
+            seed=arguments.seed,
+        )
         print(f"running agents={agents} rounds={rounds} concurrency={concurrency} "
-              f"latency_ms={latency_ms}", flush=True)
+              f"latency_ms={latency_ms} shape={profile.latency_shape}", flush=True)
         level = run_load_level(agents=agents, rounds=rounds, concurrency=concurrency,
                                latency_ms=latency_ms, seed=arguments.seed,
-                               fail_every=arguments.fail_every,
-                               failure_policy=arguments.failure_policy)
+                               failure_policy=arguments.failure_policy, profile=profile)
         measured.append(level)
-        print(json.dumps({"load": level["load"], "outcome": level["outcome"]},
+        print(json.dumps({"load": level["load"], "outcome": level["outcome"],
+                          "substitute_outcomes": level["resources"]["substitute_outcomes"]},
                          ensure_ascii=False), flush=True)
 
     report = build_report(measured, label=arguments.label)

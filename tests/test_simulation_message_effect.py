@@ -1,14 +1,22 @@
-"""Runtime message effect, independent state and memory isolation.
+"""Runtime message effect, memory effect and isolation boundaries.
 
 The probe these tests exercise lives in ``scripts/simulation_message_effect_probe.py``.
-It runs one seeded scenario twice with the same decision rule: the treatment arm can
-see the runtime message an agent received, the control arm cannot. Everything else --
-personas, neighbours, evidence, own memory, per-agent state -- is identical, and that
-identity is asserted on the frozen observation rather than assumed.
+It runs two *separate* paired contrasts with one shared decision rule:
+
+* message control -- evidence, persona, state, neighbours and own memory held fixed,
+  only visibility of the runtime message varies;
+* memory control -- evidence, persona, state, neighbours and received messages held
+  fixed, only visibility of the agent's own persisted memory varies.
+
+What is compared and hashed is the **effective observation handed to the decision
+component**, not the pre-intervention observation. The claim these tests support is
+therefore: the engine routes a runtime message and an agent's isolated memory into that
+agent's decision input, and a decision difference is attributable to that input. They do
+**not** support any claim about how a real language model would behave, and no
+multi-round "only the message differs" claim is made.
 """
 
 import importlib.util
-import json
 from pathlib import Path
 
 import pytest
@@ -29,76 +37,100 @@ def evidence():
     return load_probe().probe(agents=3, rounds=3, seed=20261011)
 
 
-def test_receiver_input_is_identical_except_for_the_runtime_message(evidence):
-    frozen = evidence["frozen_input_check"]
-    assert frozen["differing_observation_keys"] == []
-    assert frozen["frozen_observations_equal_apart_from_messages"] is True
-    assert frozen["treatment_without_messages_sha256"] == (
-        frozen["control_without_messages_sha256"])
-    for field in ("state_equal", "memories_equal", "evidence_equal", "persona_equal",
-                  "neighbours_equal"):
-        assert frozen[field] is True, field
+@pytest.fixture(scope="module")
+def message_control(evidence):
+    return evidence["message_control"]
 
 
-def test_only_the_message_list_differs_between_the_two_arms(evidence):
-    frozen = evidence["frozen_input_check"]
-    # The engine froze the same message for both arms; the control rule simply was
-    # not shown it, which is what makes the difference attributable to the message.
-    assert frozen["treatment_frozen_messages"] == frozen["control_frozen_messages"]
-    assert len(frozen["treatment_frozen_messages"]) == 1
-    assert frozen["treatment_effective_messages"] == frozen["treatment_frozen_messages"]
-    assert frozen["control_effective_messages"] == []
+@pytest.fixture(scope="module")
+def memory_control(evidence):
+    return evidence["memory_control"]
 
 
-def test_request_opportunities_are_equal_before_the_decision_differs(evidence):
-    """Both arms did the same work up to the point of interest."""
-    sender = evidence["sender_round_1"]
-    assert sender["identical"] is True
-    assert sender["treatment_action"]["action"] == "share"
-    assert evidence["runs"]["treatment"]["action_counts"] == (
-        evidence["runs"]["control"]["action_counts"])
+def assert_single_field_intervention(pair):
+    """Everything except the intervened field is identical in the decision input."""
+    assert pair["effective_input_sha256"]["identical"] is True
+    assert pair["effective_input_differing_keys"] == []
+    assert pair["frozen_input_equal_except_intervention"] is True
+    assert pair["state_equal"] is True
+    assert pair["persona_equal"] is True
+    assert pair["neighbours_equal"] is True
+    assert pair["evidence_equal"] is True
+    # The intervention really did differ, otherwise the contrast proves nothing.
+    assert pair["intervened_value"]["treatment_count"] >= 1
+    assert pair["intervened_value"]["control_count"] == 0
 
 
-def test_received_message_changes_the_next_decision_and_is_cited(evidence):
-    receiver = evidence["receiver_round_2"]
-    assert receiver["treatment_status"] == receiver["control_status"] == "valid"
-    assert receiver["decision_changed"] is True
-    assert receiver["treatment_cited_received_message"] is True
-    message_id = evidence["frozen_input_check"]["treatment_frozen_messages"][0][
-        "message_id"]
-    assert receiver["treatment_decision"]["evidence_ids"] == [message_id]
-    assert message_id in receiver["treatment_observation_refs"]["messages"]
-    # Both arms were frozen with the same visible message, so the recorded
-    # observation reference is identical; what differs is what each rule could read.
-    assert receiver["control_observation_refs"]["messages"] == (
-        receiver["treatment_observation_refs"]["messages"])
-    # The control arm could not read the message, so it fell back on its own memory.
-    assert receiver["control_decision"]["evidence_ids"] == (
-        receiver["control_observation_refs"]["memories"])
-    assert receiver["treatment_decision"] != receiver["control_decision"]
+def test_message_control_isolates_the_runtime_message(message_control):
+    assert message_control["intervened_field"] == "messages"
+    assert message_control["held_fixed"] == ["memories"]
+    assert_single_field_intervention(message_control)
 
 
+def test_memory_control_isolates_the_agents_own_memory(memory_control):
+    assert memory_control["intervened_field"] == "memories"
+    assert memory_control["held_fixed"] == ["messages"]
+    assert_single_field_intervention(memory_control)
+
+
+def test_message_visibility_changes_the_next_decision(message_control):
+    decision = message_control["decision"]
+    assert decision["changed"] is True
+    assert decision["treatment_cited_intervention"] is True
+    assert decision["control_cited_intervention"] is False
+    message_id = message_control["intervened_value"]["treatment"][0]["message_id"]
+    assert decision["treatment"]["evidence_ids"] == [message_id]
+    assert decision["treatment"]["action"] == "comment"
+
+
+def test_memory_visibility_changes_the_next_decision(memory_control):
+    decision = memory_control["decision"]
+    assert decision["changed"] is True
+    assert decision["treatment_cited_intervention"] is True
+    assert decision["control_cited_intervention"] is False
+    memory_id = memory_control["intervened_value"]["treatment"][0]["memory_id"]
+    assert decision["treatment"]["evidence_ids"] == [memory_id]
+    assert decision["treatment"]["action"] == "seek_clarification"
+    # Without its own memory the control agent falls back to plain observation.
+    assert decision["control"]["action"] == "observe"
+
+
+@pytest.mark.parametrize("pair_name", ["message_control", "memory_control"])
 @pytest.mark.parametrize("arm", ["treatment", "control"])
-def test_agents_keep_independent_state_and_memory(evidence, arm):
-    isolation = evidence["isolation"][arm]
+def test_agents_keep_independent_state_and_memory(evidence, pair_name, arm):
+    isolation = evidence[pair_name]["isolation"][arm]
     assert isolation["agents"] == 3
     # A distinct state per agent, not one shared blob.
     assert isolation["distinct_agent_states"] == isolation["agents"]
-    # No memory row or visible memory belongs to another agent.
     assert isolation["memory_rows_naming_another_agent"] == 0
     assert isolation["foreign_memories_visible"] == 0
-    # No visibility of the current or a future round.
     assert isolation["memories_from_current_or_future_round"] == 0
     assert isolation["messages_delivered_to_wrong_inbox"] == 0
     assert isolation["messages_not_from_the_previous_round"] == 0
 
 
-def test_probe_records_zero_model_calls_and_network_requests(evidence):
+def test_unrelated_addresses_and_future_rounds_are_never_visible(evidence):
+    checks = evidence["isolation_checks"]
+    assert checks["violations"] == []
+    assert checks["violation_count"] == 0
+    assert checks["inbox_mismatches"] == 0
+    assert checks["all_stored_memories_owned"] is True
+    assert checks["messages_considered"] > 0
+    assert checks["memories_considered"] > 0
+
+
+def test_probe_declares_its_limits_and_records_no_model_calls(evidence):
     method = evidence["method"]
     assert method["is_real_model"] is False
     assert method["model_calls"] == 0
     assert method["network_requests"] == 0
-    assert evidence["runs"]["treatment"]["all_decisions_valid"] is True
-    assert evidence["runs"]["control"]["all_decisions_valid"] is True
-    # The evidence must be serialisable and free of backend response text.
-    assert "provider" not in json.dumps(evidence).lower()
+    # A rule-based decision component must be declared as such.
+    assert "rule" in method["rule_based_limit"].lower()
+    assert "multi-round" in method["multi_round_limit"].lower()
+    assert any("real language model" in item for item in method["does_not_support"])
+    plan = evidence["real_model_experiment_plan"]
+    assert plan["status"] == "not_executed_no_authorization"
+    assert plan["planned_size"]["total_calls"] == 4
+    for pair in ("message_control", "memory_control"):
+        assert evidence[pair]["runs"]["treatment"]["all_decisions_valid"] is True
+        assert evidence[pair]["runs"]["control"]["all_decisions_valid"] is True
