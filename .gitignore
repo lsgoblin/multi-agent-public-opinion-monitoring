@@ -20,9 +20,10 @@ data/private/
 !/data/research/channel_checks_v2.json
 !/data/research/unh_change_20240222_visibility.json
 
-# Submission docs: keep the current assignment and the concise delivery guides.
-/docs/design/
-/docs/planning/
+# Submission docs: track current dated plan/design, keep historical drafts local.
+/docs/design/*
+!/docs/design/当前架构与设计依据-2026-10-11.md
+/docs/archive/
 /docs/records/
 /docs/sources/*
 !/docs/sources/2026-09-30-新版命题-多智能体仿真舆情监测.md
