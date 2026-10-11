@@ -154,6 +154,13 @@ class Day4Alerts:
             "assessment_fingerprint_sha256": fingerprint,
             "data_mode": snapshot["data_mode"], "execution_mode": execution_mode,
             "status": "provisional_offline_assessment",
+            # An alert may still be produced for an incomplete run, but never silently:
+            # these flags make it impossible to read a stopped or partly failed run as a
+            # clean one. A consumer must not present this as a successful assessment.
+            "run_complete": run["status"] == "complete",
+            "decisions_all_valid": total_failures == 0,
+            "alert_is_success_result": (run["status"] == "complete" and
+                                        total_failures == 0),
             "assessed_at": assessed_at,
             # Local rule detection time; it is not the historical event's first-public time.
             "discovered_at": assessed_at,

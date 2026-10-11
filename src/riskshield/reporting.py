@@ -216,9 +216,26 @@ class Day4Reports:
 
         action_map = {(a["round_number"], a["agent_id"]): a for a in actions}
         message_map = {m["message_id"]: m for m in messages}
-        if (len(action_map) != len(actions) or len(message_map) != len(messages)
-                or len(rounds) != run["completed_rounds"]
-                or [r["round_number"] for r in rounds] != list(range(1, len(rounds) + 1))):
+        # A run that stopped early records the abandoned round too, so its ledger holds
+        # one row per *started* round, not one row per *completed* round. Completed rounds
+        # must form a contiguous prefix from round 1, and any abandoned round must follow
+        # them; that keeps the round numbering honest without discarding the accounting of
+        # the round that stopped. A report is still allowed, and the caller marks it
+        # incomplete through ``run_status``/``integrity_label``.
+        round_numbers = [r["round_number"] for r in rounds]
+        abandoned_flags = [bool(json.loads(r["stats"]).get("round_abandoned"))
+                           for r in rounds]
+        completed_flags = [not flag for flag in abandoned_flags]
+        expected_completed = list(range(1, run["completed_rounds"] + 1))
+        ledger_inconsistent = (
+            len(action_map) != len(actions) or len(message_map) != len(messages)
+            or round_numbers != list(range(1, len(rounds) + 1))
+            or completed_flags != [True] * run["completed_rounds"] + [False] * (
+                len(rounds) - run["completed_rounds"])
+            or [number for number, flag in zip(round_numbers, completed_flags) if flag] !=
+            expected_completed
+            or (rounds and abandoned_flags and abandoned_flags[0]))
+        if ledger_inconsistent:
             raise ReportError("Run ledger is incomplete or inconsistent")
         if risk_assessment is not None:
             evidence_refs = risk_assessment.get("evidence_refs", {})
@@ -238,12 +255,17 @@ class Day4Reports:
 
         distributions = []
         failed_ids = []
+        undecided_ids = []
+        deadline_exceeded_ids = []
+        abandoned_round_numbers = []
         cited_source_ids = set()
         for row in rounds:
             number = row["round_number"]
             round_actions = [a for a in actions if a["round_number"] == number]
             counts = Counter()
             action_ids = []
+            expected_failed = 0
+            expected_undecided = 0
             for action in round_actions:
                 aid = _action_id(run_id, number, action["agent_id"])
                 action_ids.append(aid)
@@ -265,15 +287,41 @@ class Day4Reports:
                         raise ReportError("Decision cites evidence outside its observation")
                     cited_source_ids.update(set(decision["evidence_ids"]) & set(eligible))
                     counts[decision["action"]] += 1
-                else:
+                elif action["status"] == "failed":
+                    # A decision attempt that came back unusable.
                     counts["failed_or_invalid"] += 1
                     failed_ids.append(aid)
+                    expected_failed += 1
+                else:
+                    # not_dispatched (never sent) or deadline_exceeded (stopped waiting).
+                    # Neither is a failed decision attempt, so they are reported as
+                    # undecided rather than inflating the failure count.
+                    counts["undecided"] += 1
+                    undecided_ids.append(aid)
+                    expected_undecided += 1
+                    if action["status"] == "deadline_exceeded":
+                        deadline_exceeded_ids.append(aid)
             stats = json.loads(row["stats"])
+            if stats.get("round_abandoned"):
+                abandoned_round_numbers.append(number)
             if (len(round_actions) != stats["decision_requests"]
-                    or counts["failed_or_invalid"] != stats["failed_decisions"]):
+                    or expected_failed != stats["failed_decisions"]
+                    or expected_undecided != stats.get(
+                        "not_dispatched_current_round", expected_undecided)):
                 raise ReportError("Round statistics disagree with action ledger")
             distributions.append({"round": number, "action_counts": dict(sorted(counts.items())),
-                                  "decision_count": len(round_actions), "action_ids": action_ids})
+                                  "decision_count": len(round_actions), "action_ids": action_ids,
+                                  "round_abandoned": bool(stats.get("round_abandoned"))})
+
+        # A run with failed decisions, an abandoned round, or fewer rounds than configured
+        # may still produce a report, but that report must say so rather than read as a
+        # clean result.
+        incomplete = bool(
+            run["status"] != "complete"
+            or failed_ids
+            or undecided_ids
+            or abandoned_round_numbers
+            or run["completed_rounds"] != config["rounds"])
 
         edges = defaultdict(list)
         edge_sources = defaultdict(set)
@@ -329,8 +377,7 @@ class Day4Reports:
             "generated_by": "deterministic_workflow_template_not_model_output",
         }]
         technical_checks = []
-        if failed_ids:
-            technical_checks.append({
+        if failed_ids:            technical_checks.append({
                 "text": "复核无效决策后再解释汇总行为。", "action_ids": failed_ids,
                 "source_record_ids": [], "message_ids": [],
             })
@@ -395,11 +442,17 @@ class Day4Reports:
                 "run_integrity": {
                     "status": run["status"], "completed_rounds": run["completed_rounds"],
                     "configured_rounds": config["rounds"],
+                    "abandoned_rounds": abandoned_round_numbers,
                     "requested_decisions": len(actions),
-                    "valid_decisions": len(actions) - len(failed_ids),
+                    # A request the engine stopped waiting for is neither a valid decision
+                    # nor a failed one; counting it as valid would overstate the run.
+                    "valid_decisions": len(actions) - len(failed_ids) -
+                        len(deadline_exceeded_ids),
                     "failed_decisions": len(failed_ids),
+                    "deadline_exceeded_decisions": len(deadline_exceeded_ids),
                     "message_count": len(messages),
-                    "integrity_label": ("存在失败或部分完成" if failed_ids or run["status"] != "complete"
+                    "complete": not incomplete,
+                    "integrity_label": ("不完整：存在失败决策或中止轮次" if incomplete
                                         else "账本完整（不代表结果真实或关口通过）"),
                 },
             },

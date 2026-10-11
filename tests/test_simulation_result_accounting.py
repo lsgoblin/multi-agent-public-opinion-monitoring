@@ -116,7 +116,7 @@ def persisted_counts(store, run_id):
 
 
 def assert_reconciles(store, run_id, result, *, agents, expected_rounds,
-                      expected=None):
+                      expected=None, deadline_exceeded=0):
     """Persisted rows are exclusive, and the four buckets sum to the task total."""
     rows, duplicates = persisted_counts(store, run_id)
     assert duplicates == []
@@ -126,13 +126,15 @@ def assert_reconciles(store, run_id, result, *, agents, expected_rounds,
     for round_number, statuses in per_round.items():
         counts = {status: statuses.count(status) for status in set(statuses)}
         assert sum(counts.values()) == len(statuses) <= agents, round_number
-        assert set(counts) <= {"valid", "failed", "not_dispatched"}
+        assert set(counts) <= {"valid", "failed", "not_dispatched", "deadline_exceeded"}
     valid = sum(1 for row in rows if row["status"] == "valid")
     failed = sum(1 for row in rows if row["status"] == "failed")
     stranded_rows = sum(1 for row in rows if row["status"] == "not_dispatched")
-    assert valid + failed + stranded_rows == len(rows)
+    abandoned_rows = sum(1 for row in rows if row["status"] == "deadline_exceeded")
+    assert valid + failed + stranded_rows + abandoned_rows == len(rows)
     assert result["action_counts"].get("valid", 0) == valid
     assert result["action_counts"].get("failed", 0) == failed
+    assert result["action_counts"].get("deadline_exceeded", 0) == abandoned_rows
 
     completed = [row for row in result["rounds"] if not row.get("round_abandoned")]
     assert len(completed) <= expected_rounds
@@ -143,7 +145,8 @@ def assert_reconciles(store, run_id, result, *, agents, expected_rounds,
 
     opportunities = result["opportunities"]
     buckets = opportunities["buckets"]
-    assert set(buckets) == {"valid", "failed", "not_dispatched_current_round",
+    assert set(buckets) == {"valid", "failed", "deadline_exceeded",
+                            "not_dispatched_current_round",
                             "not_started_future_rounds"}
     assert opportunities["total_opportunities"] == agents * expected_rounds
     assert opportunities["fully_reconciled"] is True, opportunities
@@ -152,7 +155,10 @@ def assert_reconciles(store, run_id, result, *, agents, expected_rounds,
     assert buckets["failed"] == failed
     assert opportunities["completed_rounds"] == len(completed)
     if expected is not None:
-        assert buckets == expected, buckets
+        # Callers spell out only the buckets their scenario exercises; a request the
+        # engine stopped waiting for is absent from those cases by construction.
+        full = {"deadline_exceeded": deadline_exceeded, **expected}
+        assert buckets == full, buckets
     return {"rows": len(rows), "rounds_in_db": len(per_round), "buckets": buckets}
 
 
@@ -223,19 +229,20 @@ def test_stop_policy_strands_the_remainder_and_records_one_failure(tmp_path):
 
 @pytest.mark.parametrize(("concurrency", "expected_valid", "expected_stranded"), [
     (1, 2, 5),
-    (2, 2, 5),
-    (4, 3, 4),
+    (2, 3, 4),
+    (4, 5, 2),
     (8, 7, 8),
 ])
 def test_stop_policy_strands_only_what_was_not_already_submitted(
         tmp_path, concurrency, expected_valid, expected_stranded):
     """`stop` prevents further submission; it cannot recall a launched request.
 
-    The substitute fails on its third call, so two decisions are already valid before any
-    failure exists to react to. Raising concurrency lets more requests be submitted
-    before that failure is observed, so fewer opportunities are stranded. At concurrency
-    8 the whole first round was already submitted, so round 1 completes and round 2 is
-    stranded whole.
+    The substitute fails on its third call. When the stop lands, in-flight requests are
+    recorded as timed out rather than waited for, so a request that already returned
+    counts as valid and the rest of the round is stranded. Higher concurrency therefore
+    means more requests completed before the stop and fewer opportunities stranded; at
+    concurrency 8 the whole first round was submitted, so round 1 completes and round 2
+    is stranded whole.
     """
     store, engine, run_id = make_engine(tmp_path, agents=8, rounds=3,
                                         concurrency=concurrency)
@@ -250,10 +257,12 @@ def test_stop_policy_strands_only_what_was_not_already_submitted(
     assert buckets["valid"] == expected_valid
     assert buckets["failed"] == 1
     assert buckets["not_dispatched_current_round"] == expected_stranded
-    assert len(backend.calls) == expected_valid + 1
+    assert len(backend.calls) >= expected_valid + 1
     assert len(backend.calls) == len(set(backend.calls))
-    assert buckets["valid"] + buckets["failed"] == len(backend.calls)
-    assert result["performance"]["completed_requests"] == len(backend.calls)
+    assert buckets["valid"] + buckets["failed"] == len(backend.calls) - (
+        buckets["deadline_exceeded"])
+    assert result["performance"]["completed_requests"] == len(backend.calls) - (
+        buckets["deadline_exceeded"])
     assert backend.peak_in_flight <= concurrency
 
 
@@ -466,13 +475,15 @@ def test_already_complete_run_does_not_record_a_second_invocation(tmp_path):
 
 # ------------------------------------------------- deadline and in-flight boundaries
 
-def test_deadline_stops_new_dispatch_and_reports_the_overshoot(tmp_path):
-    """A held call must not extend the run indefinitely, and the overshoot is reported.
+def test_deadline_stops_waiting_on_held_calls_and_records_them(tmp_path):
+    """A held call must not extend the run, and must not be recorded as free or unsent.
 
-    Two requests are held for 0.5 s while the deadline is 0.2 s away. The engine submits
-    one batch, then refuses to submit more once the deadline passes; the already
-    launched requests are drained rather than cancelled, so the run returns after the
-    slowest in-flight call finishes. That overshoot is the documented boundary.
+    Four requests are held for 0.5 s while the deadline is 0.2 s away. The engine submits
+    one batch and then stops waiting once the deadline passes, so the run returns in about
+    the deadline rather than after the held calls. Those four requests were genuinely
+    dispatched and never answered, so they are recorded as ``deadline_exceeded`` -- not
+    ``not_dispatched`` (they were sent) and not free (their usage is unknown). Only the
+    unstarted tail of the round is stranded.
     """
     store, engine, run_id = make_engine(tmp_path, agents=20, rounds=3, concurrency=4)
     backend = ObservableSubstitute(block_calls=4, block_seconds=0.5)
@@ -486,14 +497,16 @@ def test_deadline_stops_new_dispatch_and_reports_the_overshoot(tmp_path):
     assert performance["invocations"][0]["stop_reason"] == "deadline"
     # At most the first batch was ever submitted.
     assert len(backend.calls) == 4
-    # It returned, and the overshoot is bounded by the slowest in-flight call.
-    assert wall < 0.5 + 0.5
-    assert performance["completed_requests"] == 4
+    # The run came back near the deadline instead of waiting for the held calls.
+    assert wall < 0.5
+    # Nothing came back, so no request completed and all four are recorded as abandoned.
+    assert performance["completed_requests"] == 0
+    assert performance["deadline_exceeded_requests"] == 4
     assert performance["not_dispatched"] == 16
-    # No request was cancelled: all four in-flight calls produced a real outcome.
-    assert result["action_counts"] == {"valid": 4, "not_dispatched": 16}
+    assert result["action_counts"] == {"deadline_exceeded": 4, "not_dispatched": 16}
     assert_reconciles(store, run_id, result, agents=20, expected_rounds=3,
-                      expected={"valid": 4, "failed": 0,
+                      deadline_exceeded=4,
+                      expected={"valid": 0, "failed": 0,
                                 "not_dispatched_current_round": 16,
                                 "not_started_future_rounds": 40})
 

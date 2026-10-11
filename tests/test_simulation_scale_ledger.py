@@ -98,8 +98,8 @@ def test_explicit_stop_policy_keeps_the_historical_partial_semantics(tmp_path):
     assert result["opportunities"]["abandoned_rounds"] == 1
     assert result["opportunities"]["fully_reconciled"] is True
     assert result["opportunities"]["buckets"] == {
-        "valid": 0, "failed": 1, "not_dispatched_current_round": 3,
-        "not_started_future_rounds": 4}
+        "valid": 0, "failed": 1, "deadline_exceeded": 0,
+        "not_dispatched_current_round": 3, "not_started_future_rounds": 4}
     # The failed decision stays a failed decision; the rest of the round is stranded.
     assert result["action_counts"] == {"not_dispatched": 3, "failed": 1}
     # Only the first agent was submitted; concurrency 1 prevents a wider drain.

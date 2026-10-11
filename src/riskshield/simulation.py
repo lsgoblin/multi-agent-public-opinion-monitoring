@@ -7,12 +7,12 @@ engineering path, while a real model run needs a separately authorized backend.
 import json
 import hashlib
 import math
+import queue
 import random
 import re
 import threading
 import time
 import uuid
-from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
@@ -44,6 +44,85 @@ DEFAULT_TASK_BUDGET_CNY = Decimal("5.00")
 
 class SimulationError(ValueError):
     pass
+
+
+class DaemonCallPool:
+    """A bounded worker pool whose threads can never hold the process open.
+
+    ``concurrent.futures.ThreadPoolExecutor`` is unsuitable for work that may never
+    return: its workers are non-daemon and an interpreter exit hook joins them, so a
+    single hung request keeps the whole process alive even after the engine has stopped
+    waiting for it. That is exactly the failure this pool exists to avoid.
+
+    The pool gives the engine a bounded wait (``collect`` with a timeout) and rejects new
+    work past that bound (``stop_submitting``), while a stuck worker is left behind
+    harmlessly: it is a daemon thread and its late result is queued but never read,
+    because the request it belonged to has already been recorded.
+    """
+
+    def __init__(self, max_workers: int):
+        if type(max_workers) is not int or max_workers < 1:
+            raise SimulationError("pool size must be a positive integer")
+        self.max_workers = max_workers
+        # Two queues on purpose: work goes one way, results come back the other. A single
+        # shared queue would let the collecting thread steal a work item that no worker
+        # had picked up yet.
+        self._submitted: queue.Queue = queue.Queue()
+        self._results: queue.Queue = queue.Queue()
+        self._lock = threading.Lock()
+        self._submitting = True
+        self._stop = object()  # unique sentinel: never confusable with a result
+        self._threads = [
+            threading.Thread(target=self._worker, daemon=True,
+                             name=f"riskshield-decision-{index}")
+            for index in range(max_workers)
+        ]
+        for thread in self._threads:
+            thread.start()
+
+    def _worker(self):
+        while True:
+            item = self._submitted.get()
+            if item is self._stop:
+                return
+            identifier, function, arguments = item
+            try:
+                self._results.put((identifier, (function(*arguments),)))
+            except BaseException as exc:  # reported to the caller, never swallowed
+                self._results.put((identifier, exc))
+
+    def submit(self, identifier, function, *arguments):
+        """Queue one call. Returns False once the pool has stopped accepting work."""
+        with self._lock:
+            if not self._submitting:
+                return False
+            self._submitted.put((identifier, function, arguments))
+            return True
+
+    def collect(self, timeout):
+        """Return ``(identifier, result_or_exception)``, or None if nothing arrived.
+
+        The wait is bounded: this method never blocks longer than ``timeout``.
+        """
+        try:
+            item = (self._results.get(timeout=timeout) if timeout is not None
+                    else self._results.get())
+        except queue.Empty:
+            return None
+        identifier, payload = item
+        if isinstance(payload, BaseException):
+            return identifier, payload
+        return identifier, payload[0]
+
+    def stop_submitting(self):
+        with self._lock:
+            self._submitting = False
+
+    def shutdown(self):
+        """Signal idle workers to stop. Never joins, so a stuck worker cannot block."""
+        self.stop_submitting()
+        for _ in self._threads:
+            self._submitted.put(self._stop)
 
 
 class SafeDecisionError(RuntimeError):
@@ -484,6 +563,9 @@ class Day3Simulation:
         valid_count = sum(o["status"] == "valid" for o in considered)
         failed_count = sum(o["status"] == "failed" for o in considered)
         stranded = sum(o["status"] == "not_dispatched" for o in considered)
+        # A request we stopped waiting for. It was dispatched, so it is neither a failed
+        # decision nor an unsent one, and its usage is unknown, so it is not free.
+        timed_out = sum(o["status"] == "deadline_exceeded" for o in considered)
         # An abandoned round can also hold opportunities that produced no outcome at all.
         # They belong to this round, not to a round the run never reached.
         unresolved_current_round = max(0, configured_agents - len(considered))
@@ -523,6 +605,7 @@ class Day3Simulation:
             "model_decision_agents": configured_agents - current_round_stranded,
             "dispatched_requests": configured_agents - current_round_stranded,
             "not_dispatched_requests": stranded,
+            "deadline_exceeded_requests": timed_out,
             "not_dispatched_current_round": current_round_stranded,
             # Everything after this round that no agent will ever be offered. For a
             # completed round that is exactly the later rounds; for an abandoned round it
@@ -531,15 +614,17 @@ class Day3Simulation:
             "not_started_rounds_count": max(0, config["rounds"] - round_number),
             "task_opportunities_total": total_opportunities,
             "task_opportunities_reconciled": (
-                valid_count + failed_count + current_round_stranded + not_started),
+                valid_count + failed_count + timed_out +
+                current_round_stranded + not_started),
             "round_abandoned": abandoned,
             "billing": {
                 "states": billing_states,
                 "cost_by_state": cost_by_billing_state,
                 "reservation": reservation_by_status,
-                "note": ("unsettled_reserved means the request was dispatched but its "
-                         "usage is unknown; its reservation is kept as the cost rather "
-                         "than reported as free. not_sent/released cost nothing."),
+                "note": ("unsettled_reserved covers both a dispatched request whose usage "
+                         "is unknown and a request we stopped waiting for; either way the "
+                         "reservation is kept as the cost rather than reported as free. "
+                         "not_sent/released cost nothing."),
             },
             "local_state_update_agents": len(state_by_id),
             "valid_decisions": valid_count,
@@ -570,9 +655,10 @@ class Day3Simulation:
           preflight, stop signal, deadline, or the tail of an abandoned round).
         - ``settled``: the response carried usable token usage, so the amount is billed
           usage priced at the frozen rates.
-        - ``unsettled_reserved``: the request was dispatched but its usage is unknown
-          (transport failure, timeout, malformed usage). The reservation is kept as the
-          cost on purpose: a possibly billed request must not be reported as free.
+        - ``unsettled_reserved``: the request was dispatched but its usage is unknown --
+          a transport failure, a malformed usage block, or a request the engine stopped
+          waiting for. The reservation is kept as the cost on purpose: a possibly billed
+          request must not be reported as free.
         """
         cost = outcome["cost"]
         if outcome["status"] == "not_dispatched":
@@ -635,11 +721,13 @@ class Day3Simulation:
         which is the only view that reflects the run's actual end state, plus a round of
         opportunities for each round that never produced a row.
         """
-        buckets = {"valid": 0, "failed": 0, "not_dispatched_current_round": 0,
-                   "not_started_future_rounds": 0}
+        buckets = {"valid": 0, "failed": 0, "deadline_exceeded": 0,
+                   "not_dispatched_current_round": 0, "not_started_future_rounds": 0}
         for row in rounds:
             buckets["valid"] += int(row.get("valid_decisions", 0))
             buckets["failed"] += int(row.get("failed_decisions", 0))
+            buckets["deadline_exceeded"] += int(
+                row.get("deadline_exceeded_requests", 0))
             buckets["not_dispatched_current_round"] += int(
                 row.get("not_dispatched_current_round", 0))
         if rounds:
@@ -679,7 +767,8 @@ class Day3Simulation:
                 stop_event: threading.Event | None = None,
                 deadline_monotonic: float | None = None,
                 stop_on_failure: bool = False,
-                failure_policy: str | None = None):
+                failure_policy: str | None = None,
+                call_timeout_seconds: float | None = None):
         """Advance whole rounds with bounded dispatch and optional timing/stop controls.
 
         ``deadline_monotonic`` is an absolute value from ``time.monotonic()`` in this
@@ -720,6 +809,12 @@ class Day3Simulation:
             raise SimulationError("backend mode must declare test_substitute or real_model")
         if max_rounds is not None and (type(max_rounds) is not int or max_rounds < 1):
             raise SimulationError("max_rounds must be positive")
+        if call_timeout_seconds is not None:
+            if (isinstance(call_timeout_seconds, bool) or
+                    not isinstance(call_timeout_seconds, (int, float)) or
+                    not math.isfinite(call_timeout_seconds) or call_timeout_seconds <= 0):
+                raise SimulationError(
+                    "call_timeout_seconds must be a finite positive number of seconds")
         if stop_event is not None and not callable(getattr(stop_event, "is_set", None)):
             raise SimulationError("stop_event must provide is_set()")
         if deadline_monotonic is not None:
@@ -733,8 +828,47 @@ class Day3Simulation:
         call_started_at = datetime.now().astimezone().isoformat()
         # A mutable container: finish() below must observe the final counts, and a plain
         # local would be rebound in this scope without being visible to the closure.
-        call_totals = {"dispatched": 0, "valid": 0}
+        call_totals = {"dispatched": 0, "valid": 0, "deadline_exceeded": 0}
         final_stop_reason = None
+
+        def effective_round_budget():
+            """Seconds a round may wait for its in-flight requests before giving up.
+
+            This is the real termination boundary. Waiting on a launched request with no
+            bound is what lets one hung backend call block the whole task forever, so the
+            engine must be able to stop waiting by itself and not depend on the backend
+            (or the model gateway) honouring a socket timeout.
+            """
+            if call_timeout_seconds is not None:
+                return call_timeout_seconds
+            if deadline_monotonic is None:
+                return None
+            return max(0.0, deadline_monotonic - time.monotonic())
+
+        def record_call_timeout(aid):
+            """Record a request we stopped waiting for.
+
+            It was genuinely dispatched, so it is NOT ``not_dispatched``, and its usage is
+            unknown, so it is NOT free. It is ``deadline_exceeded`` and its reservation is
+            kept as an unsettled cost, because the provider may have processed it.
+            """
+            obs, quote = observation_by_id[aid], quote_by_id[aid]
+            return {
+                "status": "deadline_exceeded", "decision": None, "usage": None,
+                "cost": quote.reservation_cny, "reserved": quote.reservation_cny,
+                "requested_model": quote.requested_model,
+                "price_version": quote.price_version, "model": None,
+                "error": "CallTimeout", "request_audit": None,
+                "schema_diagnostics": None, "failure_category": "CallTimeout",
+                # No response arrived, so there are no response timings to report. The
+                # dispatch evidence records that the request was sent and then abandoned.
+                "timing": {
+                    "queued_at": None, "started_at": None, "ended_at": None,
+                    "queue_seconds": None, "backend_seconds": None,
+                    "validation_seconds": None, "elapsed_seconds": None,
+                    "dispatch_evidence": "dispatched_then_not_waited_for",
+                },
+            }
 
         def finish():
             """Close the invocation and return the summary.
@@ -823,7 +957,7 @@ class Day3Simulation:
                     raise SimulationError("frozen observation changed; refusing to replay this round")
                 if row["status"] == "not_dispatched":
                     continue
-                if row["status"] not in {"valid", "failed"}:
+                if row["status"] not in {"valid", "failed", "deadline_exceeded"}:
                     raise SimulationError("unknown persisted action status")
                 outcomes_by_id[aid] = {
                     "status": row["status"],
@@ -1182,11 +1316,16 @@ class Day3Simulation:
                 request_validation_total = 0.0
                 projected_cost = current_cost
                 completed_buffer = []
+                abandoned_in_flight = []
                 if final_stop_reason is None and pending:
                     active = {}
                     cursor = 0
                     concurrency = config["concurrency"]
-                    with ThreadPoolExecutor(max_workers=concurrency) as pool:
+                    round_budget = effective_round_budget()
+                    round_deadline = (time.monotonic() + round_budget
+                                      if round_budget is not None else None)
+                    pool = DaemonCallPool(concurrency)
+                    try:
                         while cursor < len(pending) or active:
                             while (cursor < len(pending) and len(active) < concurrency
                                    and final_stop_reason is None):
@@ -1198,46 +1337,86 @@ class Day3Simulation:
                                 cursor += 1
                                 queued_at = time.perf_counter()
                                 queued_wall = datetime.now().astimezone().isoformat()
-                                future = pool.submit(call, observation_by_id[aid],
-                                                     quote_by_id[aid], queued_at, queued_wall)
-                                active[future] = aid
+                                pool.submit(aid, call, observation_by_id[aid],
+                                            quote_by_id[aid], queued_at, queued_wall)
+                                active[aid] = True
                                 peak_in_flight = max(peak_in_flight, len(active))
                             if not active:
                                 break
-                            done, _ = wait(active, return_when=FIRST_COMPLETED)
-                            for future in sorted(done, key=lambda f: active[f]):
-                                aid = active.pop(future)
-                                outcome = future.result()
-                                outcomes_by_id[aid] = outcome
-                                completed_buffer.append((aid, outcome))
-                                projected_cost += outcome["cost"]
-                                call_totals["dispatched"] += outcome["status"] != "not_dispatched"
-                                call_totals["valid"] += outcome["status"] == "valid"
-                                request_backend_total += outcome["timing"]["backend_seconds"]
-                                request_validation_total += outcome["timing"]["validation_seconds"]
-                                if (outcome["error"] or "").endswith(":call_limit"):
-                                    final_stop_reason = "backend_call_limit"
-                                elif failure_policy == "stop" and outcome["status"] == "failed":
-                                    final_stop_reason = "stop_on_failure"
-                                if projected_cost > Decimal(config["budget_cny"]):
-                                    final_stop_reason = "budget_exceeded"
-                                if len(completed_buffer) >= concurrency:
-                                    persist_outcomes(completed_buffer)
-                                    completed_buffer.clear()
+                            timeout = None
+                            if round_deadline is not None:
+                                timeout = max(0.0, round_deadline - time.monotonic())
+                            arrived = pool.collect(timeout)
+                            if arrived is None:
+                                # The budget is spent and nothing came back. Stop waiting;
+                                # the requests already dispatched are recorded below. The
+                                # reason distinguishes "the run deadline passed" from "this
+                                # round's call budget was exhausted".
+                                final_stop_reason = (
+                                    "deadline" if requested_stop() == "deadline"
+                                    else "call_timeout")
+                                abandoned_in_flight = sorted(active)
+                                active.clear()
+                                break
+                            aid, outcome = arrived
+                            if aid not in active:
+                                continue  # late result from an already-recorded request
+                            del active[aid]
+                            if isinstance(outcome, BaseException):
+                                raise SimulationError(
+                                    "worker returned an unexpected exception"
+                                ) from outcome
+                            outcomes_by_id[aid] = outcome
+                            completed_buffer.append((aid, outcome))
+                            projected_cost += outcome["cost"]
+                            call_totals["dispatched"] += outcome["status"] != "not_dispatched"
+                            call_totals["valid"] += outcome["status"] == "valid"
+                            request_backend_total += outcome["timing"]["backend_seconds"] or 0.0
+                            request_validation_total += (
+                                outcome["timing"]["validation_seconds"] or 0.0)
+                            if (outcome["error"] or "").endswith(":call_limit"):
+                                final_stop_reason = "backend_call_limit"
+                            elif failure_policy == "stop" and outcome["status"] == "failed":
+                                final_stop_reason = "stop_on_failure"
+                            if projected_cost > Decimal(config["budget_cny"]):
+                                final_stop_reason = "budget_exceeded"
+                            if len(completed_buffer) >= concurrency:
+                                persist_outcomes(completed_buffer)
+                                completed_buffer.clear()
+                        if final_stop_reason is None and active:
+                            # A stop landed while requests were in flight. They were
+                            # dispatched, so they are not "not dispatched"; their outcome
+                            # is simply unknown, so they are recorded as timed out rather
+                            # than released as free.
+                            abandoned_in_flight = sorted(active)
+                            active.clear()
+                            final_stop_reason = "call_timeout"
                         persist_outcomes(completed_buffer)
+                    finally:
+                        pool.shutdown()
+                if final_stop_reason in {"call_timeout", "deadline"} and abandoned_in_flight:
+                    # Reconcile the requests we stopped waiting for, then let the normal
+                    # ledger path record the rest of the round as stranded.
+                    timeouts = [(aid, record_call_timeout(aid))
+                                for aid in abandoned_in_flight]
+                    call_totals["deadline_exceeded"] += len(timeouts)
+                    persist_outcomes(timeouts)
                 if pending and final_stop_reason is not None:
                     reason = {
                         "stop_signal": "StopSignal", "deadline": "DeadlineExceeded",
+                        "call_timeout": "CallTimeout",
                         "budget_preflight": "BudgetPreflight",
                         "backend_call_limit": "BackendCallLimit",
                         "stop_on_failure": "StoppedAfterFailure",
                         "budget_exceeded": "BudgetExceeded",
                     }.get(final_stop_reason, "NotDispatched")
                     # One connection for the whole tail of the round instead of one per
-                    # agent. Agents that already produced a persisted outcome (valid or
-                    # failed) are skipped, so a failed decision keeps its failed status.
-                    insert_not_dispatched_batch(
-                        [aid for aid in pending if aid not in outcomes_by_id], reason)
+                    # agent. Agents that already produced a persisted outcome (valid,
+                    # failed or deadline_exceeded) are skipped, so a recorded outcome keeps
+                    # its own status.
+                    stranded_now = [aid for aid in pending if aid not in outcomes_by_id]
+                    if stranded_now:
+                        insert_not_dispatched_batch(stranded_now, reason)
                 scheduler_wall = time.perf_counter() - scheduler_started
                 if phases is not None:
                     phases["scheduler_and_drain_wall_seconds"] = scheduler_wall
@@ -1418,14 +1597,15 @@ class Day3Simulation:
             return None
         dispatched = [row for row in requests if row["status"] in {"valid", "failed"}]
         valid = [row for row in dispatched if row["status"] == "valid"]
+        timed_out = [row for row in requests if row["status"] == "deadline_exceeded"]
         unknown_usage = sum(row["usage_unknown"] for row in dispatched)
         elapsed = sum(row["wall_seconds"] for row in calls)
         by_model = {}
         for row in requests:
             model = row["requested_model"]
             bucket = by_model.setdefault(model, {"requests": 0, "valid": 0, "failed": 0,
-                "not_dispatched": 0, "unknown_usage": 0, "cost_cny": "0",
-                "failure_categories": {}, "backend_seconds": [],
+                "not_dispatched": 0, "deadline_exceeded": 0, "unknown_usage": 0,
+                "cost_cny": "0", "failure_categories": {}, "backend_seconds": [],
                 "queue_seconds": [], "request_elapsed_seconds": []})
             bucket["requests"] += 1
             bucket[row["status"]] += 1
@@ -1462,6 +1642,7 @@ class Day3Simulation:
             "completed_requests": len(dispatched),
             "valid_decisions": len(valid),
             "failed_dispatched_requests": sum(row["status"] == "failed" for row in dispatched),
+            "deadline_exceeded_requests": len(timed_out),
             "not_dispatched": sum(row["status"] == "not_dispatched" for row in requests),
             "unknown_usage_calls": unknown_usage,
             "completed_request_throughput_per_second": (

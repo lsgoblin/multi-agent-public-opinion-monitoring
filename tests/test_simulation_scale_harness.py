@@ -236,7 +236,8 @@ def test_completed_run_has_no_unstarted_or_stranded_buckets(harness):
                       profile=harness.FaultProfile(latency_seconds=0.002))
     buckets = level["opportunities"]["buckets"]
     assert level["opportunities"]["total_opportunities"] == 36
-    assert buckets == {"valid": 36, "failed": 0, "not_dispatched_current_round": 0,
+    assert buckets == {"valid": 36, "failed": 0, "deadline_exceeded": 0,
+                       "not_dispatched_current_round": 0,
                        "not_started_future_rounds": 0}
     assert_all_invariants_hold(level)
 
@@ -320,8 +321,13 @@ def test_priced_budget_stop_sends_nothing_and_charges_nothing(harness):
 
 # ----------------------------------------------------- deadline and held-call boundary
 
-def test_deadline_bounds_a_held_call_and_reports_the_overshoot(harness):
-    """A genuinely held call must not extend the run past the drained batch."""
+def test_deadline_stops_waiting_on_held_calls(harness):
+    """A genuinely held call must not extend the run past the deadline.
+
+    Four calls are held for 0.4 s while the deadline is 150 ms away. The engine submits the
+    batch, then stops waiting when the deadline passes, so it returns near the deadline
+    rather than after the held calls.
+    """
     profile = harness.FaultProfile(latency_seconds=0.0, hold_calls=4, hold_seconds=0.4)
     level = harness.run_load_level(agents=20, rounds=3, concurrency=4, latency_ms=0.0,
                                    profile=profile, deadline_ms=150.0)
@@ -329,26 +335,32 @@ def test_deadline_bounds_a_held_call_and_reports_the_overshoot(harness):
     assert outcome["status"] == "partial"
     assert level["resources"]["substitute_held_calls"] == 4
     assert level["resources"]["substitute_call_count"] == 4
-    # The run returned after the four held calls drained, not after every round.
-    assert outcome["wall_seconds"] < 0.4 + 0.6
+    # It returned near the deadline, not after the held calls finished.
+    assert outcome["wall_seconds"] < 0.4
     assert outcome["completed_rounds"] == 0
     assert level["invariants"]["ledger_round_rows_match_completed_rounds"][
         "abandoned_rounds"] == 1
     assert level["opportunities"]["fully_reconciled"] is True
+    config = level["run_config_frozen"]
+    assert config["agent_count"] * config["rounds"] == 60
     assert level["opportunities"]["buckets"] == {
-        "valid": 4, "failed": 0, "not_dispatched_current_round": 16,
-        "not_started_future_rounds": 40}
+        "valid": 0, "failed": 0, "deadline_exceeded": 4,
+        "not_dispatched_current_round": 16, "not_started_future_rounds": 40}
     assert_all_invariants_hold(level)
 
 
-def test_deadline_reports_stop_reason_and_billing(harness):
+def test_deadline_charges_the_requests_it_stopped_waiting_for(harness):
+    """Requests abandoned at the deadline keep their reservation, never free."""
     profile = harness.FaultProfile(latency_seconds=0.0, hold_calls=2, hold_seconds=0.3,
                                    **PRICED)
     level = harness.run_load_level(agents=12, rounds=2, concurrency=2, latency_ms=0.0,
                                    profile=profile, deadline_ms=100.0)
     assert level["billing"]["cost_reconciles"] is True
-    assert level["billing"]["states"]["settled"] == 2
+    # Nothing came back, so nothing settled; the two dispatched requests are unsettled.
+    assert level["billing"]["states"]["settled"] == 0
+    assert level["billing"]["states"]["unsettled_reserved"] == 2
     assert level["billing"]["states"]["not_sent"] == 10
+    assert Decimal(level["billing"]["unsettled_reserved_cost_cny"]) == Decimal("0.20") * 2
     assert_all_invariants_hold(level)
 
 
@@ -358,6 +370,6 @@ def test_an_expired_deadline_dispatches_nothing(harness):
     assert level["resources"]["substitute_call_count"] == 0
     assert level["outcome"]["action_counts"] == {"not_dispatched": 6}
     assert level["opportunities"]["buckets"] == {
-        "valid": 0, "failed": 0, "not_dispatched_current_round": 6,
-        "not_started_future_rounds": 6}
+        "valid": 0, "failed": 0, "deadline_exceeded": 0,
+        "not_dispatched_current_round": 6, "not_started_future_rounds": 6}
     assert_all_invariants_hold(level)

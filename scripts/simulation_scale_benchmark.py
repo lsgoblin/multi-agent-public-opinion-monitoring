@@ -370,6 +370,9 @@ def invariant_verdicts(*, result: dict, counts: dict, performance: dict,
     rounds = result["rounds"]
     completed = [row for row in rounds if not row.get("round_abandoned")]
     dispatched = action_counts.get("valid", 0) + action_counts.get("failed", 0)
+    # A request the engine stopped waiting for was dispatched and recorded, just without a
+    # decision, so it belongs on the "accounted for" side of the ledger.
+    abandoned = action_counts.get("deadline_exceeded", 0)
     return {
         "no_duplicate_dispatch": {
             "verdict": counts["duplicate_action_cells"] == 0,
@@ -400,11 +403,13 @@ def invariant_verdicts(*, result: dict, counts: dict, performance: dict,
             "unreached_rounds": opportunities.get("unreached_rounds"),
         },
         "no_request_silently_lost": {
-            "verdict": backend.calls == dispatched,
+            "verdict": backend.calls == dispatched + abandoned,
             "detail": ("every request the substitute actually received has a persisted "
-                       "outcome: no completed decision was dropped from the ledger"),
+                       "outcome: a completed decision, or a deadline_exceeded record when "
+                       "the engine stopped waiting for it"),
             "requests_received": backend.calls,
             "persisted_dispatched": dispatched,
+            "deadline_exceeded": abandoned,
         },
         # Replaces an earlier check that could never fail for a zero-cost substitute.
         # This one compares the billing ledger against the charged run cost, so it does

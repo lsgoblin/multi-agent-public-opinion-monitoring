@@ -79,8 +79,10 @@ def test_report_has_five_evidence_bound_modules_and_persists(tmp_path):
     assert report["overview"]["event_title"] == "Fictional Northstar Insurance test service interruption"
     assert report["overview"]["run_integrity"] == {
         "status": "complete", "completed_rounds": 2, "configured_rounds": 2,
-        "requested_decisions": 4, "valid_decisions": 4, "failed_decisions": 0,
+        "abandoned_rounds": [], "requested_decisions": 4, "valid_decisions": 4,
+        "failed_decisions": 0, "deadline_exceeded_decisions": 0,
         "message_count": propagation["total_messages"],
+        "complete": True,
         "integrity_label": "账本完整（不代表结果真实或关口通过）",
     }
     business = report["modules"]["recommendations"]["items"][0]
@@ -204,5 +206,7 @@ def test_report_surfaces_failed_decision_counts_and_partial_integrity(tmp_path):
     assert integrity["requested_decisions"] == 4
     assert integrity["valid_decisions"] == 3
     assert integrity["failed_decisions"] == 1
-    assert integrity["integrity_label"] == "存在失败或部分完成"
+    assert integrity["integrity_label"] == "不完整：存在失败决策或中止轮次"
+    assert integrity["complete"] is False
+    assert integrity["deadline_exceeded_decisions"] == 0
     assert len(report["evidence"]["failed_action_ids"]) == 1
