@@ -283,13 +283,34 @@ def _is_filled(value: Any) -> bool:
     return value is not None and (not isinstance(value, str) or value.strip() != "")
 
 
+def expected_units_for_role(packet: dict[str, Any], role: str) -> list[str]:
+    """The units one annotator role is actually responsible for.
+
+    Role A takes the first slot of every unit. Role B takes the second slot, so a
+    unit that needs only one independent label is not part of pass B at all.
+    """
+    if role not in ("A", "B"):
+        raise AnnotationInputError("role must be 'A' or 'B'.")
+    expected: list[str] = []
+    for unit in packet_units(packet):
+        slots = [s for s in unit.get("annotator_slots", []) if isinstance(s, dict)]
+        if not slots:
+            continue
+        if role == "B" and len(slots) < 2:
+            continue
+        expected.append(unit.get("unit_id"))
+    return expected
+
+
 def validate_submission(packet: dict[str, Any], submission: dict[str, Any], *,
-                        slot_binding: dict[str, str] | None = None) -> dict[str, Any]:
+                        slot_binding: dict[str, str] | None = None,
+                        role: str | None = None) -> dict[str, Any]:
     """Check one returned submission against the frozen packet.
 
-    ``slot_binding`` maps ``unit_id`` to the slot id this submission is claiming,
-    which lets the caller pin an answer to a specific slot instead of trusting the
-    submitter's own numbering.
+    ``role`` states which annotator pass this is, so "missing" is judged against
+    the units that pass is responsible for rather than every unit in the packet.
+    ``slot_binding`` optionally pins each answer to a specific slot id instead of
+    trusting the submitter's own numbering.
     """
     key, entries = _submission_entries(submission)
     units_by_id = {unit.get("unit_id"): unit for unit in packet_units(packet)}
@@ -382,26 +403,30 @@ def validate_submission(packet: dict[str, Any], submission: dict[str, Any], *,
             "text_sha256": unit.get("text_sha256"),
         })
 
-    expected_units = {unit.get("unit_id") for unit in packet_units(packet)
-                      if isinstance(slot_binding, dict) is False}
-    missing = sorted(
-        unit_id for unit_id in (slot_binding or {}).keys()
-        if unit_id not in {row["unit_id"] for row in accepted + rejected})
-    if not slot_binding:
-        missing = sorted({unit.get("unit_id") for unit in packet_units(packet)}
-                         - {row["unit_id"] for row in accepted + rejected})
+    if slot_binding:
+        expected = sorted(slot_binding.keys())
+    elif role is not None:
+        expected = expected_units_for_role(packet, role)
+    else:
+        expected = sorted(units_by_id.keys())
+    seen_answered = {row["unit_id"] for row in accepted + rejected}
+    missing = sorted(unit_id for unit_id in expected if unit_id not in seen_answered)
+    unexpected = sorted(seen_answered - set(expected))
 
     annotators = {row["annotator_id"] for row in accepted}
     return {
         "schema": VALIDATION_SCHEMA,
         "submission_key": key,
+        "role": role,
         "accepted": accepted,
         "rejected": rejected,
         "counts": {"rows": len(entries), "accepted": len(accepted), "rejected": len(rejected)},
+        "expected_units": expected,
         "missing_units": missing,
-        "complete": not missing and not rejected,
+        "unexpected_units": unexpected,
+        "complete": not missing and not rejected and not unexpected,
         "distinct_annotators": sorted(annotators),
-        "packet_units": len(expected_units) if expected_units else len(units_by_id),
+        "packet_units": len(units_by_id),
         "label_distribution": _distribution(accepted),
     }
 
@@ -461,6 +486,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--write-sheets", action="store_true")
     parser.add_argument("--validate", type=Path, default=None)
     parser.add_argument("--validate-second", type=Path, default=None)
+    parser.add_argument("--role", choices=("A", "B"), default=None,
+                        help="Which annotator pass --validate carries.")
+    parser.add_argument("--role-second", choices=("A", "B"), default=None,
+                        help="Which annotator pass --validate-second carries.")
     args = parser.parse_args(argv)
 
     root = args.material_root.resolve()
@@ -491,10 +520,11 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     if args.validate is not None:
-        first = validate_submission(packet, _read_json(args.validate))
+        first = validate_submission(packet, _read_json(args.validate), role=args.role)
         output: dict[str, Any] = {"first_pass": first}
         if args.validate_second is not None:
-            second = validate_submission(packet, _read_json(args.validate_second))
+            second = validate_submission(packet, _read_json(args.validate_second),
+                                         role=args.role_second)
             output["second_pass"] = second
             output["cross_check"] = cross_check(first, second)
         print(json.dumps(output, ensure_ascii=False, indent=2))

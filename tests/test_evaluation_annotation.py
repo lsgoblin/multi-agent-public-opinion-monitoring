@@ -221,6 +221,43 @@ def test_complete_submission_is_complete(packet):
     assert result["missing_units"] == []
 
 
+def test_role_b_is_complete_without_the_single_slot_unit(packet):
+    """unit_two needs one independent label, so pass B is not responsible for it."""
+    result = ann.validate_submission(packet,
+                                     _submission([_answer("unit_one", TEXT_A)]),
+                                     role="B")
+    assert result["expected_units"] == ["unit_one"]
+    assert result["missing_units"] == []
+    assert result["complete"] is True
+
+
+def test_role_a_is_incomplete_without_the_single_slot_unit(packet):
+    result = ann.validate_submission(packet,
+                                     _submission([_answer("unit_one", TEXT_A)]),
+                                     role="A")
+    assert result["expected_units"] == ["unit_one", "unit_two"]
+    assert result["missing_units"] == ["unit_two"]
+    assert result["complete"] is False
+
+
+def test_role_b_flagging_a_unit_it_does_not_own(packet):
+    rows = [_answer("unit_one", TEXT_A), _answer("unit_two", TEXT_B)]
+    result = ann.validate_submission(packet, _submission(rows), role="B")
+    assert result["unexpected_units"] == ["unit_two"]
+    assert result["complete"] is False
+
+
+def test_expected_units_for_role_matches_the_sheet(packet):
+    for role in ("A", "B"):
+        assert ann.expected_units_for_role(packet, role) == [
+            row["unit_id"] for row in ann.sheet_rows(packet, role)]
+
+
+def test_expected_units_rejects_unknown_role(packet):
+    with pytest.raises(ann.AnnotationInputError):
+        ann.expected_units_for_role(packet, "C")
+
+
 def test_text_hash_mismatch_is_rejected(packet):
     bad = _answer("unit_one", TEXT_A, text_sha256="0" * 64)
     result = ann.validate_submission(packet, _submission([bad]))
@@ -316,9 +353,9 @@ def test_records_key_is_accepted(packet):
 
 def test_agreement_is_computed_over_shared_units(packet):
     first = ann.validate_submission(packet, _submission(
-        [_answer("unit_one", TEXT_A, label="negative")]))
+        [_answer("unit_one", TEXT_A, label="negative")]), role="A")
     second = ann.validate_submission(packet, _submission(
-        [_answer("unit_one", TEXT_A, label="negative", annotator_id="annotator-2")]))
+        [_answer("unit_one", TEXT_A, label="negative", annotator_id="annotator-2")]), role="B")
     result = ann.cross_check(first, second)
     assert result["units_with_both_passes"] == 1
     assert result["agreement"] == {"numerator": 1, "denominator": 1, "value": 1.0}
@@ -327,9 +364,9 @@ def test_agreement_is_computed_over_shared_units(packet):
 
 def test_disagreement_excludes_the_unit(packet):
     first = ann.validate_submission(packet, _submission(
-        [_answer("unit_one", TEXT_A, label="negative")]))
+        [_answer("unit_one", TEXT_A, label="negative")]), role="A")
     second = ann.validate_submission(packet, _submission(
-        [_answer("unit_one", TEXT_A, label="neutral", annotator_id="annotator-2")]))
+        [_answer("unit_one", TEXT_A, label="neutral", annotator_id="annotator-2")]), role="B")
     result = ann.cross_check(first, second)
     assert result["agreement"]["numerator"] == 0
     assert "independent_labels_disagree_no_adjudication" in \
@@ -337,16 +374,16 @@ def test_disagreement_excludes_the_unit(packet):
 
 
 def test_same_annotator_twice_is_not_two_independent_labels(packet):
-    first = ann.validate_submission(packet, _submission([_answer("unit_one", TEXT_A)]))
-    second = ann.validate_submission(packet, _submission([_answer("unit_one", TEXT_A)]))
+    first = ann.validate_submission(packet, _submission([_answer("unit_one", TEXT_A)]), role="A")
+    second = ann.validate_submission(packet, _submission([_answer("unit_one", TEXT_A)]), role="B")
     result = ann.cross_check(first, second)
     assert result["units_agreeing"] == 0
     assert "same_annotator_for_both_passes" in result["excluded_units"][0]["reasons"]
 
 
 def test_cross_check_reports_no_units_when_disjoint(packet):
-    first = ann.validate_submission(packet, _submission([_answer("unit_one", TEXT_A)]))
-    second = ann.validate_submission(packet, _submission([_answer("unit_two", TEXT_B)]))
+    first = ann.validate_submission(packet, _submission([_answer("unit_one", TEXT_A)]), role="A")
+    second = ann.validate_submission(packet, _submission([_answer("unit_two", TEXT_B)]), role="B")
     result = ann.cross_check(first, second)
     assert result["units_with_both_passes"] == 0
     assert result["agreement"]["value"] is None
