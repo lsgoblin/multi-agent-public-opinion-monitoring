@@ -183,7 +183,11 @@ def sheet_rows(packet: dict[str, Any], role: str) -> list[dict[str, str]]:
 def write_review_sheet(packet: dict[str, Any], role: str, path: Path) -> dict[str, Any]:
     rows = sheet_rows(packet, role)
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("w", encoding="utf-8", newline="") as stream:
+    # utf-8-sig writes a BOM so a spreadsheet on a Chinese Windows locale decodes
+    # the frozen title as UTF-8 instead of the ANSI code page. Getting this wrong
+    # corrupts a curly apostrophe in one frozen title, and the corrupted row is
+    # then rejected on its text hash.
+    with path.open("w", encoding="utf-8-sig", newline="") as stream:
         writer = csv.DictWriter(stream, fieldnames=list(SHEET_COLUMNS))
         writer.writeheader()
         writer.writerows(rows)
@@ -192,6 +196,7 @@ def write_review_sheet(packet: dict[str, Any], role: str, path: Path) -> dict[st
         "role": role,
         "rows": len(rows),
         "columns": list(SHEET_COLUMNS),
+        "encoding": "utf-8-sig",
         "blank_fields": ["label", "rationale", "confidence", "annotator_id",
                          "submitted_at", "prediction_exposure",
                          "saw_other_annotator_answer"],

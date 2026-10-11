@@ -135,7 +135,7 @@ def test_slot_count_mismatch_is_detected():
 def test_review_sheet_is_blank_and_blind(packet, tmp_path):
     report = ann.write_review_sheet(packet, "A", tmp_path / "sheet-a.csv")
     assert report["rows"] == 2
-    with (tmp_path / "sheet-a.csv").open(encoding="utf-8") as stream:
+    with (tmp_path / "sheet-a.csv").open(encoding="utf-8-sig") as stream:
         rows = list(csv.DictReader(stream))
     for row in rows:
         for field in ("label", "rationale", "confidence", "annotator_id",
@@ -146,6 +146,27 @@ def test_review_sheet_is_blank_and_blind(packet, tmp_path):
     assert set(rows[0]) == set(ann.SHEET_COLUMNS)
     assert not any("predict" in column for column in rows[0] if column != "prediction_exposure")
     assert not any("suggestion" in column for column in rows[0])
+
+
+def test_review_sheet_carries_a_bom_so_spreadsheets_decode_utf8(packet, tmp_path):
+    """A frozen title contains a curly apostrophe; ANSI decoding would corrupt it."""
+    path = tmp_path / "sheet-a.csv"
+    report = ann.write_review_sheet(packet, "A", path)
+    assert report["encoding"] == "utf-8-sig"
+    assert path.read_bytes().startswith(b"\xef\xbb\xbf")
+    with path.open(encoding="utf-8-sig") as stream:
+        rows = list(csv.DictReader(stream))
+    assert rows[0]["text_to_annotate"] == TEXT_A
+
+
+def test_non_ascii_title_round_trips_through_the_sheet(packet, tmp_path):
+    path = tmp_path / "sheet.csv"
+    ann.write_review_sheet(packet, "A", path)
+    with path.open(encoding="utf-8-sig") as stream:
+        rows = list(csv.DictReader(stream))
+    by_unit = {row["unit_id"]: row for row in rows}
+    assert by_unit["unit_two"]["text_to_annotate"] == TEXT_B
+    assert ann.sha256_text(by_unit["unit_two"]["text_to_annotate"]) == _sha(TEXT_B)
 
 
 def test_role_b_sheet_uses_the_second_slot_and_skips_single_slot_units(packet):
