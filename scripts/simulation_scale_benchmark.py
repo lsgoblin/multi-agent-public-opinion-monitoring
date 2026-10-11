@@ -127,7 +127,22 @@ class FaultProfile:
     invalid_output_every: int = 0         # engine must reject the decision
     error_every: int = 0                  # generic backend error
     burst_error_at: tuple = ()            # consecutive call indices that all fail
+    hold_calls: int = 0                   # first N calls really block
+    hold_seconds: float = 0.0
+    # Simulated prices. Zero keeps the engine overhead baseline free; non-zero exercises
+    # reservation, settlement and release. These are test rates, not provider prices.
+    reservation_cny: str = "0"
+    input_cny_per_million: str = "0"
+    cached_input_cny_per_million: str = "0"
+    output_cny_per_million: str = "0"
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    emit_usage: bool = True
     seed: int = 20261011
+
+    @property
+    def priced(self) -> bool:
+        return Decimal(self.reservation_cny) > 0
 
     def describe(self) -> dict:
         return {
@@ -142,6 +157,18 @@ class FaultProfile:
             "invalid_output_every": self.invalid_output_every,
             "error_every": self.error_every,
             "burst_error_at": list(self.burst_error_at),
+            "hold_calls": self.hold_calls,
+            "hold_seconds": self.hold_seconds,
+            "simulated_prices": {
+                "reservation_cny": self.reservation_cny,
+                "input_cny_per_million": self.input_cny_per_million,
+                "cached_input_cny_per_million": self.cached_input_cny_per_million,
+                "output_cny_per_million": self.output_cny_per_million,
+                "prompt_tokens": self.prompt_tokens,
+                "completion_tokens": self.completion_tokens,
+                "is_simulated": True,
+                "note": "engineering test rates, not provider prices",
+            },
             "seed": self.seed,
             "is_engineering_test_configuration": True,
         }
@@ -151,19 +178,15 @@ class SubstituteBackend:
     """A substitute that holds each request open, and can be told to misbehave.
 
     The decision rule is deliberately small and deterministic: it reacts to the runtime
-    message it received, else to its own memory, else to a role default. Latency and
-    faults are the independent variables that the scale question needs.
+    message it received, else to its own memory, else to a role default. Latency, faults
+    and simulated prices are the independent variables the scale question needs.
     """
-
-    mode = "test_substitute"
-    reservation_cny = Decimal("0")
-    input_cny_per_million = Decimal("0")
-    cached_input_cny_per_million = Decimal("0")
-    output_cny_per_million = Decimal("0")
-    price_version = "offline-zero-cost-v2"
 
     def __init__(self, profile: FaultProfile | None = None):
         self.profile = profile or FaultProfile()
+        self.mode = "real_model" if self.profile.priced else "test_substitute"
+        self.price_version = ("simulated-prices-v1" if self.profile.priced
+                              else "offline-zero-cost-v2")
         self._lock = threading.Lock()
         self._rng = random.Random(self.profile.seed)
         self.calls = 0
@@ -172,15 +195,18 @@ class SubstituteBackend:
         self.observed_latencies: list[float] = []
         self.outcomes: dict = {name: 0 for name in FAULT_OUTCOMES}
         self.burst_failures = 0
+        self.held_calls = 0
         self._next_admission = 0.0
 
     def pricing(self, observation) -> DecisionPricing:
-        return DecisionPricing(requested_model=SUBSTITUTE_NAME,
-                               price_version=SUBSTITUTE_VERSION,
-                               reservation_cny=Decimal("0"),
-                               input_cny_per_million=Decimal("0"),
-                               cached_input_cny_per_million=Decimal("0"),
-                               output_cny_per_million=Decimal("0"))
+        profile = self.profile
+        return DecisionPricing(
+            requested_model=SUBSTITUTE_NAME,
+            price_version=self.price_version,
+            reservation_cny=Decimal(profile.reservation_cny),
+            input_cny_per_million=Decimal(profile.input_cny_per_million),
+            cached_input_cny_per_million=Decimal(profile.cached_input_cny_per_million),
+            output_cny_per_million=Decimal(profile.output_cny_per_million))
 
     def _sample_latency(self) -> float:
         profile = self.profile
@@ -231,6 +257,11 @@ class SubstituteBackend:
             latency = self._sample_latency()
             if latency:
                 time.sleep(latency)
+            # A small number of genuinely held calls, to probe the stop/deadline boundary
+            # without making the whole level slow.
+            if profile.hold_calls and index <= profile.hold_calls and profile.hold_seconds:
+                self.held_calls += 1
+                time.sleep(profile.hold_seconds)
 
             # A genuine block past the timeout, then a transport-style failure. This is
             # not "returning a timeout error": the request really does wait this long.
@@ -285,10 +316,14 @@ class SubstituteBackend:
             action = "share" if role in {"netizen", "media", "kol"} else "observe"
             reference = observation["evidence"][0]["evidence_id"]
             reason = "First-round reaction to visible cutoff evidence."
+        profile = self.profile
+        usage = ({"prompt_tokens": profile.prompt_tokens,
+                  "completion_tokens": profile.completion_tokens}
+                 if profile.emit_usage else None)
         return DecisionResult(
             AgentDecision(agent_id=observation["agent_id"], action=action,
                           evidence_ids=[reference], reason=reason),
-            usage={"prompt_tokens": 0, "completion_tokens": 0},
+            usage=usage,
             model=SUBSTITUTE_NAME,
         )
 
@@ -324,13 +359,16 @@ def line_counts(store: Store, run_id: str) -> dict:
 
 def invariant_verdicts(*, result: dict, counts: dict, performance: dict,
                        backend, concurrency: int, agents: int) -> dict:
-    """Self-checks P1 requires: no double dispatch, no runaway, no lost ledger.
+    """Self-checks P1 requires: no double dispatch, no runaway, no lost opportunity.
 
     A failing verdict here means the run must not be cited as scale evidence.
     """
     action_counts = result["action_counts"]
-    resolved = (action_counts.get("valid", 0) + action_counts.get("failed", 0)
-                + action_counts.get("not_dispatched", 0))
+    opportunities = result["opportunities"]
+    buckets = opportunities["buckets"]
+    billing = result.get("billing") or {}
+    rounds = result["rounds"]
+    completed = [row for row in rounds if not row.get("round_abandoned")]
     dispatched = action_counts.get("valid", 0) + action_counts.get("failed", 0)
     return {
         "no_duplicate_dispatch": {
@@ -346,13 +384,20 @@ def invariant_verdicts(*, result: dict, counts: dict, performance: dict,
             "substitute_peak": backend.peak_in_flight,
             "engine_peak": performance.get("maximum_observed_in_flight"),
         },
-        "every_opportunity_accounted_once": {
-            "verdict": resolved == counts["actions"],
-            "detail": ("valid + failed + not_dispatched equals the persisted action rows, "
-                       "so the buckets are exclusive and none is double counted"),
-            "resolved": resolved,
-            "persisted_action_rows": counts["actions"],
-            "expected_full_run": agents * result["config"]["rounds"],
+        # This is the whole-task reconciliation. It compares the four exclusive buckets
+        # against the CONFIGURED opportunity total (agents x rounds), never against the
+        # number of persisted rows: a run stopped at round 1 of 30 owes an accounting for
+        # every opportunity it never reached.
+        "whole_task_opportunities_reconciled": {
+            "verdict": (opportunities["fully_reconciled"] is True and
+                        sum(buckets.values()) == opportunities["total_opportunities"]),
+            "detail": ("valid + failed + not_dispatched_current_round + "
+                       "not_started_future_rounds equals agents x rounds"),
+            "total_opportunities": opportunities["total_opportunities"],
+            "buckets": buckets,
+            "reconciled": opportunities["reconciled"],
+            "abandoned_rounds": opportunities.get("abandoned_rounds"),
+            "unreached_rounds": opportunities.get("unreached_rounds"),
         },
         "no_request_silently_lost": {
             "verdict": backend.calls == dispatched,
@@ -361,17 +406,26 @@ def invariant_verdicts(*, result: dict, counts: dict, performance: dict,
             "requests_received": backend.calls,
             "persisted_dispatched": dispatched,
         },
-        "cost_reservation_released": {
-            "verdict": result["cost_cny"] == "0" or backend.mode == "real_model",
-            "detail": ("the zero-cost substitute must never accumulate cost; a real-model "
-                       "backend keeps its reservation by design"),
-            "cost_cny": result["cost_cny"],
+        # Replaces an earlier check that could never fail for a zero-cost substitute.
+        # This one compares the billing ledger against the charged run cost, so it does
+        # real work for both priced and free backends.
+        "billing_reconciles_with_run_cost": {
+            "verdict": (bool(billing) and billing.get("cost_reconciles") is True and
+                        billing.get("recorded_requests") ==
+                        sum(billing.get("states", {}).values())),
+            "detail": ("settled + unsettled_reserved equals the run cost, and every "
+                       "recorded request has exactly one billing state"),
+            "run_cost_cny": result["cost_cny"],
+            "charged_cost_cny": billing.get("charged_cost_cny"),
+            "states": billing.get("states"),
+            "cost_by_state": billing.get("cost_by_state"),
         },
         "ledger_round_rows_match_completed_rounds": {
-            "verdict": counts["rounds"] >= result["completed_rounds"],
-            "detail": ("a stopped round may leave a partial round row, but the count can "
-                       "never be below the completed rounds"),
-            "ledger_round_rows": counts["rounds"],
+            "verdict": len(completed) == result["completed_rounds"],
+            "detail": ("an abandoned round may add a ledger row, but it is flagged and is "
+                       "not counted as a completed round"),
+            "ledger_round_rows": len(rounds),
+            "abandoned_rounds": len(rounds) - len(completed),
             "completed_rounds": result["completed_rounds"],
         },
     }
@@ -409,6 +463,8 @@ def run_load_level(*, agents: int, rounds: int, concurrency: int, latency_ms: fl
                    seed: int = 20261011, fail_every: int = 0,
                    failure_policy: str | None = None,
                    profile: FaultProfile | None = None,
+                   deadline_monotonic: float | None = None,
+                   deadline_ms: float | None = None,
                    budget_cny: Decimal = DEFAULT_TASK_BUDGET_CNY) -> dict:
     """Run one graded load level on a fresh local database and return its ledger.
 
@@ -427,7 +483,11 @@ def run_load_level(*, agents: int, rounds: int, concurrency: int, latency_ms: fl
         config = engine.summary(run_id)["config"]
         backend = SubstituteBackend(profile)
         started = time.perf_counter()
+        if deadline_monotonic is None and deadline_ms:
+            # Relative to the moment the run actually starts, not to argument parsing.
+            deadline_monotonic = time.monotonic() + deadline_ms / 1000.0
         result = engine.advance(run_id, backend, collect_performance=True,
+                                deadline_monotonic=deadline_monotonic,
                                 **({"failure_policy": failure_policy}
                                    if failure_policy else {}))
         wall_seconds = time.perf_counter() - started
@@ -478,6 +538,8 @@ def run_load_level(*, agents: int, rounds: int, concurrency: int, latency_ms: fl
             "cost_cny": result["cost_cny"],
             "estimated_cost_cny": result["cost_cny"],
         },
+        "opportunities": result["opportunities"],
+        "billing": result.get("billing"),
         "invariants": verdicts,
         "resources": {
             "peak_process_rss_bytes": rss,
@@ -488,6 +550,9 @@ def run_load_level(*, agents: int, rounds: int, concurrency: int, latency_ms: fl
             "substitute_call_count": backend.calls,
             "substitute_outcomes": dict(backend.outcomes),
             "substitute_burst_failures": backend.burst_failures,
+            "substitute_held_calls": backend.held_calls,
+            "substitute_mode": backend.mode,
+            "substitute_priced": profile.priced,
             "substitute_latency_seconds": {
                 "configured": latency_ms / 1000.0,
                 "shape": profile.latency_shape,
@@ -620,6 +685,20 @@ def main(argv=None) -> int:
     parser.add_argument("--error-every", type=int, default=0)
     parser.add_argument("--burst-error-at", default=None,
                         help="comma-separated 1-based call indices that all fail")
+    parser.add_argument("--hold-calls", type=int, default=0,
+                        help="first N calls genuinely block for --hold-ms")
+    parser.add_argument("--hold-ms", type=float, default=0.0)
+    # Simulated prices: engineering test rates for reservation/settlement/release.
+    parser.add_argument("--reservation-cny", default="0")
+    parser.add_argument("--input-cny-per-million", default="0")
+    parser.add_argument("--cached-input-cny-per-million", default="0")
+    parser.add_argument("--output-cny-per-million", default="0")
+    parser.add_argument("--prompt-tokens", type=int, default=0)
+    parser.add_argument("--completion-tokens", type=int, default=0)
+    parser.add_argument("--omit-usage", action="store_true",
+                        help="return no token usage, to model an unknown-usage request")
+    parser.add_argument("--deadline-ms", type=float, default=0.0,
+                        help="stop dispatching this long after the run starts")
     arguments = parser.parse_args(argv)
     levels = parse_levels(arguments.level) if arguments.level else DEFAULT_LEVELS
 
@@ -637,16 +716,30 @@ def main(argv=None) -> int:
             invalid_output_every=arguments.invalid_output_every,
             error_every=arguments.error_every,
             burst_error_at=parse_burst(arguments.burst_error_at),
+            hold_calls=arguments.hold_calls,
+            hold_seconds=arguments.hold_ms / 1000.0,
+            reservation_cny=arguments.reservation_cny,
+            input_cny_per_million=arguments.input_cny_per_million,
+            cached_input_cny_per_million=arguments.cached_input_cny_per_million,
+            output_cny_per_million=arguments.output_cny_per_million,
+            prompt_tokens=arguments.prompt_tokens,
+            completion_tokens=arguments.completion_tokens,
+            emit_usage=not arguments.omit_usage,
             seed=arguments.seed,
         )
         print(f"running agents={agents} rounds={rounds} concurrency={concurrency} "
-              f"latency_ms={latency_ms} shape={profile.latency_shape}", flush=True)
+              f"latency_ms={latency_ms} shape={profile.latency_shape} "
+              f"priced={profile.priced}", flush=True)
+        deadline = (time.monotonic() + arguments.deadline_ms / 1000.0
+                    if arguments.deadline_ms > 0 else None)
         level = run_load_level(agents=agents, rounds=rounds, concurrency=concurrency,
                                latency_ms=latency_ms, seed=arguments.seed,
-                               failure_policy=arguments.failure_policy, profile=profile)
+                               failure_policy=arguments.failure_policy, profile=profile,
+                               deadline_monotonic=deadline)
         measured.append(level)
         print(json.dumps({"load": level["load"], "outcome": level["outcome"],
-                          "substitute_outcomes": level["resources"]["substitute_outcomes"]},
+                          "buckets": level["opportunities"]["buckets"],
+                          "billing_states": (level["billing"] or {}).get("states")},
                          ensure_ascii=False), flush=True)
 
     report = build_report(measured, label=arguments.label)

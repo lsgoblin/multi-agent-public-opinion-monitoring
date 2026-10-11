@@ -13,6 +13,8 @@ provider. These tests keep that boundary honest and check the properties P1 requ
 """
 
 import importlib.util
+import time
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
@@ -202,4 +204,160 @@ def test_zero_latency_does_not_demonstrate_concurrency(harness):
     # Peak in-flight stays far below the configured pool size, which is exactly why
     # concurrency claims must come from a delayed profile.
     assert level["resources"]["substitute_peak_in_flight"] < 8
+    assert_all_invariants_hold(level)
+
+
+# ------------------------------------------- whole-task opportunity reconciliation
+
+def test_whole_task_reconciliation_counts_rounds_never_reached(harness):
+    """A stopped run must account for every opportunity it never reached.
+
+    Ten agents over ten rounds is 100 opportunities. The run stops inside round 1, so only
+    a handful of rows exist; the ledger must still reconcile to 100, not to the 10 rows.
+    """
+    level = run_level(harness, agents=10, rounds=10, concurrency=1,
+                      profile=harness.FaultProfile(latency_seconds=0.0, error_every=2),
+                      failure_policy="stop")
+    opportunities = level["opportunities"]
+    buckets = opportunities["buckets"]
+    assert opportunities["total_opportunities"] == 100
+    assert opportunities["fully_reconciled"] is True
+    assert sum(buckets.values()) == 100
+    # The persisted row count is far smaller than the reconciled total.
+    assert level["resources"]["rows"]["actions"] < 100
+    assert buckets["failed"] >= 1
+    assert buckets["not_dispatched_current_round"] >= 0
+    assert buckets["not_started_future_rounds"] == 90
+    assert_all_invariants_hold(level)
+
+
+def test_completed_run_has_no_unstarted_or_stranded_buckets(harness):
+    level = run_level(harness, agents=12, rounds=3, concurrency=4,
+                      profile=harness.FaultProfile(latency_seconds=0.002))
+    buckets = level["opportunities"]["buckets"]
+    assert level["opportunities"]["total_opportunities"] == 36
+    assert buckets == {"valid": 36, "failed": 0, "not_dispatched_current_round": 0,
+                       "not_started_future_rounds": 0}
+    assert_all_invariants_hold(level)
+
+
+def test_invariant_fails_when_persisted_rows_are_not_the_whole_task(harness):
+    """The reconciliation must reject the weaker "rows add up" claim.
+
+    Guards against regressing to an invariant that only compares persisted rows with
+    themselves: for a stopped run the row-derived total is deliberately below the
+    configured opportunity total.
+    """
+    level = run_level(harness, agents=10, rounds=10, concurrency=1,
+                      profile=harness.FaultProfile(latency_seconds=0.0, error_every=2),
+                      failure_policy="stop")
+    bucket_sum = sum(level["opportunities"]["buckets"].values())
+    rows = level["resources"]["rows"]["actions"]
+    assert rows != bucket_sum
+    assert bucket_sum == level["opportunities"]["total_opportunities"]
+    verdict = level["invariants"]["whole_task_opportunities_reconciled"]
+    assert verdict["verdict"] is True
+    assert verdict["reconciled"] == 100 != rows
+
+
+# ------------------------------------------------------------------ billing ledger
+
+PRICED = dict(reservation_cny="0.20", input_cny_per_million="3",
+              cached_input_cny_per_million="0.6", output_cny_per_million="6",
+              prompt_tokens=1000, completion_tokens=200)
+
+
+def test_priced_run_settles_and_reconciles(harness):
+    level = run_level(harness, agents=8, rounds=2, concurrency=2,
+                      profile=harness.FaultProfile(latency_seconds=0.002, **PRICED))
+    billing = level["billing"]
+    assert level["resources"]["substitute_priced"] is True
+    assert level["resources"]["substitute_mode"] == "real_model"
+    assert billing["states"]["settled"] == 16
+    assert billing["states"]["unsettled_reserved"] == 0
+    assert billing["cost_reconciles"] is True
+    assert Decimal(billing["settled_cost_cny"]) == Decimal(level["outcome"]["cost_cny"])
+    assert_all_invariants_hold(level)
+
+
+def test_priced_unknown_usage_keeps_the_reservation(harness):
+    """A dispatched request with no usage must not be reported as free."""
+    level = run_level(harness, agents=8, rounds=2, concurrency=2,
+                      profile=harness.FaultProfile(latency_seconds=0.002,
+                                                   emit_usage=False, **PRICED))
+    billing = level["billing"]
+    assert billing["states"] == {"not_sent": 0, "released": 0, "settled": 0,
+                                 "unsettled_reserved": 16}
+    assert Decimal(billing["unsettled_reserved_cost_cny"]) == Decimal("0.20") * 16
+    assert billing["cost_reconciles"] is True
+    assert_all_invariants_hold(level)
+
+
+def test_priced_failure_still_reconciles(harness):
+    level = run_level(harness, agents=8, rounds=2, concurrency=2,
+                      profile=harness.FaultProfile(latency_seconds=0.002,
+                                                   error_every=5, **PRICED))
+    billing = level["billing"]
+    assert billing["states"]["settled"] > 0
+    assert billing["states"]["unsettled_reserved"] > 0
+    assert billing["cost_reconciles"] is True
+    assert_all_invariants_hold(level)
+
+
+def test_priced_budget_stop_sends_nothing_and_charges_nothing(harness):
+    """Reservation must be released, not charged, when the preflight rejects a round."""
+    profile = harness.FaultProfile(latency_seconds=0.0, **PRICED)
+    level = harness.run_load_level(agents=8, rounds=2, concurrency=2, latency_ms=0.0,
+                                   profile=profile, budget_cny=Decimal("0.50"))
+    billing = level["billing"]
+    assert level["outcome"]["status"] == "partial"
+    assert billing["states"]["not_sent"] == 8
+    assert Decimal(billing["charged_cost_cny"]) == 0
+    assert Decimal(level["outcome"]["cost_cny"]) == 0
+    assert billing["cost_reconciles"] is True
+    assert_all_invariants_hold(level)
+
+
+# ----------------------------------------------------- deadline and held-call boundary
+
+def test_deadline_bounds_a_held_call_and_reports_the_overshoot(harness):
+    """A genuinely held call must not extend the run past the drained batch."""
+    profile = harness.FaultProfile(latency_seconds=0.0, hold_calls=4, hold_seconds=0.4)
+    level = harness.run_load_level(agents=20, rounds=3, concurrency=4, latency_ms=0.0,
+                                   profile=profile, deadline_ms=150.0)
+    outcome = level["outcome"]
+    assert outcome["status"] == "partial"
+    assert level["resources"]["substitute_held_calls"] == 4
+    assert level["resources"]["substitute_call_count"] == 4
+    # The run returned after the four held calls drained, not after every round.
+    assert outcome["wall_seconds"] < 0.4 + 0.6
+    assert outcome["completed_rounds"] == 0
+    assert level["invariants"]["ledger_round_rows_match_completed_rounds"][
+        "abandoned_rounds"] == 1
+    assert level["opportunities"]["fully_reconciled"] is True
+    assert level["opportunities"]["buckets"] == {
+        "valid": 4, "failed": 0, "not_dispatched_current_round": 16,
+        "not_started_future_rounds": 40}
+    assert_all_invariants_hold(level)
+
+
+def test_deadline_reports_stop_reason_and_billing(harness):
+    profile = harness.FaultProfile(latency_seconds=0.0, hold_calls=2, hold_seconds=0.3,
+                                   **PRICED)
+    level = harness.run_load_level(agents=12, rounds=2, concurrency=2, latency_ms=0.0,
+                                   profile=profile, deadline_ms=100.0)
+    assert level["billing"]["cost_reconciles"] is True
+    assert level["billing"]["states"]["settled"] == 2
+    assert level["billing"]["states"]["not_sent"] == 10
+    assert_all_invariants_hold(level)
+
+
+def test_an_expired_deadline_dispatches_nothing(harness):
+    level = harness.run_load_level(agents=6, rounds=2, concurrency=2, latency_ms=0.0,
+                                   profile=harness.FaultProfile(latency_seconds=0.0), deadline_ms=-1.0)
+    assert level["resources"]["substitute_call_count"] == 0
+    assert level["outcome"]["action_counts"] == {"not_dispatched": 6}
+    assert level["opportunities"]["buckets"] == {
+        "valid": 0, "failed": 0, "not_dispatched_current_round": 6,
+        "not_started_future_rounds": 6}
     assert_all_invariants_hold(level)

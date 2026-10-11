@@ -35,6 +35,9 @@ ROLE_QUERIES = {
 }
 SIGNALS = {"observe": 0.0, "share": -0.06, "comment": -0.04,
            "seek_clarification": 0.03, "express_complaint_intent": -0.12}
+# Exhaustive and exclusive billing outcomes for one request opportunity. A request
+# that was dispatched without usable usage is deliberately NOT reported as free.
+BILLING_STATES = ("not_sent", "released", "settled", "unsettled_reserved")
 MAX_TASK_BUDGET_CNY = Decimal("30.00")
 DEFAULT_TASK_BUDGET_CNY = Decimal("5.00")
 
@@ -464,6 +467,212 @@ class Day3Simulation:
                  Decimal(completion) * quote.output_cny_per_million)
                 / Decimal(1_000_000))
         return max(cost, Decimal("0")), normalized
+
+    def _round_stats(self, outcomes, *, config, round_number, failure_policy,
+                     final_stop_reason, configured_agents, state_by_id,
+                     message_count, abandoned):
+        """One round's exclusive accounting, billing states and opportunity buckets.
+
+        ``abandoned`` marks a round that stopped before every agent produced an outcome.
+        Such a round still owns its accounting: requests that were submitted are valid or
+        failed, the remainder of *this* round is ``not_dispatched_current_round``, and
+        rounds strictly after it are ``not_started_future_rounds``. Those four buckets are
+        exclusive and sum to the configured task total, which the persisted action count
+        alone can never show.
+        """
+        considered = list(outcomes)
+        valid_count = sum(o["status"] == "valid" for o in considered)
+        failed_count = sum(o["status"] == "failed" for o in considered)
+        stranded = sum(o["status"] == "not_dispatched" for o in considered)
+        # An abandoned round can also hold opportunities that produced no outcome at all.
+        # They belong to this round, not to a round the run never reached.
+        unresolved_current_round = max(0, configured_agents - len(considered))
+        failure_categories = {}
+        for outcome in considered:
+            if outcome["status"] != "failed":
+                continue
+            category = outcome["failure_category"] or "unknown"
+            failure_categories[category] = failure_categories.get(category, 0) + 1
+        cost_by_model, reserved_by_model = {}, {}
+        for outcome in considered:
+            model = outcome["requested_model"]
+            cost_by_model[model] = str(
+                Decimal(cost_by_model.get(model, "0")) + outcome["cost"])
+            reserved_by_model[model] = str(
+                Decimal(reserved_by_model.get(model, "0")) + outcome["reserved"])
+        billing_states = {state: 0 for state in BILLING_STATES}
+        cost_by_billing_state = {state: "0" for state in BILLING_STATES}
+        reservation_by_status = {"reserved": "0", "released": "0"}
+        for outcome in considered:
+            state, settled = self._billing_status(outcome)
+            billing_states[state] += 1
+            cost_by_billing_state[state] = str(
+                Decimal(cost_by_billing_state[state]) + settled)
+            if state == "released":
+                reservation_by_status["released"] = str(
+                    Decimal(reservation_by_status["released"]) + outcome["reserved"])
+            elif state in {"settled", "unsettled_reserved"}:
+                reservation_by_status["reserved"] = str(
+                    Decimal(reservation_by_status["reserved"]) + outcome["reserved"])
+        total_opportunities = config["agent_count"] * config["rounds"]
+        not_started = max(0, config["agent_count"] * (config["rounds"] - round_number))
+        current_round_stranded = stranded + unresolved_current_round
+        return {
+            "configured_agents": configured_agents,
+            "decision_requests": configured_agents,
+            "model_decision_agents": configured_agents - current_round_stranded,
+            "dispatched_requests": configured_agents - current_round_stranded,
+            "not_dispatched_requests": stranded,
+            "not_dispatched_current_round": current_round_stranded,
+            # Everything after this round that no agent will ever be offered. For a
+            # completed round that is exactly the later rounds; for an abandoned round it
+            # also covers the rounds the run will never record.
+            "not_started_future_rounds": not_started,
+            "not_started_rounds_count": max(0, config["rounds"] - round_number),
+            "task_opportunities_total": total_opportunities,
+            "task_opportunities_reconciled": (
+                valid_count + failed_count + current_round_stranded + not_started),
+            "round_abandoned": abandoned,
+            "billing": {
+                "states": billing_states,
+                "cost_by_state": cost_by_billing_state,
+                "reservation": reservation_by_status,
+                "note": ("unsettled_reserved means the request was dispatched but its "
+                         "usage is unknown; its reservation is kept as the cost rather "
+                         "than reported as free. not_sent/released cost nothing."),
+            },
+            "local_state_update_agents": len(state_by_id),
+            "valid_decisions": valid_count,
+            "active_decisions": sum(
+                o["decision"] is not None and
+                o["decision"]["action"] != "observe" for o in considered),
+            "failed_decisions": failed_count,
+            "messages": message_count,
+            "failure_policy": {
+                "mode": failure_policy,
+                "tolerated_failures": (failed_count if failure_policy == "continue" else 0),
+                "stopped_by_failure": final_stop_reason == "stop_on_failure",
+                "failure_categories": failure_categories,
+            },
+            "reserved_cny": str(sum((o["reserved"] for o in considered), Decimal("0"))),
+            "reserved_by_model": reserved_by_model,
+            "cost_cny": str(sum((o["cost"] for o in considered), Decimal("0"))),
+            "cost_by_model": cost_by_model,
+        }
+
+    @staticmethod
+    def _billing_status(outcome):
+        """Classify what a request actually cost, so a ledger never implies a false number.
+
+        - ``not_sent``: the backend rejected the request before dispatch, so nothing was
+          reserved and nothing can have been billed.
+        - ``released``: the opportunity was recorded without being dispatched (budget
+          preflight, stop signal, deadline, or the tail of an abandoned round).
+        - ``settled``: the response carried usable token usage, so the amount is billed
+          usage priced at the frozen rates.
+        - ``unsettled_reserved``: the request was dispatched but its usage is unknown
+          (transport failure, timeout, malformed usage). The reservation is kept as the
+          cost on purpose: a possibly billed request must not be reported as free.
+        """
+        cost = outcome["cost"]
+        if outcome["status"] == "not_dispatched":
+            return ("not_sent" if cost == 0 else "released"), cost
+        if outcome.get("usage") is not None:
+            return "settled", cost
+        return "unsettled_reserved", cost
+
+    def _billing_summary(self, run_id, run_cost):
+        """Aggregate billing states from the persisted action rows.
+
+        Derived from ``simulation_actions`` rather than per-round ``stats`` on purpose: a
+        round that aborted partway has decisions and cost persisted even though it may not
+        have written stats, so deriving from the action ledger covers every outcome and
+        can be reconciled against the charged run cost.
+        """
+        with self.store.connect() as db:
+            rows = [dict(row) for row in db.execute(
+                "SELECT status, usage, cost_cny, reserved_cny FROM simulation_actions "
+                "WHERE run_id=?", (run_id,))]
+        states = {state: 0 for state in BILLING_STATES}
+        cost_by_state = {state: Decimal("0") for state in BILLING_STATES}
+        reservation = {"reserved": Decimal("0"), "released": Decimal("0")}
+        for row in rows:
+            state, settled = self._billing_status({
+                "status": row["status"], "cost": Decimal(row["cost_cny"]),
+                "reserved": Decimal(row["reserved_cny"]),
+                "usage": json.loads(row["usage"]) if row["usage"] else None})
+            states[state] += 1
+            cost_by_state[state] += settled
+            if state == "released":
+                reservation["released"] += Decimal(row["reserved_cny"])
+            elif state in {"settled", "unsettled_reserved"}:
+                reservation["reserved"] += Decimal(row["reserved_cny"])
+        charged = cost_by_state["settled"] + cost_by_state["unsettled_reserved"]
+        return {
+            "recorded_requests": len(rows),
+            "states": states,
+            "cost_by_state": {state: str(value)
+                              for state, value in cost_by_state.items()},
+            "settled_cost_cny": str(cost_by_state["settled"]),
+            "unsettled_reserved_cost_cny": str(cost_by_state["unsettled_reserved"]),
+            "charged_cost_cny": str(charged),
+            "run_cost_cny": str(run_cost),
+            "cost_reconciles": charged == run_cost,
+            "reservation": {key: str(value) for key, value in reservation.items()},
+            "note": ("unsettled_reserved keeps the reservation as cost because the request "
+                     "was dispatched and its usage is unknown; a possibly billed request is "
+                     "never reported as free. not_sent and released cost nothing."),
+        }
+
+    def _opportunity_buckets(self, rounds, config):
+        """Whole-task opportunity reconciliation across four exclusive buckets.
+
+        ``valid``, ``failed`` and ``not_dispatched_current_round`` accumulate across
+        rounds because each round owns its own slice. ``not_started_future_rounds`` does
+        NOT accumulate: every round records it as a *point-in-time remainder* (how many
+        opportunities still lay ahead of that round), so summing would count the same
+        future opportunities once per round. It is taken from the final recorded round,
+        which is the only view that reflects the run's actual end state, plus a round of
+        opportunities for each round that never produced a row.
+        """
+        buckets = {"valid": 0, "failed": 0, "not_dispatched_current_round": 0,
+                   "not_started_future_rounds": 0}
+        for row in rounds:
+            buckets["valid"] += int(row.get("valid_decisions", 0))
+            buckets["failed"] += int(row.get("failed_decisions", 0))
+            buckets["not_dispatched_current_round"] += int(
+                row.get("not_dispatched_current_round", 0))
+        if rounds:
+            # The final recorded round already owns every round after it, whether or not
+            # those rounds ever produce a row. So take its remainder as the whole unseen
+            # tail and add nothing else.
+            buckets["not_started_future_rounds"] = int(
+                rounds[-1].get("not_started_future_rounds", 0))
+            last_round = int(rounds[-1].get("round", len(rounds)))
+            unreached_rounds = max(0, config["rounds"] - last_round)
+        else:
+            # No round was started, so every opportunity is unstarted.
+            unreached_rounds = config["rounds"]
+            buckets["not_started_future_rounds"] = config["agent_count"] * config["rounds"]
+        total = config["agent_count"] * config["rounds"]
+        reconciled = sum(buckets.values())
+        return {
+            "total_opportunities": total,
+            "buckets": buckets,
+            "reconciled": reconciled,
+            "fully_reconciled": reconciled == total,
+            "completed_rounds": sum(1 for row in rounds
+                                    if not row.get("round_abandoned")),
+            "recorded_round_rows": len(rounds),
+            "abandoned_rounds": sum(1 for row in rounds if row.get("round_abandoned")),
+            "unreached_rounds": unreached_rounds,
+            "accounting_note": ("buckets are exclusive: requests already submitted are "
+                                "valid or failed; not_dispatched_current_round is the "
+                                "abandoned remainder of a started round; "
+                                "not_started_future_rounds were never offered to any "
+                                "agent. The persisted action count alone cannot show the "
+                                "last bucket."),
+        }
 
     def advance(self, run_id: str, backend: DecisionBackend, *, max_rounds: int | None = None,
                 collect_performance: bool = False,
@@ -1045,7 +1254,28 @@ class Day3Simulation:
             if (len(outcomes_by_id) < len(agents) or any(
                     outcome["status"] == "not_dispatched"
                     for outcome in outcomes_by_id.values())):
+                # The round did not finish, but it still owns accounting: submitted
+                # requests are recorded and the remainder of this round is explicitly
+                # stranded. Without a ledger row that remainder would be invisible and
+                # the whole-task total could not be reconciled.
+                abandoned_stats = self._round_stats(
+                    [outcomes_by_id[obs["agent_id"]] for obs in observations
+                     if obs["agent_id"] in outcomes_by_id],
+                    config=config, round_number=round_number,
+                    failure_policy=failure_policy, final_stop_reason=final_stop_reason,
+                    configured_agents=len(agents), state_by_id={},
+                    message_count=0, abandoned=True)
+                abandoned_stats["elapsed_seconds"] = round(
+                    time.perf_counter() - round_started, 3)
+                if phases is not None:
+                    phases["round_started_at"] = round_started_at
+                    phases["round_abandoned"] = True
+                    abandoned_stats["performance"] = phases
                 with self.store.connect() as db:
+                    db.execute("DELETE FROM simulation_rounds WHERE run_id=? "
+                               "AND round_number=?", (run_id, round_number))
+                    db.execute("INSERT INTO simulation_rounds VALUES (?, ?, ?)",
+                               (run_id, round_number, _json(abandoned_stats)))
                     db.execute("UPDATE simulation_runs SET status='partial' WHERE run_id=?",
                                (run_id,))
                 break
@@ -1102,40 +1332,12 @@ class Day3Simulation:
             failed = sum(outcome["status"] == "failed" for outcome in outcomes)
             not_dispatched = sum(outcome["status"] == "not_dispatched"
                                  for outcome in outcomes)
-            failure_categories = {}
-            for outcome in outcomes:
-                if outcome["status"] != "failed":
-                    continue
-                category = outcome["failure_category"] or "unknown"
-                failure_categories[category] = failure_categories.get(category, 0) + 1
-            cost_by_model, reserved_by_model = {}, {}
-            for outcome in outcomes:
-                model = outcome["requested_model"]
-                cost_by_model[model] = str(
-                    Decimal(cost_by_model.get(model, "0")) + outcome["cost"])
-                reserved_by_model[model] = str(
-                    Decimal(reserved_by_model.get(model, "0")) + outcome["reserved"])
-            stats = {
-                "configured_agents": len(agents), "decision_requests": len(agents),
-                "model_decision_agents": len(agents) - not_dispatched,
-                "dispatched_requests": len(agents) - not_dispatched,
-                "not_dispatched_requests": not_dispatched,
-                "local_state_update_agents": len(state_by_id),
-                "valid_decisions": valid,
-                "active_decisions": sum(
-                    outcome["decision"] is not None and
-                    outcome["decision"]["action"] != "observe" for outcome in outcomes),
-                "failed_decisions": failed, "messages": len(messages),
-                "failure_policy": {
-                    "mode": failure_policy,
-                    "tolerated_failures": failed if failure_policy == "continue" else 0,
-                    "stopped_by_failure": final_stop_reason == "stop_on_failure",
-                    "failure_categories": failure_categories,
-                },
-                "reserved_cny": str(sum((o["reserved"] for o in outcomes), Decimal("0"))),
-                "reserved_by_model": reserved_by_model,
-                "cost_cny": str(round_cost), "cost_by_model": cost_by_model,
-            }
+            round_cost = sum((outcome["cost"] for outcome in outcomes), Decimal("0"))
+            stats = self._round_stats(
+                outcomes, config=config, round_number=round_number,
+                failure_policy=failure_policy, final_stop_reason=final_stop_reason,
+                configured_agents=len(agents), state_by_id=state_by_id,
+                message_count=len(messages), abandoned=False)
             if phases is not None:
                 phases["round_started_at"] = round_started_at
                 phases["phase_timing_note"] = (
@@ -1301,14 +1503,19 @@ class Day3Simulation:
             action_counts.get("valid", 0) == expected_decisions and
             action_counts.get("failed", 0) == 0 and
             action_counts.get("not_dispatched", 0) == 0)
+        config = json.loads(run["config"])
         summary = {"run_id": run_id, "case_id": run["case_id"], "graph_id": run["graph_id"],
-                   "config": json.loads(run["config"]), "status": run["status"],
+                   "config": config, "status": run["status"],
                    "completed_rounds": run["completed_rounds"],
                    "actual_participants": participants,
                    "action_counts": action_counts,
                    "all_decisions_valid": all_decisions_valid,
                    "cost_cny": run["cost_cny"], "usage": json.loads(run["usage"]),
                    "rounds": rounds}
+        # Whole-task opportunity reconciliation and the billing ledger, both independent
+        # of how many action rows happened to be persisted.
+        summary["opportunities"] = self._opportunity_buckets(rounds, config)
+        summary["billing"] = self._billing_summary(run_id, Decimal(run["cost_cny"]))
         performance = self._performance_summary(run_id)
         if performance is not None:
             summary["performance"] = performance

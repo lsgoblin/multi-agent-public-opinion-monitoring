@@ -1,16 +1,21 @@
-"""Result accounting, failure/stop semantics and performance capture.
+"""Result accounting, failure/stop semantics, billing states and performance capture.
 
-These tests pin the four facts that must stay separable:
+Four facts must stay separable:
 
 1. how many rounds actually ran (``completed_rounds``);
 2. how many request opportunities were handled (``decision_requests``);
 3. how many decisions were valid (``valid_decisions`` / ``all_decisions_valid``);
 4. whether the run may be delivered as a complete success.
 
-A run whose rounds all ran but which contains failed decisions is ``complete`` yet
-``all_decisions_valid=False``; it is explicitly not a successful job. Downstream
-consumers (``tasks``, ``reporting``, ``alerts``) already reject that combination, and
-the tests below keep the distinction visible rather than collapsing it into ``partial``.
+Whole-task opportunity reconciliation is checked here against the *configured* total
+(agents x rounds), never against the number of persisted rows: a run stopped at round 1
+of 30 owes an accounting for the 14,000 opportunities it never reached, and those can
+never appear as rows.
+
+Billing is checked with non-zero simulated prices so that reservation, settlement and
+release are actually exercised. A request that was dispatched but whose usage is unknown
+is reported as ``unsettled_reserved`` and keeps its reservation as cost; it is never
+reported as free.
 
 Everything here is offline: the substitute backends never touch a network or a model.
 """
@@ -48,10 +53,15 @@ class ObservableSubstitute:
     price_version = "reconcile-v1"
     model = "reconcile"
 
-    def __init__(self, *, fail_agents=(), fail_at_call=None, delay=0.0):
+    def __init__(self, *, fail_agents=(), fail_at_call=None, delay=0.0,
+                 block_calls=0, block_seconds=0.0, usage=None):
         self.fail_agents = set(fail_agents)
         self.fail_at_call = fail_at_call
         self.delay = delay
+        self.block_calls = block_calls
+        self.block_seconds = block_seconds
+        self.usage = usage if usage is not None else {"prompt_tokens": 1,
+                                                      "completion_tokens": 1}
         self._lock = threading.Lock()
         self.calls = []
         self.in_flight = 0
@@ -64,6 +74,8 @@ class ObservableSubstitute:
             self.in_flight += 1
             self.peak_in_flight = max(self.peak_in_flight, self.in_flight)
         try:
+            if call_index <= self.block_calls and self.block_seconds:
+                time.sleep(self.block_seconds)
             if self.delay:
                 time.sleep(self.delay)
             if (observation["agent_id"] in self.fail_agents or
@@ -75,20 +87,21 @@ class ObservableSubstitute:
             return DecisionResult(AgentDecision(
                 agent_id=observation["agent_id"], action="observe",
                 evidence_ids=[reference], reason="recorded substitute decision"),
-                usage={"prompt_tokens": 1, "completion_tokens": 1}, model=self.model)
+                usage=dict(self.usage), model=self.model)
         finally:
             with self._lock:
                 self.in_flight -= 1
 
 
 class CostedSubstitute(ObservableSubstitute):
-    """Non-zero prices and reservation so the budget preflight can reject a round."""
+    """Non-zero prices and reservation so budget and billing paths are exercised."""
 
     mode = "real_model"
     reservation_cny = Decimal("0.20")
-    input_cny_per_million = Decimal("1")
-    cached_input_cny_per_million = Decimal("1")
-    output_cny_per_million = Decimal("1")
+    input_cny_per_million = Decimal("3.00")
+    cached_input_cny_per_million = Decimal("0.60")
+    output_cny_per_million = Decimal("6.00")
+    price_version = "simulated-prices-v1"
 
 
 def persisted_counts(store, run_id):
@@ -102,8 +115,9 @@ def persisted_counts(store, run_id):
     return rows, duplicates
 
 
-def assert_reconciles(store, run_id, result, *, agents, expected_rounds):
-    """Every opportunity is in exactly one bucket, and the buckets are exclusive."""
+def assert_reconciles(store, run_id, result, *, agents, expected_rounds,
+                      expected=None):
+    """Persisted rows are exclusive, and the four buckets sum to the task total."""
     rows, duplicates = persisted_counts(store, run_id)
     assert duplicates == []
     per_round = {}
@@ -111,26 +125,35 @@ def assert_reconciles(store, run_id, result, *, agents, expected_rounds):
         per_round.setdefault(row["round_number"], []).append(row["status"])
     for round_number, statuses in per_round.items():
         counts = {status: statuses.count(status) for status in set(statuses)}
-        total = sum(counts.values())
-        assert total == len(statuses) == agents, round_number
+        assert sum(counts.values()) == len(statuses) <= agents, round_number
         assert set(counts) <= {"valid", "failed", "not_dispatched"}
     valid = sum(1 for row in rows if row["status"] == "valid")
     failed = sum(1 for row in rows if row["status"] == "failed")
-    not_dispatched = sum(1 for row in rows if row["status"] == "not_dispatched")
-    assert valid + failed + not_dispatched == len(rows)
+    stranded_rows = sum(1 for row in rows if row["status"] == "not_dispatched")
+    assert valid + failed + stranded_rows == len(rows)
     assert result["action_counts"].get("valid", 0) == valid
     assert result["action_counts"].get("failed", 0) == failed
-    assert result["action_counts"].get("not_dispatched", 0) == not_dispatched
-    # Completed rounds each contribute exactly one full round of opportunities.
-    assert len(result["rounds"]) <= expected_rounds
-    for row in result["rounds"]:
+
+    completed = [row for row in result["rounds"] if not row.get("round_abandoned")]
+    assert len(completed) <= expected_rounds
+    for row in completed:
         assert row["decision_requests"] == row["configured_agents"] == agents
         assert (row["valid_decisions"] + row["failed_decisions"] +
                 row["not_dispatched_requests"]) == row["decision_requests"]
-    assert len(rows) == agents * (len(result["rounds"]) + (
-        1 if len(per_round) > len(result["rounds"]) else 0))
-    return {"valid": valid, "failed": failed, "not_dispatched": not_dispatched,
-            "rows": len(rows), "rounds_in_db": len(per_round)}
+
+    opportunities = result["opportunities"]
+    buckets = opportunities["buckets"]
+    assert set(buckets) == {"valid", "failed", "not_dispatched_current_round",
+                            "not_started_future_rounds"}
+    assert opportunities["total_opportunities"] == agents * expected_rounds
+    assert opportunities["fully_reconciled"] is True, opportunities
+    assert sum(buckets.values()) == opportunities["total_opportunities"]
+    assert buckets["valid"] == valid
+    assert buckets["failed"] == failed
+    assert opportunities["completed_rounds"] == len(completed)
+    if expected is not None:
+        assert buckets == expected, buckets
+    return {"rows": len(rows), "rounds_in_db": len(per_round), "buckets": buckets}
 
 
 def test_success_path_accounts_for_every_opportunity(tmp_path):
@@ -141,9 +164,11 @@ def test_success_path_accounts_for_every_opportunity(tmp_path):
     assert result["status"] == "complete"
     assert result["completed_rounds"] == 3
     assert result["all_decisions_valid"] is True
-    totals = assert_reconciles(store, run_id, result, agents=8, expected_rounds=3)
-    assert totals == {"valid": 24, "failed": 0, "not_dispatched": 0,
-                      "rows": 24, "rounds_in_db": 3}
+    totals = assert_reconciles(
+        store, run_id, result, agents=8, expected_rounds=3,
+        expected={"valid": 24, "failed": 0, "not_dispatched_current_round": 0,
+                  "not_started_future_rounds": 0})
+    assert totals["rows"] == 24
     assert len(backend.calls) == len(set(backend.calls)) == 24
     assert result["performance"]["completed_requests"] == 24
     assert result["performance"]["not_dispatched"] == 0
@@ -158,9 +183,10 @@ def test_failed_decisions_continue_and_do_not_hide_round_completion(tmp_path):
     assert result["status"] == "complete"
     assert result["completed_rounds"] == 3
     assert result["all_decisions_valid"] is False
-    totals = assert_reconciles(store, run_id, result, agents=8, expected_rounds=3)
-    assert totals == {"valid": 21, "failed": 3, "not_dispatched": 0,
-                      "rows": 24, "rounds_in_db": 3}
+    assert_reconciles(store, run_id, result, agents=8, expected_rounds=3,
+                      expected={"valid": 21, "failed": 3,
+                                "not_dispatched_current_round": 0,
+                                "not_started_future_rounds": 0})
     for row in result["rounds"]:
         assert row["failure_policy"] == {
             "mode": "continue", "tolerated_failures": 1, "stopped_by_failure": False,
@@ -168,9 +194,8 @@ def test_failed_decisions_continue_and_do_not_hide_round_completion(tmp_path):
         }
         assert row["dispatched_requests"] == 8
     # The failing agent was asked once per round and never silently retried.
-    assert backend.calls.count((1, "agent_0000")) == 1
-    assert backend.calls.count((2, "agent_0000")) == 1
-    assert backend.calls.count((3, "agent_0000")) == 1
+    for round_number in (1, 2, 3):
+        assert backend.calls.count((round_number, "agent_0000")) == 1
 
 
 def test_stop_policy_strands_the_remainder_and_records_one_failure(tmp_path):
@@ -181,13 +206,19 @@ def test_stop_policy_strands_the_remainder_and_records_one_failure(tmp_path):
 
     assert result["status"] == "partial"
     assert result["completed_rounds"] == 0
-    assert result["rounds"] == []
     assert result["all_decisions_valid"] is False
-    totals = assert_reconciles(store, run_id, result, agents=8, expected_rounds=3)
-    assert totals == {"valid": 0, "failed": 1, "not_dispatched": 7,
-                      "rows": 8, "rounds_in_db": 1}
+    totals = assert_reconciles(
+        store, run_id, result, agents=8, expected_rounds=3,
+        expected={"valid": 0, "failed": 1, "not_dispatched_current_round": 7,
+                  "not_started_future_rounds": 16})
+    assert totals["rows"] == 8
     # Concurrency 1 means nothing else was already in flight when the stop landed.
     assert backend.calls == [(1, "agent_0000")]
+    # The abandoned round is recorded as abandoned, not as a completed round.
+    abandoned = [row for row in result["rounds"] if row.get("round_abandoned")]
+    assert len(abandoned) == 1
+    assert abandoned[0]["not_dispatched_current_round"] == 7
+    assert result["opportunities"]["abandoned_rounds"] == 1
 
 
 @pytest.mark.parametrize(("concurrency", "expected_valid", "expected_stranded"), [
@@ -200,14 +231,11 @@ def test_stop_policy_strands_only_what_was_not_already_submitted(
         tmp_path, concurrency, expected_valid, expected_stranded):
     """`stop` prevents further submission; it cannot recall a launched request.
 
-    The substitute fails on its third call, so the first two decisions are already
-    valid before any failure exists to react to. Raising concurrency lets more requests
-    be submitted before that failure is observed, so fewer opportunities are stranded:
-    at concurrency 1 five remain stranded, at concurrency 8 the whole first round had
-    already been submitted, so round 1 completes and only round 2 is stranded.
-    `peak_in_flight` stays 1 because an instantaneous substitute never actually
-    overlaps -- which is exactly why an instantaneous substitute cannot be used to
-    demonstrate concurrency, and why the concurrency tests below use a real delay.
+    The substitute fails on its third call, so two decisions are already valid before any
+    failure exists to react to. Raising concurrency lets more requests be submitted
+    before that failure is observed, so fewer opportunities are stranded. At concurrency
+    8 the whole first round was already submitted, so round 1 completes and round 2 is
+    stranded whole.
     """
     store, engine, run_id = make_engine(tmp_path, agents=8, rounds=3,
                                         concurrency=concurrency)
@@ -218,15 +246,14 @@ def test_stop_policy_strands_only_what_was_not_already_submitted(
     assert result["status"] == "partial"
     assert result["all_decisions_valid"] is False
     totals = assert_reconciles(store, run_id, result, agents=8, expected_rounds=3)
-    assert totals["valid"] == expected_valid
-    assert totals["failed"] == 1
-    assert totals["not_dispatched"] == expected_stranded
-    # Every opportunity is either a real request or explicitly stranded.
+    buckets = totals["buckets"]
+    assert buckets["valid"] == expected_valid
+    assert buckets["failed"] == 1
+    assert buckets["not_dispatched_current_round"] == expected_stranded
     assert len(backend.calls) == expected_valid + 1
     assert len(backend.calls) == len(set(backend.calls))
-    assert totals["valid"] + totals["failed"] == len(backend.calls)
+    assert buckets["valid"] + buckets["failed"] == len(backend.calls)
     assert result["performance"]["completed_requests"] == len(backend.calls)
-    assert result["performance"]["not_dispatched"] == expected_stranded
     assert backend.peak_in_flight <= concurrency
 
 
@@ -244,11 +271,15 @@ def test_a_launched_but_later_round_is_never_double_counted(tmp_path):
     assert len(round_one) == 8 and len(round_two) == 8
     assert {row["status"] for row in round_one} == {"valid", "failed"}
     assert {row["status"] for row in round_two} == {"not_dispatched"}
-    # Round 1 is a completed round in the ledger; round 2 was stranded.
-    assert [row["round"] for row in result["rounds"]] == [1]
-    assert result["rounds"][0]["valid_decisions"] == 7
-    assert result["rounds"][0]["failed_decisions"] == 1
+    completed = [row for row in result["rounds"] if not row.get("round_abandoned")]
+    assert [row["round"] for row in completed] == [1]
+    assert completed[0]["valid_decisions"] == 7
+    assert completed[0]["failed_decisions"] == 1
     assert result["completed_rounds"] == 1
+    assert_reconciles(store, run_id, result, agents=8, expected_rounds=3,
+                      expected={"valid": 7, "failed": 1,
+                                "not_dispatched_current_round": 8,
+                                "not_started_future_rounds": 8})
 
 
 def test_budget_preflight_strands_the_round_before_any_dispatch(tmp_path):
@@ -260,11 +291,15 @@ def test_budget_preflight_strands_the_round_before_any_dispatch(tmp_path):
     assert result["status"] == "partial"
     assert result["completed_rounds"] == 0
     assert backend.calls == []
-    totals = assert_reconciles(store, run_id, result, agents=8, expected_rounds=2)
-    assert totals == {"valid": 0, "failed": 0, "not_dispatched": 8,
-                      "rows": 8, "rounds_in_db": 1}
+    assert_reconciles(store, run_id, result, agents=8, expected_rounds=2,
+                      expected={"valid": 0, "failed": 0,
+                                "not_dispatched_current_round": 8,
+                                "not_started_future_rounds": 8})
     assert result["cost_cny"] == "0"
     assert result["usage"]["unknown_usage_calls"] == 0
+    # Nothing was sent, so nothing was reserved and nothing was billed.
+    assert result["billing"]["states"] == {"not_sent": 8, "released": 0, "settled": 0,
+                                           "unsettled_reserved": 0}
 
 
 def test_partial_round_limit_leaves_later_rounds_unstarted(tmp_path):
@@ -275,11 +310,103 @@ def test_partial_round_limit_leaves_later_rounds_unstarted(tmp_path):
     assert result["status"] == "running"
     assert result["completed_rounds"] == 2
     assert result["all_decisions_valid"] is False  # rounds remain
-    totals = assert_reconciles(store, run_id, result, agents=6, expected_rounds=4)
-    assert totals == {"valid": 12, "failed": 0, "not_dispatched": 0,
-                      "rows": 12, "rounds_in_db": 2}
+    assert_reconciles(store, run_id, result, agents=6, expected_rounds=4,
+                      expected={"valid": 12, "failed": 0,
+                                "not_dispatched_current_round": 0,
+                                "not_started_future_rounds": 12})
     assert result["action_counts"] == {"valid": 12}
 
+
+# --------------------------------------------------------------------------- billing
+
+def test_billing_settles_known_usage_at_frozen_rates(tmp_path):
+    """A successful priced request settles to the priced amount, not the reservation."""
+    store, engine, run_id = make_engine(tmp_path, agents=4, rounds=2, concurrency=2,
+                                        budget="30.00")
+    backend = CostedSubstitute(usage={"prompt_tokens": 1000, "completion_tokens": 200})
+    result = engine.advance(run_id, backend, collect_performance=True)
+
+    assert result["status"] == "complete"
+    billing = result["billing"]
+    assert billing["states"] == {"not_sent": 0, "released": 0, "settled": 8,
+                                 "unsettled_reserved": 0}
+    # 1000 uncached input at 3.00/M plus 200 output at 6.00/M = 0.003 + 0.0012.
+    expected_each = (Decimal("1000") * Decimal("3.00") +
+                     Decimal("200") * Decimal("6.00")) / Decimal(1_000_000)
+    assert Decimal(billing["settled_cost_cny"]) == expected_each * 8
+    assert Decimal(billing["charged_cost_cny"]) == Decimal(result["cost_cny"])
+    assert billing["cost_reconciles"] is True
+    assert Decimal(billing["reservation"]["reserved"]) == Decimal("0.20") * 8
+    assert Decimal(billing["reservation"]["released"]) == 0
+
+
+def test_billing_keeps_the_reservation_when_usage_is_unknown(tmp_path):
+    """A dispatched request with unknown usage is never reported as free."""
+    store, engine, run_id = make_engine(tmp_path, agents=4, rounds=2, concurrency=2,
+                                        budget="30.00")
+    backend = CostedSubstitute(fail_agents={"agent_0000"})
+    result = engine.advance(run_id, backend, collect_performance=True)
+
+    billing = result["billing"]
+    assert billing["states"] == {"not_sent": 0, "released": 0, "settled": 6,
+                                 "unsettled_reserved": 2}
+    assert Decimal(billing["unsettled_reserved_cost_cny"]) == Decimal("0.20") * 2
+    assert Decimal(billing["charged_cost_cny"]) == Decimal(result["cost_cny"])
+    assert billing["cost_reconciles"] is True
+    assert result["all_decisions_valid"] is False
+    assert result["usage"]["unknown_usage_calls"] == 2
+
+
+def test_billing_reports_released_when_nothing_was_sent(tmp_path):
+    """Budget preflight reserves nothing, so the requests are not_sent and cost 0."""
+    store, engine, run_id = make_engine(tmp_path, agents=6, rounds=2, concurrency=2,
+                                        budget="0.50")
+    backend = CostedSubstitute()
+    result = engine.advance(run_id, backend, collect_performance=True)
+
+    assert result["status"] == "partial"
+    billing = result["billing"]
+    assert billing["states"]["not_sent"] == 6
+    assert billing["states"]["settled"] == 0
+    assert billing["states"]["unsettled_reserved"] == 0
+    assert Decimal(billing["charged_cost_cny"]) == 0
+    assert billing["cost_reconciles"] is True
+
+
+def test_billing_covers_an_abandoned_round(tmp_path):
+    """A round that aborts before writing stats still contributes its cost."""
+    store, engine, run_id = make_engine(tmp_path, agents=4, rounds=3, concurrency=1,
+                                        budget="30.00")
+    backend = CostedSubstitute(fail_agents={"agent_0000"})
+    result = engine.advance(run_id, backend, collect_performance=True,
+                            stop_on_failure=True)
+
+    assert result["status"] == "partial"
+    billing = result["billing"]
+    assert billing["states"]["unsettled_reserved"] == 1
+    assert billing["states"]["not_sent"] == 3
+    assert Decimal(billing["charged_cost_cny"]) == Decimal(result["cost_cny"])
+    assert billing["cost_reconciles"] is True
+
+
+@pytest.mark.parametrize("scenario", ["complete", "failed", "stopped"])
+def test_billing_always_reconciles_with_run_cost(tmp_path, scenario):
+    store, engine, run_id = make_engine(tmp_path, agents=4, rounds=2, concurrency=2,
+                                        budget="30.00")
+    failing = {"agent_0000"} if scenario != "complete" else set()
+    backend = CostedSubstitute(fail_agents=failing)
+    extra = {"stop_on_failure": True} if scenario == "stopped" else {}
+    result = engine.advance(run_id, backend, collect_performance=True, **extra)
+
+    billing = result["billing"]
+    charged = (Decimal(billing["cost_by_state"]["settled"]) +
+               Decimal(billing["cost_by_state"]["unsettled_reserved"]))
+    assert charged == Decimal(result["cost_cny"])
+    assert billing["cost_reconciles"] is True
+    assert billing["recorded_requests"] == sum(billing["states"].values())
+
+
+# ------------------------------------------------------------------- performance
 
 @pytest.mark.parametrize(("label", "kwargs", "expected_reason"), [
     ("budget_preflight", {"budget": "1.00", "costed": True}, "budget_preflight"),
@@ -289,12 +416,7 @@ def test_partial_round_limit_leaves_later_rounds_unstarted(tmp_path):
 ])
 def test_stopped_runs_still_publish_a_performance_record(
         tmp_path, label, kwargs, expected_reason):
-    """A stopped run must not lose its timing/throughput record.
-
-    Before this was fixed, every abort path returned before writing the invocation row,
-    so `_performance_summary` returned None and the one run whose concurrency and drain
-    behaviour matters most had no performance evidence at all.
-    """
+    """A stopped run must not lose its timing/throughput record."""
     agents = 6
     concurrency = kwargs.get("concurrency", 2)
     budget = kwargs.get("budget", "5.00")
@@ -342,13 +464,85 @@ def test_already_complete_run_does_not_record_a_second_invocation(tmp_path):
     assert second["action_counts"] == {"valid": 4}
 
 
+# ------------------------------------------------- deadline and in-flight boundaries
+
+def test_deadline_stops_new_dispatch_and_reports_the_overshoot(tmp_path):
+    """A held call must not extend the run indefinitely, and the overshoot is reported.
+
+    Two requests are held for 0.5 s while the deadline is 0.2 s away. The engine submits
+    one batch, then refuses to submit more once the deadline passes; the already
+    launched requests are drained rather than cancelled, so the run returns after the
+    slowest in-flight call finishes. That overshoot is the documented boundary.
+    """
+    store, engine, run_id = make_engine(tmp_path, agents=20, rounds=3, concurrency=4)
+    backend = ObservableSubstitute(block_calls=4, block_seconds=0.5)
+    started = time.perf_counter()
+    result = engine.advance(run_id, backend, collect_performance=True,
+                            deadline_monotonic=time.monotonic() + 0.2)
+    wall = time.perf_counter() - started
+
+    assert result["status"] == "partial"
+    performance = result["performance"]
+    assert performance["invocations"][0]["stop_reason"] == "deadline"
+    # At most the first batch was ever submitted.
+    assert len(backend.calls) == 4
+    # It returned, and the overshoot is bounded by the slowest in-flight call.
+    assert wall < 0.5 + 0.5
+    assert performance["completed_requests"] == 4
+    assert performance["not_dispatched"] == 16
+    # No request was cancelled: all four in-flight calls produced a real outcome.
+    assert result["action_counts"] == {"valid": 4, "not_dispatched": 16}
+    assert_reconciles(store, run_id, result, agents=20, expected_rounds=3,
+                      expected={"valid": 4, "failed": 0,
+                                "not_dispatched_current_round": 16,
+                                "not_started_future_rounds": 40})
+
+
+def test_expired_deadline_dispatches_nothing_and_returns_at_once(tmp_path):
+    store, engine, run_id = make_engine(tmp_path, agents=6, rounds=3, concurrency=2)
+    backend = ObservableSubstitute()
+    result = engine.advance(run_id, backend, collect_performance=True,
+                            deadline_monotonic=time.monotonic() - 1)
+
+    assert result["status"] == "partial"
+    assert backend.calls == []
+    assert result["action_counts"] == {"not_dispatched": 6}
+    assert result["performance"]["invocations"][0]["stop_reason"] == "deadline"
+    assert_reconciles(store, run_id, result, agents=6, expected_rounds=3,
+                      expected={"valid": 0, "failed": 0,
+                                "not_dispatched_current_round": 6,
+                                "not_started_future_rounds": 12})
+
+
+def test_stop_signal_mid_flight_drains_and_accounts_for_the_tail(tmp_path):
+    """A stop signal landing mid-round drains the batch and strands the rest."""
+    store, engine, run_id = make_engine(tmp_path, agents=12, rounds=2, concurrency=3)
+    event = threading.Event()
+    backend = ObservableSubstitute(delay=0.05)
+    original = backend.decide
+
+    def decide_then_signal(observation):
+        outcome = original(observation)
+        event.set()
+        return outcome
+
+    backend.decide = decide_then_signal
+    result = engine.advance(run_id, backend, collect_performance=True, stop_event=event)
+
+    assert result["status"] == "partial"
+    assert result["performance"]["invocations"][0]["stop_reason"] == "stop_signal"
+    assert 0 < len(backend.calls) <= 3
+    assert_reconciles(store, run_id, result, agents=12, expected_rounds=2)
+    buckets = result["opportunities"]["buckets"]
+    assert buckets["valid"] == len(backend.calls)
+    assert buckets["not_dispatched_current_round"] == 12 - len(backend.calls)
+
+
+# ------------------------------------------------------------------- concurrency
+
 @pytest.mark.parametrize("concurrency", [1, 2, 4, 8])
 def test_observed_in_flight_reaches_the_configured_concurrency(tmp_path, concurrency):
-    """Concurrency is only observable with non-zero latency.
-
-    An instantaneous substitute finishes each request before the scheduler can overlap
-    it, so this uses a real delay and asserts the pool genuinely fanned out.
-    """
+    """Concurrency is only observable with non-zero latency."""
     agents = 16
     store, engine, run_id = make_engine(tmp_path, agents=agents, rounds=1,
                                         concurrency=concurrency)
