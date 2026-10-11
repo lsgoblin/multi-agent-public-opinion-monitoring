@@ -469,13 +469,39 @@ class Day3Simulation:
                 collect_performance: bool = False,
                 stop_event: threading.Event | None = None,
                 deadline_monotonic: float | None = None,
-                stop_on_failure: bool = False):
+                stop_on_failure: bool = False,
+                failure_policy: str | None = None):
         """Advance whole rounds with bounded dispatch and optional timing/stop controls.
 
-        deadline_monotonic is an absolute value from time.monotonic() in this process.
-        Already submitted backend calls are drained and recorded; stop only prevents
-        additional submissions. The engine never retries a failed call.
+        ``deadline_monotonic`` is an absolute value from ``time.monotonic()`` in this
+        process. Already submitted backend calls are drained and recorded; a stop only
+        prevents additional submissions. The engine never retries a failed call.
+
+        ``failure_policy`` decides what one failed decision means for the whole run:
+
+        - ``"stop"`` (historical behaviour, still selected by ``stop_on_failure=True``):
+          the first failed decision aborts the run. The round is then incomplete, so
+          the run is marked ``partial`` and the remaining opportunities are recorded as
+          ``not_dispatched``. With a realistic provider transport-error rate, this makes
+          a long run stop at the first transient error while reporting nothing about the
+          work that would have followed.
+        - ``"continue"`` (default): a failed decision is recorded as a failed decision,
+          the agent that failed keeps its current local state, and the remaining rounds
+          are still attempted. The run can then reach ``status="complete"`` with
+          ``all_decisions_valid=False``, which keeps "all rounds ran" and "every decision
+          was valid" as two separate facts instead of collapsing them into ``partial``.
+
+        Only the first failed decision of a round is reported in
+        ``rounds[].failure_policy.stopped_by_failure``; the count is
+        ``rounds[].failed_decisions``.
         """
+        if failure_policy is not None and stop_on_failure:
+            raise SimulationError(
+                "pass either failure_policy or stop_on_failure, not both")
+        if failure_policy is None:
+            failure_policy = "stop" if stop_on_failure else "continue"
+        if failure_policy not in {"stop", "continue"}:
+            raise SimulationError("failure_policy must be 'stop' or 'continue'")
         if backend.mode not in {"test_substitute", "real_model"}:
             raise SimulationError("backend mode must declare test_substitute or real_model")
         if max_rounds is not None and (type(max_rounds) is not int or max_rounds < 1):
@@ -597,75 +623,86 @@ class Day3Simulation:
 
             request_ledger_persist_total = 0.0
 
-            def insert_not_dispatched(aid, reason):
-                nonlocal request_ledger_persist_total
+            def insert_not_dispatched(db, aid, reason):
                 obs, quote = observation_by_id[aid], quote_by_id[aid]
                 values = (run_id, round_number, aid, "not_dispatched",
                           _json(observation_refs(obs)), None, None,
                           quote.requested_model, None, quote.price_version,
                           "0", "0", reason, None, None, observation_hashes[aid])
+                old = db.execute(
+                    "SELECT status, error FROM simulation_actions WHERE run_id=? "
+                    "AND round_number=? AND agent_id=?", (run_id, round_number, aid)
+                ).fetchone()
+                if old is None:
+                    db.execute(
+                        "INSERT INTO simulation_actions "
+                        "(run_id, round_number, agent_id, status, observation_refs, decision, "
+                        "usage, requested_model, model, price_version, reserved_cny, cost_cny, "
+                        "error, request_audit, schema_diagnostics, observation_sha256) "
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", values)
+                elif old["status"] == "not_dispatched":
+                    if old["error"] and old["error"] not in {
+                            "BudgetPreflight", "StopSignal", "DeadlineExceeded",
+                            "BackendCallLimit", "StoppedAfterFailure", "BudgetExceeded",
+                            "NotDispatched", "FailedDecisionsTolerated"}:
+                        return False
+                    db.execute(
+                        "UPDATE simulation_actions SET observation_refs=?, decision=NULL, "
+                        "usage=NULL, requested_model=?, model=NULL, price_version=?, "
+                        "reserved_cny='0', cost_cny='0', error=?, request_audit=NULL, "
+                        "schema_diagnostics=NULL, observation_sha256=? WHERE run_id=? "
+                        "AND round_number=? AND agent_id=? AND status='not_dispatched'",
+                        (_json(observation_refs(obs)), quote.requested_model,
+                         quote.price_version, reason, observation_hashes[aid],
+                         run_id, round_number, aid))
+                else:
+                    return False
+                if collect_performance:
+                    db.execute(
+                        "INSERT INTO simulation_request_metrics "
+                        "(run_id, round_number, agent_id, requested_model, queued_at, "
+                        "started_at, ended_at, queue_seconds, backend_seconds, "
+                        "validation_seconds, request_elapsed_seconds, status, "
+                        "failure_category, dispatch_evidence, "
+                        "usage_json, cost_cny, usage_unknown) "
+                        "VALUES (?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "
+                        "'not_dispatched', ?, 'not_submitted', NULL, '0', 0) "
+                        "ON CONFLICT(run_id, round_number, agent_id) DO UPDATE SET "
+                        "requested_model=excluded.requested_model, queued_at=NULL, "
+                        "started_at=NULL, ended_at=NULL, queue_seconds=NULL, "
+                        "backend_seconds=NULL, validation_seconds=NULL, "
+                        "request_elapsed_seconds=NULL, "
+                        "status='not_dispatched', failure_category=excluded.failure_category, "
+                        "dispatch_evidence='not_submitted', usage_json=NULL, cost_cny='0', "
+                        "usage_unknown=0",
+                        (run_id, round_number, aid, quote.requested_model, reason))
+                return True
+
+            def insert_not_dispatched_batch(aids, reason):
+                """Record every undispatched opportunity in one connection and transaction.
+
+                Before this, each opportunity opened its own SQLite connection, so a
+                round that stopped before dispatch (budget preflight, stop signal,
+                deadline or an aborting failure) paid one connection per agent.
+                """
+                nonlocal request_ledger_persist_total
+                if not aids:
+                    return
                 persist_started = time.perf_counter()
                 with self.store.connect() as db:
-                    old = db.execute(
-                        "SELECT status, error FROM simulation_actions WHERE run_id=? "
-                        "AND round_number=? AND agent_id=?", (run_id, round_number, aid)
-                    ).fetchone()
-                    if old is None:
-                        db.execute(
-                            "INSERT INTO simulation_actions "
-                            "(run_id, round_number, agent_id, status, observation_refs, decision, "
-                            "usage, requested_model, model, price_version, reserved_cny, cost_cny, "
-                            "error, request_audit, schema_diagnostics, observation_sha256) "
-                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", values)
-                    elif old["status"] == "not_dispatched":
-                        if old["error"] and old["error"] not in {
-                                "BudgetPreflight", "StopSignal", "DeadlineExceeded",
-                                "BackendCallLimit", "StoppedAfterFailure", "BudgetExceeded",
-                                "NotDispatched"}:
-                            return
-                        db.execute(
-                            "UPDATE simulation_actions SET observation_refs=?, decision=NULL, "
-                            "usage=NULL, requested_model=?, model=NULL, price_version=?, "
-                            "reserved_cny='0', cost_cny='0', error=?, request_audit=NULL, "
-                            "schema_diagnostics=NULL, observation_sha256=? WHERE run_id=? "
-                            "AND round_number=? AND agent_id=? AND status='not_dispatched'",
-                            (_json(observation_refs(obs)), quote.requested_model,
-                             quote.price_version, reason, observation_hashes[aid],
-                             run_id, round_number, aid))
-                    else:
-                        return
-                    if collect_performance:
-                        db.execute(
-                            "INSERT INTO simulation_request_metrics "
-                            "(run_id, round_number, agent_id, requested_model, queued_at, "
-                            "started_at, ended_at, queue_seconds, backend_seconds, "
-                            "validation_seconds, request_elapsed_seconds, status, "
-                            "failure_category, dispatch_evidence, "
-                            "usage_json, cost_cny, usage_unknown) "
-                            "VALUES (?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "
-                            "'not_dispatched', ?, 'not_submitted', NULL, '0', 0) "
-                            "ON CONFLICT(run_id, round_number, agent_id) DO UPDATE SET "
-                            "requested_model=excluded.requested_model, queued_at=NULL, "
-                            "started_at=NULL, ended_at=NULL, queue_seconds=NULL, "
-                            "backend_seconds=NULL, validation_seconds=NULL, "
-                            "request_elapsed_seconds=NULL, "
-                            "status='not_dispatched', failure_category=excluded.failure_category, "
-                            "dispatch_evidence='not_submitted', usage_json=NULL, cost_cny='0', "
-                            "usage_unknown=0",
-                            (run_id, round_number, aid, quote.requested_model, reason))
+                    for aid in aids:
+                        insert_not_dispatched(db, aid, reason)
                 request_ledger_persist_total += time.perf_counter() - persist_started
 
             actual_in_flight = 0
             actual_peak_in_flight = 0
             in_flight_lock = threading.Lock()
             if final_stop_reason == "budget_preflight":
-                for aid in pending_ids:
-                    insert_not_dispatched(aid, "BudgetPreflight")
+                insert_not_dispatched_batch(pending_ids, "BudgetPreflight")
             elif pending_ids and requested_stop() is not None:
                 final_stop_reason = requested_stop()
                 reason = "StopSignal" if final_stop_reason == "stop_signal" else "DeadlineExceeded"
-                for aid in pending_ids:
-                    insert_not_dispatched(aid, reason)
+                insert_not_dispatched_batch(pending_ids, reason)
             else:
                 def call(obs, quote, queued_at, queued_wall):
                     nonlocal actual_in_flight, actual_peak_in_flight
@@ -716,6 +753,7 @@ class Day3Simulation:
                             "price_version": quote.price_version, "model": None,
                             "error": error, "request_audit": request_audit,
                             "schema_diagnostics": _safe_schema_diagnostics(exc),
+                            "failure_category": error,
                             "timing": {
                                 "queued_at": queued_wall, "started_at": started_wall,
                                 "ended_at": ended_wall,
@@ -764,6 +802,7 @@ class Day3Simulation:
                         "price_version": quote.price_version, "model": actual_model,
                         "error": error, "request_audit": request_audit,
                         "schema_diagnostics": schema_diagnostics,
+                        "failure_category": error,
                         "timing": {
                             "queued_at": queued_wall, "started_at": started_wall,
                             "ended_at": ended_wall,
@@ -883,7 +922,7 @@ class Day3Simulation:
                                      timing["queued_at"], timing["started_at"], timing["ended_at"],
                                      timing["queue_seconds"], timing["backend_seconds"],
                                      timing["validation_seconds"], timing["elapsed_seconds"],
-                                     outcome["status"], outcome["error"],
+                                     outcome["status"], outcome["failure_category"],
                                      timing["dispatch_evidence"],
                                      _json(outcome["usage"]) if outcome["usage"] else None,
                                      str(outcome["cost"]), int(
@@ -940,7 +979,7 @@ class Day3Simulation:
                                 request_validation_total += outcome["timing"]["validation_seconds"]
                                 if (outcome["error"] or "").endswith(":call_limit"):
                                     final_stop_reason = "backend_call_limit"
-                                elif stop_on_failure and outcome["status"] == "failed":
+                                elif failure_policy == "stop" and outcome["status"] == "failed":
                                     final_stop_reason = "stop_on_failure"
                                 if projected_cost > Decimal(config["budget_cny"]):
                                     final_stop_reason = "budget_exceeded"
@@ -956,9 +995,11 @@ class Day3Simulation:
                         "stop_on_failure": "StoppedAfterFailure",
                         "budget_exceeded": "BudgetExceeded",
                     }.get(final_stop_reason, "NotDispatched")
-                    for aid in pending:
-                        if aid not in outcomes_by_id:
-                            insert_not_dispatched(aid, reason)
+                    # One connection for the whole tail of the round instead of one per
+                    # agent. Agents that already produced a persisted outcome (valid or
+                    # failed) are skipped, so a failed decision keeps its failed status.
+                    insert_not_dispatched_batch(
+                        [aid for aid in pending if aid not in outcomes_by_id], reason)
                 scheduler_wall = time.perf_counter() - scheduler_started
                 if phases is not None:
                     phases["scheduler_and_drain_wall_seconds"] = scheduler_wall
@@ -1032,6 +1073,12 @@ class Day3Simulation:
             failed = sum(outcome["status"] == "failed" for outcome in outcomes)
             not_dispatched = sum(outcome["status"] == "not_dispatched"
                                  for outcome in outcomes)
+            failure_categories = {}
+            for outcome in outcomes:
+                if outcome["status"] != "failed":
+                    continue
+                category = outcome["failure_category"] or "unknown"
+                failure_categories[category] = failure_categories.get(category, 0) + 1
             cost_by_model, reserved_by_model = {}, {}
             for outcome in outcomes:
                 model = outcome["requested_model"]
@@ -1050,6 +1097,12 @@ class Day3Simulation:
                     outcome["decision"] is not None and
                     outcome["decision"]["action"] != "observe" for outcome in outcomes),
                 "failed_decisions": failed, "messages": len(messages),
+                "failure_policy": {
+                    "mode": failure_policy,
+                    "tolerated_failures": failed if failure_policy == "continue" else 0,
+                    "stopped_by_failure": final_stop_reason == "stop_on_failure",
+                    "failure_categories": failure_categories,
+                },
                 "reserved_cny": str(sum((o["reserved"] for o in outcomes), Decimal("0"))),
                 "reserved_by_model": reserved_by_model,
                 "cost_cny": str(round_cost), "cost_by_model": cost_by_model,
