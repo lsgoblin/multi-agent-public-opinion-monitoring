@@ -470,6 +470,7 @@ def run_load_level(*, agents: int, rounds: int, concurrency: int, latency_ms: fl
                    profile: FaultProfile | None = None,
                    deadline_monotonic: float | None = None,
                    deadline_ms: float | None = None,
+                   call_timeout_ms: float | None = None,
                    budget_cny: Decimal = DEFAULT_TASK_BUDGET_CNY) -> dict:
     """Run one graded load level on a fresh local database and return its ledger.
 
@@ -493,6 +494,8 @@ def run_load_level(*, agents: int, rounds: int, concurrency: int, latency_ms: fl
             deadline_monotonic = time.monotonic() + deadline_ms / 1000.0
         result = engine.advance(run_id, backend, collect_performance=True,
                                 deadline_monotonic=deadline_monotonic,
+                                **({"call_timeout_seconds": call_timeout_ms / 1000.0}
+                                   if call_timeout_ms else {}),
                                 **({"failure_policy": failure_policy}
                                    if failure_policy else {}))
         wall_seconds = time.perf_counter() - started
@@ -704,6 +707,9 @@ def main(argv=None) -> int:
                         help="return no token usage, to model an unknown-usage request")
     parser.add_argument("--deadline-ms", type=float, default=0.0,
                         help="stop dispatching this long after the run starts")
+    parser.add_argument("--call-timeout-ms", type=float, default=0.0,
+                        help="per-round wait budget; a call that never returns is "
+                             "recorded as deadline_exceeded instead of blocking the run")
     arguments = parser.parse_args(argv)
     levels = parse_levels(arguments.level) if arguments.level else DEFAULT_LEVELS
 
@@ -740,7 +746,10 @@ def main(argv=None) -> int:
         level = run_load_level(agents=agents, rounds=rounds, concurrency=concurrency,
                                latency_ms=latency_ms, seed=arguments.seed,
                                failure_policy=arguments.failure_policy, profile=profile,
-                               deadline_monotonic=deadline)
+                               deadline_monotonic=deadline,
+                               call_timeout_ms=(arguments.call_timeout_ms
+                                                if arguments.call_timeout_ms > 0
+                                                else None))
         measured.append(level)
         print(json.dumps({"load": level["load"], "outcome": level["outcome"],
                           "buckets": level["opportunities"]["buckets"],
