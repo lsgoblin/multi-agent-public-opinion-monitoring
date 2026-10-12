@@ -42,7 +42,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-from riskshield.evaluation import _adjudication_for_case, evaluate_documents
+from riskshield.evaluation import _adjudication_for_case, _resolve_ref, evaluate_documents
 from riskshield.evaluation_alignment import (
     INPUT_SCHEMA,
     LABEL_SCHEMA,
@@ -786,7 +786,7 @@ def score_trajectory_set(units: list[dict[str, Any]], *, dataset_version: str,
              for unit in units]
     events = [{
         "event_id": unit["event_id"],
-        "observed_direction": unit["human_direction_label"],
+        "observed_direction": resolved_direction_label(unit),
         "evidence_refs": [ref for annotation in unit.get("direction_annotations", [])
                           for ref in annotation["evidence_refs"]],
     } for unit in units]
@@ -975,6 +975,128 @@ def build_trajectory_package(units: list[dict[str, Any]], relative_path: str,
     }
 
 
+def _direction_adjudication_valid(block: dict[str, Any], root: Path) -> tuple[str | None, list[str]]:
+    """Decide whether a recorded direction adjudication may stand as the label.
+
+    Mirrors the sentiment rules rather than inventing a second set: a named
+    adjudicator, a label inside the declared direction space, both original
+    answers preserved, a stated rule source, and an evidence pointer that
+    resolves. An adjudication that fails any of these leaves the disagreement
+    where it was, excluded.
+    """
+    reasons: list[str] = []
+    label = block.get("final_label")
+    if not isinstance(block.get("adjudicator_id"), str) or not block["adjudicator_id"].strip():
+        reasons.append("missing_adjudicator_id")
+    if label not in DIRECTION_LABELS:
+        reasons.append("final_label_outside_the_declared_direction_space")
+    if block.get("original_answers_preserved") is not True:
+        reasons.append("original_answers_not_preserved")
+    if not isinstance(block.get("rule_source"), str) or not block["rule_source"].strip():
+        reasons.append("missing_rule_source")
+    refs = block.get("evidence_refs")
+    if not isinstance(refs, list) or not refs:
+        reasons.append("missing_evidence_refs")
+    else:
+        for ref in refs:
+            if not isinstance(ref, dict) or not isinstance(ref.get("path"), str):
+                reasons.append("evidence_ref_is_not_a_path_and_pointer")
+                break
+            # Only the resolution failure is caught. A wider catch would turn a
+            # mistake in this function into a verdict about the material.
+            try:
+                resolved = _resolve_ref(ref, root)
+            except (AlignmentInputError, KeyError, IndexError, TypeError, ValueError):
+                reasons.append("evidence_ref_does_not_resolve")
+                break
+            if resolved is None:
+                reasons.append("evidence_ref_does_not_resolve")
+                break
+    return (label if not reasons else None), reasons
+
+
+def attach_direction_adjudications(units: list[dict[str, Any]],
+                                   adjudication_record: str | None,
+                                   root: Path) -> dict[str, Any]:
+    """Bind each event to its entry in a recorded direction adjudication document.
+
+    Two annotators who disagree on a direction leave the event out of the
+    denominator with no recourse, which for a ten-event track is material. This
+    is the same mechanism sentiment already has, applied to direction labels, and
+    it keeps both original answers next to the resolution rather than replacing
+    them.
+    """
+    if adjudication_record is None:
+        for unit in units:
+            unit["direction_adjudication"] = None
+        return {"recorded": False, "path": None, "attached_event_ids": [],
+                "invalid_event_ids": [], "units": {},
+                "note": ("no direction adjudication record configured; two annotators who disagree "
+                         "leave that event out of the denominator")}
+
+    document = _load(root, adjudication_record)
+    schema = document.get("schema")
+    if not isinstance(schema, str) or not schema.startswith(ADJUDICATION_SCHEMA_PREFIX):
+        raise BenchmarkConfigError(
+            f"{adjudication_record} is not an adjudication record (schema={schema!r}).")
+    rows = document.get("records")
+    if not isinstance(rows, list):
+        raise BenchmarkConfigError(f"{adjudication_record} needs a records array.")
+
+    located_rule = _resolve_rule_source(document.get("rule_source"), adjudication_record, root)
+    by_event: dict[str, tuple[int, dict[str, Any]]] = {}
+    for index, row in enumerate(rows):
+        if isinstance(row, dict) and isinstance(row.get("unit_id"), str):
+            by_event.setdefault(row["unit_id"], (index, row))
+
+    attached: list[str] = []
+    invalid: list[str] = []
+    report: dict[str, Any] = {}
+    for unit in units:
+        match = by_event.get(unit["unit_id"])
+        if match is None:
+            unit["direction_adjudication"] = None
+            continue
+        index, row = match
+        block = {
+            "adjudicator_id": document.get("decided_by"),
+            "final_label": row.get("resolved_direction_label", row.get("resolved_label")),
+            "rule_source": located_rule or document.get("rule_source"),
+            "rule_source_declared": document.get("rule_source"),
+            "rule_source_located": located_rule is not None,
+            "rule_arm": row.get("rule_arm"),
+            "decision": row.get("resolution"),
+            "adjudicated_at": document.get("decided_at"),
+            "original_answers_preserved": row.get("both_original_answers_preserved"),
+            "evidence_refs": [{"path": adjudication_record,
+                               "pointer": f"/records/{index}/resolved_direction_label"}],
+        }
+        resolved, reasons = _direction_adjudication_valid(block, root)
+        block["valid"] = resolved is not None
+        block["invalid_reasons"] = reasons
+        unit["direction_adjudication"] = block
+        report[unit["unit_id"]] = {"final_label": block["final_label"],
+                                   "adjudicator_id": block["adjudicator_id"],
+                                   "valid": block["valid"], "invalid_reasons": reasons}
+        (attached if block["valid"] else invalid).append(unit["unit_id"])
+    return {"recorded": True, "path": adjudication_record,
+            "sha256": sha256_file(root, adjudication_record),
+            "attached_event_ids": sorted(attached), "invalid_event_ids": sorted(invalid),
+            "units": report, "located_rule_source": located_rule}
+
+
+def resolved_direction_label(unit: dict[str, Any]) -> str | None:
+    """The label an event is scored on: a valid adjudication first, else agreement.
+
+    One resolver, used by the gate and by the case builder, so the two cannot
+    disagree about what an event's direction is.
+    """
+    adjudication = unit.get("direction_adjudication") or {}
+    if adjudication.get("valid") is True and adjudication.get("final_label"):
+        return adjudication["final_label"]
+    return unit.get("human_direction_label")
+
+
 def attach_direction_labels(units: list[dict[str, Any]], sources: list[dict[str, Any]],
                             root: Path) -> dict[str, Any]:
     """Attach recorded human direction labels from submission documents.
@@ -1058,22 +1180,40 @@ def trajectory_direction_gate(unit: dict[str, Any]) -> dict[str, Any]:
     A label the engine cannot express -- ``stable``, which open question 6 has
     not decided on -- is reported as its own reason rather than quietly mapped
     onto one of the two labels the engine has.
+
+    Two annotators who disagree are excluded unless a recorded adjudication
+    stands, in which case the event enters on the adjudicated label and the
+    disagreement is reported as the basis rather than hidden.
     """
     reasons: list[str] = []
-    label = unit.get("human_direction_label")
-    annotations = unit.get("direction_annotations", [])
-    if len(annotations) < 2:
+    labels = [row["label"] for row in unit.get("direction_annotations", [])]
+    distinct = sorted(set(labels))
+    adjudication = unit.get("direction_adjudication") or {}
+    adjudicated = adjudication.get("valid") is True
+
+    if len(labels) < 2:
         reasons.append("fewer_than_two_independent_direction_labels")
-    elif len({row["label"] for row in annotations}) != 1:
+    elif len(distinct) != 1 and not adjudicated:
         reasons.append("direction_labels_disagree_no_adjudication")
+
+    label = resolved_direction_label(unit)
     if label is None:
         reasons.append("no_independent_human_direction_label")
     elif label not in ENGINE_DIRECTION_LABELS:
         reasons.append("human_direction_label_outside_the_engine_label_space")
+
     prediction = unit.get("prediction") or {}
     if prediction.get("admitted") is not True:
         reasons.append("no_admitted_formal_direction_prediction")
-    return {"passed": not reasons, "reasons": sorted(set(reasons))}
+
+    if adjudicated and len(distinct) != 1:
+        basis = "adjudicated_disagreement"
+    elif len(distinct) == 1 and len(labels) >= 2:
+        basis = "two_independent_agreeing_labels"
+    else:
+        basis = None
+    return {"passed": not reasons, "reasons": sorted(set(reasons)),
+            "label_basis": basis, "resolved_label": label}
 
 
 def _parse_time(value: Any) -> datetime | None:
@@ -1385,7 +1525,10 @@ def _direction_eligibility_rows(units: list[dict[str, Any]]) -> list[dict[str, A
             "sealed_evidence_sha256": unit.get("sealed_evidence_sha256"),
             "prediction_label": (unit.get("prediction") or {}).get("label"),
             "prediction_admitted": (unit.get("prediction") or {}).get("admitted") is True,
-            "human_direction_label": unit.get("human_direction_label"),
+            "human_direction_label": resolved_direction_label(unit),
+            "human_direction_label_basis": gate["label_basis"],
+            "direction_adjudication_valid": bool(
+                (unit.get("direction_adjudication") or {}).get("valid")),
             "direction_annotation_count": len(unit.get("direction_annotations", [])),
             "direction_labels": [row["label"] for row in unit.get("direction_annotations", [])],
             "direction_annotation_exclusions": unit.get("direction_annotation_exclusions", []),
@@ -1401,6 +1544,8 @@ def _evaluate_direction_cohort(cohort: dict[str, Any], units: list[dict[str, Any
     """Label, admit, gate and score one trajectory cohort."""
     units = [dict(unit) for unit in units]
     annotation_report = attach_direction_labels(units, cohort.get("annotation_sources", []), root)
+    adjudication_report = attach_direction_adjudications(
+        units, cohort.get("direction_adjudication_record"), root)
     prediction_report = admit_trajectory_predictions(units, root, out_dir_relative)
 
     rows = _direction_eligibility_rows(units)
@@ -1434,6 +1579,7 @@ def _evaluate_direction_cohort(cohort: dict[str, Any], units: list[dict[str, Any
         "metrics": metrics,
         "eligibility_table": rows,
         "annotation_report": annotation_report,
+        "direction_adjudication_report": adjudication_report,
         "prediction_report": prediction_report["admission"],
         "evidence_package": prediction_report["package_relative"],
         "evidence_package_digest": prediction_report["package_digest"],

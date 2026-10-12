@@ -1009,6 +1009,7 @@ def _direction_submissions(root: Path, event_ids: list[str], labels: dict[str, s
 def _trajectory_cohort(event_ids: list[str], **overrides) -> dict:
     cohort = {
         "cohort_id": "trajectory",
+        "track": "direction",
         "unit_source": "trajectory_event_frame",
         "dataset_version": "trajectory-v1",
         "label_version": "trajectory-labels-v1",
@@ -1258,6 +1259,131 @@ def test_a_sentiment_cohort_without_a_track_field_still_defaults_to_sentiment():
     bench.validate_config(payload)
 
     assert bench.cohort_track(payload["cohorts"][0]) == "sentiment"
+
+
+def _direction_submissions_disagreeing(root: Path, event_id: str, *,
+                                       label_a: str, label_b: str) -> None:
+    _write(root, "direction/pass-a.json",
+           {"annotator_id": "leo", "prediction_exposure": False,
+            "saw_other_annotator_answer": False,
+            "units": [{"unit_id": event_id, "direction_label": label_a}]})
+    _write(root, "direction/pass-b.json",
+           {"annotator_id": "dick", "prediction_exposure": False,
+            "saw_other_annotator_answer": False,
+            "records": [{"unit_id": event_id, "direction_label": label_b}]})
+
+
+def _direction_adjudication(root: Path, event_id: str, *, label: str = "escalation",
+                            decided_by: str = "project owner",
+                            preserved: bool = True) -> None:
+    _write(root, "direction/rule.json", {"rule": "the frozen direction rule"})
+    _write(root, "direction/adjudication.json", {
+        "schema": "riskshield.data_evaluation.adjudication_record.v1",
+        "decided_by": decided_by, "decided_at": "2026-10-12T00:00:00Z",
+        "rule_source": "direction/rule.json",
+        "records": [{"unit_id": event_id, "resolved_direction_label": label,
+                     "both_original_answers_preserved": preserved,
+                     "resolution": "the two passes were reconciled against the observed series",
+                     "rule_arm": "frozen_direction_rule"}]})
+
+
+def test_direction_disagreement_without_adjudication_stays_out(tmp_path):
+    root = _trajectory_root(tmp_path, ["evt-1"])
+    _direction_submissions_disagreeing(root, "evt-1", label_a="escalation", label_b="calming")
+    cohort = _trajectory_cohort([], expected_excluded_unit_ids=["evt-1"])
+
+    result = bench.evaluate_cohort(cohort, bench.trajectory_units(root, cohort),
+                                   root=root, cutoffs_document=None,
+                                   out_dir_relative="out/run")
+
+    assert result["gated_unit_ids"] == []
+    assert result["metrics"]["direction_agreement"]["denominator"] == 0
+    gate = bench.trajectory_direction_gate(result["units"][0])
+    assert gate["reasons"] == ["direction_labels_disagree_no_adjudication",
+                               "no_independent_human_direction_label"]
+    assert gate["label_basis"] is None
+
+
+def test_an_adjudicated_direction_enters_on_the_adjudicated_label(tmp_path):
+    root = _trajectory_root(tmp_path, ["evt-1"])
+    _direction_submissions_disagreeing(root, "evt-1", label_a="escalation", label_b="calming")
+    _direction_adjudication(root, "evt-1", label="escalation")
+    cohort = _trajectory_cohort(["evt-1"],
+                                direction_adjudication_record="direction/adjudication.json")
+
+    result = bench.evaluate_cohort(cohort, bench.trajectory_units(root, cohort),
+                                   root=root, cutoffs_document=None,
+                                   out_dir_relative="out/run")
+
+    assert result["gated_unit_ids"] == ["evt-1"]
+    assert result["metrics"]["direction_agreement"]["denominator"] == 1
+    unit = result["units"][0]
+    # Both original answers stay on the unit; the adjudication sits beside them.
+    assert [row["label"] for row in unit["direction_annotations"]] == ["escalation", "calming"]
+    gate = bench.trajectory_direction_gate(unit)
+    assert gate["label_basis"] == "adjudicated_disagreement"
+    assert gate["resolved_label"] == "escalation"
+    assert result["direction_adjudication_report"]["attached_event_ids"] == ["evt-1"]
+
+
+def test_an_invalid_direction_adjudication_leaves_the_disagreement_excluded(tmp_path):
+    root = _trajectory_root(tmp_path, ["evt-1"])
+    _direction_submissions_disagreeing(root, "evt-1", label_a="escalation", label_b="calming")
+    _direction_adjudication(root, "evt-1", decided_by="")
+    cohort = _trajectory_cohort([], expected_excluded_unit_ids=["evt-1"],
+                                direction_adjudication_record="direction/adjudication.json")
+
+    result = bench.evaluate_cohort(cohort, bench.trajectory_units(root, cohort),
+                                   root=root, cutoffs_document=None,
+                                   out_dir_relative="out/run")
+
+    assert result["gated_unit_ids"] == []
+    unit = result["units"][0]
+    assert unit["direction_adjudication"]["valid"] is False
+    assert "missing_adjudicator_id" in unit["direction_adjudication"]["invalid_reasons"]
+    assert "direction_labels_disagree_no_adjudication" in bench.trajectory_direction_gate(
+        unit)["reasons"]
+
+
+def test_an_adjudication_to_a_label_the_engine_cannot_express_is_still_excluded(tmp_path):
+    """`stable` stays open question 6 even when an adjudicator picks it."""
+    root = _trajectory_root(tmp_path, ["evt-1"])
+    _direction_submissions_disagreeing(root, "evt-1", label_a="escalation", label_b="calming")
+    _direction_adjudication(root, "evt-1", label="stable")
+    cohort = _trajectory_cohort([], expected_excluded_unit_ids=["evt-1"],
+                                direction_adjudication_record="direction/adjudication.json")
+
+    result = bench.evaluate_cohort(cohort, bench.trajectory_units(root, cohort),
+                                   root=root, cutoffs_document=None,
+                                   out_dir_relative="out/run")
+
+    assert result["gated_unit_ids"] == []
+    assert bench.trajectory_direction_gate(result["units"][0])["reasons"] == [
+        "human_direction_label_outside_the_engine_label_space"]
+
+
+def test_two_agreeing_direction_labels_need_no_adjudication(tmp_path):
+    root = _trajectory_root(tmp_path, ["evt-1"])
+    _direction_submissions(root, ["evt-1"], {"evt-1": "calming"})
+    cohort = _trajectory_cohort(["evt-1"])
+
+    result = bench.evaluate_cohort(cohort, bench.trajectory_units(root, cohort),
+                                   root=root, cutoffs_document=None,
+                                   out_dir_relative="out/run")
+
+    gate = bench.trajectory_direction_gate(result["units"][0])
+    assert result["gated_unit_ids"] == ["evt-1"]
+    assert gate["label_basis"] == "two_independent_agreeing_labels"
+    assert result["direction_adjudication_report"]["recorded"] is False
+
+
+def test_a_direction_adjudication_record_is_validated_before_it_is_trusted(tmp_path):
+    root = _trajectory_root(tmp_path, ["evt-1"])
+    unit = bench.trajectory_units(root, _trajectory_cohort(["evt-1"]))[0]
+    _write(root, "direction/not-an-adjudication.json", {"schema": "something else"})
+
+    with pytest.raises(bench.BenchmarkConfigError, match="not an adjudication record"):
+        bench.attach_direction_adjudications([unit], "direction/not-an-adjudication.json", root)
 
 
 # --------------------------------------------------------------------------
