@@ -140,6 +140,53 @@ def test_abandoned_request_is_recorded_distinctly_from_an_unsent_one(tmp_path):
     assert result["billing"]["states"]["unsettled_reserved"] == 1
 
 
+def test_a_damaged_pool_is_never_replaced_by_another_round(tmp_path):
+    """One stuck round must not multiply: lost workers stay bounded by one concurrency.
+
+    Regression for a linear thread leak. A pool is built per round, so when every round
+    times out on a call that never returns, each round left its own set of workers behind:
+    with concurrency 16 over 30 rounds a single run could strand ~464 threads. The engine
+    now marks the pool damaged and refuses to build another one, so the loss is bounded by
+    one round's concurrency no matter how many rounds were requested.
+
+    The gate is deliberately never released, which is the only way to observe accumulation:
+    the earlier residue test released it after every attempt, so the threads it counted had
+    already exited.
+    """
+    baseline = len(live_worker_threads())
+    store, engine, run_id = make_engine(tmp_path, agents=4, rounds=5, concurrency=2)
+    gate = threading.Event()
+    # One agent hangs; the rest answer, so the damaging round still completes and a later
+    # round gets the chance to build a second pool that must be refused.
+    backend = HangsForever(gate, blocked_agents=("agent_0001",))
+    result = engine.advance(run_id, backend, collect_performance=True,
+                            call_timeout_seconds=0.2)
+
+    leaked = len(live_worker_threads()) - baseline
+    assert leaked <= 2, f"{leaked} worker threads leaked with concurrency 2"
+    capacity = result["pool_capacity"]
+    # The bound is the property that matters, whatever shape the run happened to take.
+    assert capacity["peak_lost_workers"] <= 2
+    refused = [row for row in result["rounds"] if row.get("pool_refused")]
+    if refused:
+        # A later round was reached and correctly refused instead of building a new pool.
+        assert capacity["rounds_refused_pool_exhausted"] == 1
+        assert refused[0]["round"] == 2
+        with store.connect() as db:
+            reasons = {row["error"] for row in db.execute(
+                "SELECT error FROM simulation_actions WHERE run_id=? "
+                "AND status='not_dispatched'", (run_id,))}
+        assert reasons == {"PoolExhausted"}
+    else:
+        # The damaging round was itself abandoned, so the run stopped before reaching
+        # another round; nothing may have been refused and nothing may be dispatched once
+        # the pool is spent.
+        assert capacity["rounds_refused_pool_exhausted"] == 0
+        assert result["completed_rounds"] == 1
+    gate.set()
+    time.sleep(0.1)
+
+
 def test_call_timeout_must_be_a_finite_positive_number(tmp_path):
     _, engine, run_id = make_engine(tmp_path, agents=1, rounds=1, concurrency=1)
     backend = PricedSubstitute()

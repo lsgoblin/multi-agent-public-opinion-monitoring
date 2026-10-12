@@ -58,6 +58,13 @@ class DaemonCallPool:
     work past that bound (``stop_submitting``), while a stuck worker is left behind
     harmlessly: it is a daemon thread and its late result is queued but never read,
     because the request it belonged to has already been recorded.
+
+    Leaving a worker behind is only harmless while they cannot pile up. A pool is built
+    per round, so a round that times out leaves up to ``max_workers`` workers stuck in a
+    call that may never return; the next round would build a fresh pool and leave a
+    second set behind. ``mark_damaged`` records that loss, and the engine reads
+    ``is_damaged`` to refuse to build another pool, which bounds the loss at one round's
+    concurrency instead of one round's concurrency per round.
     """
 
     def __init__(self, max_workers: int):
@@ -71,6 +78,8 @@ class DaemonCallPool:
         self._results: queue.Queue = queue.Queue()
         self._lock = threading.Lock()
         self._submitting = True
+        self._damaged = False
+        self._lost_workers = 0
         self._stop = object()  # unique sentinel: never confusable with a result
         self._threads = [
             threading.Thread(target=self._worker, daemon=True,
@@ -79,6 +88,29 @@ class DaemonCallPool:
         ]
         for thread in self._threads:
             thread.start()
+
+    def mark_damaged(self, lost_workers: int):
+        """Record that ``lost_workers`` workers never returned from their call.
+
+        Call this instead of guessing from thread counts: the lost worker really is still
+        inside the backend call, so its thread cannot exit and a new pool would add a
+        second set on top of it.
+        """
+        self._damaged = True
+        self._lost_workers = max(self._lost_workers, int(lost_workers))
+
+    def is_damaged(self) -> bool:
+        return self._damaged
+
+    def capacity(self) -> dict:
+        """What this pool still has, in terms this run's ledger can record.
+
+        ``available`` is what can still be dispatched, not a thread count: once a worker
+        is stuck it will never take another item, and after ``stop_submitting`` nothing
+        may be queued at all.
+        """
+        return {"total": self.max_workers, "lost": self._lost_workers,
+                "available": 0 if self._damaged else self.max_workers}
 
     def _worker(self):
         while True:
@@ -929,6 +961,12 @@ class Day3Simulation:
         target = (min(config["rounds"], run["completed_rounds"] + max_rounds)
                   if max_rounds is not None else config["rounds"])
 
+        # Carried across rounds: a round that abandoned workers inside a hung call has
+        # spent its pool, and building another one would leave a second set of stuck
+        # threads. The condition is recorded, not inferred from thread counts.
+        pool_damaged = False
+        pool_damaged_at_round = None
+
         while int(run["completed_rounds"]) < target:
             round_started = time.perf_counter()
             round_started_at = datetime.now().astimezone().isoformat()
@@ -1024,7 +1062,7 @@ class Day3Simulation:
                     if old["error"] and old["error"] not in {
                             "BudgetPreflight", "StopSignal", "DeadlineExceeded",
                             "BackendCallLimit", "StoppedAfterFailure", "BudgetExceeded",
-                            "NotDispatched", "FailedDecisionsTolerated"}:
+                            "PoolExhausted", "NotDispatched", "FailedDecisionsTolerated"}:
                         return False
                     db.execute(
                         "UPDATE simulation_actions SET observation_refs=?, decision=NULL, "
@@ -1077,8 +1115,21 @@ class Day3Simulation:
             actual_in_flight = 0
             actual_peak_in_flight = 0
             in_flight_lock = threading.Lock()
+            pool_capacity = None
+            pooled_workers_abandoned = 0
+            pool_refused_this_round = False
             if final_stop_reason == "budget_preflight":
                 insert_not_dispatched_batch(pending_ids, "BudgetPreflight")
+            elif pool_damaged:
+                # A previous round left workers inside a backend call that never returned.
+                # Those threads cannot be reclaimed, so this round must not dispatch: it
+                # records every remaining opportunity as not dispatched and stops the run.
+                # Skipping the round is the honest outcome; silently building a new pool
+                # would turn one stuck round into a permanently growing thread leak.
+                if final_stop_reason is None:
+                    final_stop_reason = "pool_exhausted"
+                pool_refused_this_round = True
+                insert_not_dispatched_batch(pending_ids, "PoolExhausted")
             elif pending_ids and requested_stop() is not None:
                 final_stop_reason = requested_stop()
                 reason = "StopSignal" if final_stop_reason == "stop_signal" else "DeadlineExceeded"
@@ -1401,6 +1452,17 @@ class Day3Simulation:
                             final_stop_reason = "call_timeout"
                         persist_outcomes(completed_buffer)
                     finally:
+                        pooled_workers_abandoned = (
+                            len(abandoned_in_flight)
+                            if final_stop_reason in {"call_timeout", "deadline"} else 0)
+                        if pooled_workers_abandoned:
+                            # These workers are still inside their backend call. They cannot
+                            # be reclaimed, so the pool is spent: a later round must not
+                            # build another one and add a second set of stuck threads.
+                            pool.mark_damaged(pooled_workers_abandoned)
+                            pool_damaged = True
+                            pool_damaged_at_round = round_number
+                        pool_capacity = pool.capacity()
                         pool.shutdown()
                 if final_stop_reason in {"call_timeout", "deadline"} and abandoned_in_flight:
                     # Reconcile the requests we stopped waiting for, then let the normal
@@ -1417,6 +1479,7 @@ class Day3Simulation:
                         "backend_call_limit": "BackendCallLimit",
                         "stop_on_failure": "StoppedAfterFailure",
                         "budget_exceeded": "BudgetExceeded",
+                        "pool_exhausted": "PoolExhausted",
                     }.get(final_stop_reason, "NotDispatched")
                     # One connection for the whole tail of the round instead of one per
                     # agent. Agents that already produced a persisted outcome (valid,
@@ -1454,6 +1517,17 @@ class Day3Simulation:
                     message_count=0, abandoned=True)
                 abandoned_stats["elapsed_seconds"] = round(
                     time.perf_counter() - round_started, 3)
+                abandoned_stats["stop_reason"] = final_stop_reason
+                if pool_damaged_at_round is not None:
+                    abandoned_stats["pool_damaged_at_round"] = pool_damaged_at_round
+                if pool_refused_this_round:
+                    # No pool was built for this round, so there is no capacity to report.
+                    # Reporting the configured concurrency as "lost" would overstate the
+                    # damage: the workers that really are stuck are already counted by the
+                    # round that abandoned them.
+                    abandoned_stats["pool_refused"] = True
+                if pool_capacity is not None:
+                    abandoned_stats["pool_capacity"] = dict(pool_capacity)
                 if phases is not None:
                     phases["round_started_at"] = round_started_at
                     phases["round_abandoned"] = True
@@ -1525,6 +1599,15 @@ class Day3Simulation:
                 failure_policy=failure_policy, final_stop_reason=final_stop_reason,
                 configured_agents=len(agents), state_by_id=state_by_id,
                 message_count=len(messages), abandoned=False)
+            stats["stop_reason"] = final_stop_reason
+            if pool_damaged_at_round is not None:
+                # Recorded so a *later* advance() can see that this run already lost
+                # workers and refuse to build a pool on top of them.
+                stats["pool_damaged_at_round"] = pool_damaged_at_round
+            if pool_refused_this_round:
+                stats["pool_refused"] = True
+            if pool_capacity is not None:
+                stats["pool_capacity"] = dict(pool_capacity)
             if phases is not None:
                 phases["round_started_at"] = round_started_at
                 phases["phase_timing_note"] = (
@@ -1556,10 +1639,19 @@ class Day3Simulation:
                            (run_id, round_number, _json(stats)))
                 if over_budget:
                     status = "partial"
-                elif round_number == config["rounds"]:
+                elif round_number == config["rounds"] and final_stop_reason is None:
                     # Preserve the public status meaning: all rounds ran. The additive
                     # summary success flag distinguishes that from all-valid completion.
+                    #
+                    # A round that stopped on a call timeout, a stop signal or a backend
+                    # call limit did NOT run to the end, even when it happens to be the
+                    # last configured round. It is still recorded as a completed round
+                    # (its accounting is final), but the run must not claim that all
+                    # rounds ran: pairing "complete" with undecided requests is exactly
+                    # the kind of reading the status is supposed to prevent.
                     status = "complete"
+                elif round_number == config["rounds"]:
+                    status = "partial"
                 else:
                     status = "running"
                 db.execute(
@@ -1709,6 +1801,20 @@ class Day3Simulation:
         # Whole-task opportunity reconciliation and the billing ledger, both independent
         # of how many action rows happened to be persisted.
         summary["opportunities"] = self._opportunity_buckets(rounds, config)
+        per_round_pool = [row["pool_capacity"] for row in rounds if row.get("pool_capacity")]
+        summary["pool_capacity"] = {
+            "recorded_rounds": len(per_round_pool),
+            "peak_lost_workers": max((item["lost"] for item in per_round_pool), default=0),
+            "total_lost_worker_rounds": sum(item["lost"] for item in per_round_pool),
+            "rounds_refused_pool_exhausted": sum(
+                1 for row in rounds if row.get("pool_refused")),
+            "note": ("a lost worker never returned from its backend call and is still "
+                     "inside it; the thread is a daemon so it cannot hold the process "
+                     "open, and once a round loses workers the engine refuses to build "
+                     "another pool, so the loss stays bounded by one round's concurrency. "
+                     "A refused round builds no pool and therefore reports no capacity."),
+            "per_round": per_round_pool,
+        }
         summary["billing"] = self._billing_summary(run_id, Decimal(run["cost_cny"]))
         performance = self._performance_summary(run_id)
         if performance is not None:
