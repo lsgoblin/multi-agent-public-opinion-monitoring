@@ -92,13 +92,26 @@ class Day4Alerts:
             rows = [dict(row) for row in db.execute(
                 "SELECT agent_id, status, decision, observation_refs FROM simulation_actions "
                 "WHERE run_id=? AND round_number=? ORDER BY agent_id", (run_id, round_number))]
-            total_failures = db.execute(
-                "SELECT COUNT(*) AS n FROM simulation_actions WHERE run_id=? AND status!='valid'",
-                (run_id,)).fetchone()["n"]
+            run_status_counts = {row["status"]: row["n"] for row in db.execute(
+                "SELECT status, COUNT(*) AS n FROM simulation_actions WHERE run_id=? "
+                "GROUP BY status", (run_id,))}
+            # Only ``failed`` is a failed decision. ``deadline_exceeded`` (dispatched, not
+            # waited for) and ``not_dispatched`` (never sent) are undecided, and reading
+            # "everything that is not valid" as failure misreports them as our errors.
+            total_failures = run_status_counts.get("failed", 0)
+            run_undecided = (run_status_counts.get("deadline_exceeded", 0) +
+                             run_status_counts.get("not_dispatched", 0))
             message_count = db.execute(
                 "SELECT COUNT(*) AS n FROM simulation_messages WHERE run_id=? AND round_number=?",
                 (run_id, round_number)).fetchone()["n"]
         valid = [row for row in rows if row["status"] == "valid" and row["decision"]]
+        # ``deadline_exceeded`` is a request the engine stopped waiting for and
+        # ``not_dispatched`` was never sent. Neither is a failed decision, so counting
+        # "everything that is not valid" as a failure would report undecided requests as
+        # our own errors and would also overstate ``decisions_all_valid`` failures.
+        failed = [row for row in rows if row["status"] == "failed"]
+        undecided = [row for row in rows
+                     if row["status"] in {"deadline_exceeded", "not_dispatched"}]
         if not valid:
             raise AlertError("latest round has no valid decisions")
         complaint = [row for row in valid if json.loads(row["decision"])["action"] ==
@@ -134,6 +147,8 @@ class Day4Alerts:
             limitations.append("Synthetic run must never trigger an external notification.")
         if run["status"] != "complete" or total_failures:
             limitations.append("Run is incomplete or contains failed decisions; classify valid latest-round actions only.")
+        if run_undecided:
+            limitations.append("Some requests were never decided (dispatched but not waited for, or never sent); they are undecided, not failed.")
         execution_mode = (config.get("backend") or {}).get(
             "type", config.get("backend_mode"))
         if snapshot["data_mode"] == "real_historical" and execution_mode == "offline_dynamic_substitute":
@@ -158,9 +173,9 @@ class Day4Alerts:
             # these flags make it impossible to read a stopped or partly failed run as a
             # clean one. A consumer must not present this as a successful assessment.
             "run_complete": run["status"] == "complete",
-            "decisions_all_valid": total_failures == 0,
+            "decisions_all_valid": total_failures == 0 and run_undecided == 0,
             "alert_is_success_result": (run["status"] == "complete" and
-                                        total_failures == 0),
+                                        total_failures == 0 and run_undecided == 0),
             "assessed_at": assessed_at,
             # Local rule detection time; it is not the historical event's first-public time.
             "discovered_at": assessed_at,
@@ -169,8 +184,10 @@ class Day4Alerts:
             "metrics": {
                 "round": round_number, "run_status": run["status"],
                 "latest_round_valid_decisions": len(valid),
-                "latest_round_failed_decisions": len(rows) - len(valid),
+                "latest_round_failed_decisions": len(failed),
+                "latest_round_undecided_requests": len(undecided),
                 "run_failed_decisions": total_failures,
+                "run_undecided_requests": run_undecided,
                 "simulated_complaint_intent_decisions": len(complaint),
                 "simulated_complaint_intent_share": round(share, 6),
                 "latest_round_simulated_messages": message_count,
