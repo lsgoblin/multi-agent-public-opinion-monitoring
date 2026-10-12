@@ -520,6 +520,47 @@ def test_evaluate_combined_refuses_a_duplicated_unit():
 # group 6: cutoff evidence
 # --------------------------------------------------------------------------
 
+def test_a_configured_attestation_is_used_when_it_covers_every_derived_unit(tmp_path):
+    root = _fixture_root(tmp_path, ["u1"])
+    _write(root, "frozen/attestation.json", {"units": {"u1": {"cutoff": CUTOFF}}})
+    unit = _fixture_unit(
+        root, 0, "u1",
+        cutoff_provenance="derived_backtest_window_rule_not_historical_freeze")
+
+    state = bench.ensure_cutoff_attestation([unit], "frozen/attestation.json", "out/run", root)
+
+    assert state["generated"] is False
+    assert state["reference"] == "frozen/attestation.json"
+    assert not (root / "out/run/derived-cutoff-attestation.json").exists()
+
+
+def test_a_configured_attestation_that_misses_a_unit_is_extended(tmp_path):
+    """Regression: a config written before a cohort existed left that cohort unscorable.
+
+    The v04 attestation covers the five frozen units only. The sixty collected
+    ones resolve their cutoff against the same document, so once their labels
+    arrived they passed the gate and were then dropped by the engine for a cutoff
+    that could not resolve -- silently shrinking the denominator.
+    """
+    root = _fixture_root(tmp_path, ["u1"])
+    _write(root, "frozen/attestation.json", {"units": {"someone-else": {"cutoff": CUTOFF}}})
+    unit = _fixture_unit(
+        root, 0, "u1",
+        cutoff_provenance="derived_backtest_window_rule_not_historical_freeze")
+
+    state = bench.ensure_cutoff_attestation([unit], "frozen/attestation.json", "out/run", root)
+
+    assert state["generated"] is True
+    assert state["covered_by_the_configured_document"] == []
+    assert state["added_by_generation"] == ["u1"]
+    document = json.loads((root / state["reference"]).read_text(encoding="utf-8"))
+    assert "someone-else" in document["units"]
+    assert "u1" in document["units"]
+    case = bench._cohort_case(unit, {"sentiment": None, "direction": None}, "v1", "holdout",
+                              state["reference"])
+    assert case["cutoff_evidence_ref"]["path"] == state["reference"]
+
+
 def test_a_declared_cutoff_unit_points_at_its_own_packet(tmp_path):
     root = _fixture_root(tmp_path, ["u1"])
     prepared = [dict(_fixture_unit(root, 0, "u1"))]
@@ -549,13 +590,14 @@ def test_derived_cutoff_units_get_a_generated_attestation(tmp_path):
 
 def test_a_configured_attestation_is_used_instead_of_generating_one(tmp_path):
     root = _fixture_root(tmp_path, ["u1"])
+    _write(root, "frozen/attestation.json", {"units": {"u1": {"cutoff": CUTOFF}}})
     unit = _fixture_unit(root, 0, "u1",
                          cutoff_provenance="derived_backtest_window_rule_not_historical_freeze")
 
     state = bench.ensure_cutoff_attestation([unit], "frozen/attestation.json", "out/run", root)
 
-    assert state == {"reference": "frozen/attestation.json", "generated": False,
-                     "derived_cutoff_unit_ids": ["u1"]}
+    assert state["generated"] is False
+    assert state["reference"] == "frozen/attestation.json"
     assert not (root / "out/run/derived-cutoff-attestation.json").exists()
 
 

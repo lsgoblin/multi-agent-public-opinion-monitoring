@@ -464,25 +464,57 @@ def ensure_cutoff_attestation(units: list[dict[str, Any]], cutoffs_document: str
 
     A packet that declares ``cutoff_utc`` is attested by the packet itself; only
     units whose cutoff is the project's derived ``visible_at + 30 minutes`` rule
-    need a generated attestation. Generating one is a write, so it is named and
-    reported rather than done silently.
+    need an attestation.
+
+    A configured attestation is used only when it actually covers every derived
+    unit. If it does not, a combined attestation is generated beside it, because
+    a configured document that predates a later cohort silently leaves that
+    cohort unable to resolve its cutoff -- and the failure only appears once
+    those units pass their other gates, which can be months after the config was
+    written. Generating one is a write, so it is named and reported rather than
+    done silently.
     """
     derived = [unit for unit in units
                if unit.get("cutoff_provenance")
                == "derived_backtest_window_rule_not_historical_freeze"]
+    derived_ids = sorted(unit["unit_id"] for unit in derived)
+
+    covered: list[str] = []
+    uncovered = derived
     if cutoffs_document is not None:
-        return {"reference": cutoffs_document, "generated": False,
-                "derived_cutoff_unit_ids": sorted(unit["unit_id"] for unit in derived)}
+        entries = (_load(root, cutoffs_document).get("units") or {})
+        covered = [unit["unit_id"] for unit in derived if unit["unit_id"] in entries]
+        uncovered = [unit for unit in derived if unit["unit_id"] not in entries]
+        if not uncovered:
+            return {"reference": cutoffs_document, "generated": False,
+                    "derived_cutoff_unit_ids": derived_ids,
+                    "covered_by_the_configured_document": sorted(covered),
+                    "added_by_generation": []}
+
     if not derived:
-        return {"reference": None, "generated": False, "derived_cutoff_unit_ids": []}
+        return {"reference": cutoffs_document, "generated": False,
+                "derived_cutoff_unit_ids": [], "covered_by_the_configured_document": [],
+                "added_by_generation": []}
+
     relative = f"{out_dir_relative}/derived-cutoff-attestation.json"
-    document = build_cutoff_attestation(derived, relative)
+    generated = build_cutoff_attestation(uncovered or derived, relative)
+    if cutoffs_document is not None:
+        # The generated document becomes the single reference for the whole run,
+        # so it has to keep the configured entries too. Dropping them would trade
+        # one cohort's missing cutoff for another's.
+        merged = dict((_load(root, cutoffs_document).get("units") or {}))
+        merged.update(generated.get("units") or {})
+        generated = dict(generated, units=merged,
+                         note=("generated beside the configured attestation because that document "
+                               "does not cover every derived unit in this run"))
     path = root / relative
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(document, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+    path.write_text(json.dumps(generated, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
                     encoding="utf-8", newline="\n")
     return {"reference": relative, "generated": True,
-            "derived_cutoff_unit_ids": sorted(unit["unit_id"] for unit in derived),
+            "derived_cutoff_unit_ids": derived_ids,
+            "covered_by_the_configured_document": sorted(covered),
+            "added_by_generation": sorted(unit["unit_id"] for unit in uncovered),
             "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
 
 
