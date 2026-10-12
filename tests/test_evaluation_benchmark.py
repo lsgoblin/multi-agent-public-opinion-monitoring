@@ -1530,6 +1530,51 @@ def test_a_wrong_direction_prediction_is_kept_in_the_denominator(tmp_path):
     assert set(scored) == {"evt-1", "evt-2"}
 
 
+def test_a_zero_denominator_is_never_rendered_as_zero_anywhere_in_the_report(tmp_path, monkeypatch):
+    """The block a reader actually looks at must not turn "unknown" into "0%".
+
+    A rate of zero and no rate at all are different claims. The per-track summary
+    is the surface someone reads first, so it is checked in its own right rather
+    than trusting the deeper metric blocks.
+    """
+    _, _, report = _scored_run(tmp_path, monkeypatch, ["u1"])
+
+    denominators = report["track_denominators"]
+    # Direction has no gated events anywhere in this run.
+    direction = denominators["direction"]
+    assert direction["denominator"] == 0
+    assert direction["value"] is None
+    assert direction["undefined_reason"]
+    assert direction["numerator"] == 0
+
+    # The sentiment track does have a denominator here, so it must carry a number.
+    sentiment = denominators["sentiment"]
+    assert sentiment["denominator"] == 1
+    assert sentiment["value"] is not None
+
+    # Every metric block in the whole report, wherever it sits, must obey the
+    # same rule: no denominator means no number. Checking the top level alone
+    # would miss a nested block that renders zero as a rate.
+    def metric_blocks(node):
+        if isinstance(node, dict):
+            if "numerator" in node and "denominator" in node:
+                yield node
+            for value in node.values():
+                yield from metric_blocks(value)
+        elif isinstance(node, list):
+            for item in node:
+                yield from metric_blocks(item)
+
+    blocks = list(metric_blocks(report))
+    assert blocks, "the report should contain metric blocks to check"
+    for block in blocks:
+        if block["denominator"] == 0:
+            assert block.get("value") is None, block
+            assert block.get("undefined_reason"), block
+        else:
+            assert block.get("value") is not None, block
+
+
 # --------------------------------------------------------------------------
 # group 7: the command line contract
 # --------------------------------------------------------------------------
