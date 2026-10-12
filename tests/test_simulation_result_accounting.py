@@ -625,7 +625,14 @@ def test_incomplete_run_is_not_reported_as_a_successful_job(tmp_path):
     assert job["all_decisions_valid"] is False
     assert job["status"] == "failed"
     assert job["result_state"] == "partial"
-    assert job["report_id"] is None and job["alert_id"] is None
+    # Still never a success, but the incomplete run now yields a report labelled incomplete
+    # instead of no evidence at all.
+    assert job["report_id"] is not None and job["alert_id"] is not None
+    assert job["error"] == "incomplete_run_reported"
+    with tasks.store.connect() as db:
+        body = json.loads(db.execute("SELECT body FROM day4_reports WHERE report_id=?",
+                                     (job["report_id"],)).fetchone()["body"])
+    assert body["overview"]["run_integrity"]["complete"] is False
 
 
 def test_failure_policy_rejects_conflicting_arguments(tmp_path):
