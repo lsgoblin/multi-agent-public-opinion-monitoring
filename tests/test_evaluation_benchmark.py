@@ -1448,6 +1448,88 @@ def test_the_frozen_units_are_reported_as_unassigned_rather_than_given_a_split(t
     assert by_split["unassigned"]["unit_ids"] == ["u1"]
 
 
+def _write_predictions_with_labels(root: Path, units: list[dict],
+                                   label: str) -> None:
+    """Write one prediction document in which every unit gets the same label.
+
+    Used to falsify the rule that a wrong prediction stays in the denominator:
+    hold the material fixed, change only what the model answered, and see whether
+    the denominator moves.
+    """
+    rows: dict[str, dict] = {}
+    for unit in units:
+        rows.update(_prediction_document(unit, label=label)["predictions"])
+    _write_prediction_support(root, {
+        "schema": imp.PREDICTION_IMPORT_SCHEMA,
+        "task_type": imp.TASK_SENTIMENT,
+        "document_version": "falsification-v1",
+        "predictions": rows,
+    })
+
+
+def test_a_wrong_prediction_is_kept_in_the_denominator(tmp_path, monkeypatch):
+    """The iron rule, tested by trying to break it rather than by asserting it.
+
+    The material, the labels, the gate inputs and the cutoff are identical
+    between the two runs. The only thing that changes is what the model answered.
+    If the denominator moves, then something downstream is selecting on
+    correctness and every published rate is inflated by it.
+    """
+    unit_ids = ["exp_u1", "exp_u2", "exp_u3", "exp_u4"]
+    root = _fixture_root(tmp_path, unit_ids)
+    _expansion_documents(root, unit_ids)
+    _permission_record(root, unit_ids)
+    units = bench.load_expansion_units(root, _expansion_cohort(unit_ids))
+    for unit in units:
+        unit["_root"] = str(root)
+
+    # Read the truth off a probe run rather than assuming it, then answer it
+    # correctly and wrongly in turn.
+    _write_predictions_with_labels(root, units, "neutral")
+    probe = bench.run_benchmark(_expansion_config(unit_ids), root)
+    truth = probe["headline"]["scored_units"][0]["truth"]
+    wrong = next(label for label in ("positive", "neutral", "negative") if label != truth)
+
+    seen = {}
+    for tag, label in (("answered_correctly", truth), ("answered_wrongly", wrong)):
+        _write_predictions_with_labels(root, units, label)
+        report = bench.run_benchmark(_expansion_config(unit_ids), root)
+        headline = report["headline"]["three_class"]
+        seen[tag] = (headline["numerator"], headline["denominator"])
+
+    # Same material, same labels, same gate. Only the model's answers changed.
+    assert seen["answered_correctly"][1] == seen["answered_wrongly"][1] == len(unit_ids), seen
+    # And the runs genuinely differ, so the stability above is not vacuous.
+    assert seen["answered_correctly"][0] == len(unit_ids), seen
+    assert seen["answered_wrongly"][0] == 0, seen
+
+
+def test_a_wrong_direction_prediction_is_kept_in_the_denominator(tmp_path):
+    """Both sealed events predict escalation. One human label agrees, one does not.
+
+    The one that disagrees must still be counted, and counted as a disagreement.
+    Dropping it would leave a denominator containing only the events the model
+    happened to get right, which is the failure this rule exists to prevent.
+    """
+    root = _fixture_root(tmp_path, [])
+    _trajectory_root(tmp_path, ["evt-1", "evt-2"])
+    _direction_submissions(root, ["evt-1", "evt-2"],
+                           {"evt-1": "escalation", "evt-2": "calming"})
+    cohort = _trajectory_cohort(["evt-1", "evt-2"])
+
+    result = bench.evaluate_cohort(cohort, bench.trajectory_units(root, cohort),
+                                   root=root, cutoffs_document=None,
+                                   out_dir_relative="out/run")
+
+    assert result["gated_unit_ids"] == ["evt-1", "evt-2"]
+    agreement = result["metrics"]["direction_agreement"]
+    assert agreement["denominator"] == 2
+    assert agreement["numerator"] == 1
+    # The event the model got wrong is in the scored set, not filtered out of it.
+    scored = {case["unit_id"]: case for case in result["cases"]}
+    assert set(scored) == {"evt-1", "evt-2"}
+
+
 # --------------------------------------------------------------------------
 # group 7: the command line contract
 # --------------------------------------------------------------------------
