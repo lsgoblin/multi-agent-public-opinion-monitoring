@@ -103,6 +103,9 @@ def _documents(tmp_path, cases, labels, directions=None, *, missing_outcome_evid
     for label_entry in labels:
         for index, annotation in enumerate(label_entry["sentiment_annotations"]):
             evidence["labels"].setdefault(label_entry["unit_id"], {})[f"annotator-{index}"] = annotation["label"]
+        adjudication = label_entry.get("adjudication")
+        if isinstance(adjudication, dict):
+            evidence.setdefault("adjudication", {})[label_entry["unit_id"]] = adjudication.get("final_label")
     events = []
     for event_id, outcome in sorted(directions.items()):
         evidence["observed"][event_id] = {"direction": outcome}
@@ -269,3 +272,122 @@ def test_ai_reference_agreement_is_separate_from_human_gold_metrics(tmp_path):
     assert result["ai_reference_agreement"]["denominator"] == 1
     assert result["ai_reference_agreement"]["value"] == 0
     assert result["ai_reference_agreement"]["formal_human_ground_truth"] is False
+
+
+# --------------------------------------------------------------------------
+# recorded adjudication of a label disagreement
+# --------------------------------------------------------------------------
+
+def _adjudicated(entry, final_label, **overrides):
+    """Attach a recorded adjudication block to a label entry."""
+    block = {
+        "adjudicator_id": "project owner",
+        "final_label": final_label,
+        "rule_source": "label-rule-v1.json",
+        "rule_arm": "negative_arm: the title states the subject's own adverse outcome",
+        "decision": "resolved_in_favour_of_the_negative_arm_of_the_recorded_rule",
+        "original_answers_preserved": True,
+        "evidence_refs": [_ref(f"/adjudication/{entry['unit_id']}")],
+    }
+    block.update(overrides)
+    adjudicated = dict(entry)
+    adjudicated["adjudication"] = block
+    return adjudicated
+
+
+def test_a_recorded_adjudication_resolves_a_disagreement(tmp_path):
+    case = _case("disputed", "event-disputed", "record-disputed", "negative")
+    entry = _adjudicated(_labels(case, ("neutral", "negative")), "negative")
+
+    result = _evaluate(tmp_path, [case], [entry])
+
+    assert result["sentiment_three_class"]["denominator"] == 1
+    assert result["sentiment_three_class"]["numerator"] == 1
+    scored = result["sentiment_three_class"]["scored_units"][0]
+    assert scored["truth"] == "negative"
+    assert scored["label_basis"] == "adjudicated_disagreement"
+
+
+def test_the_original_answers_survive_the_adjudication(tmp_path):
+    case = _case("disputed", "event-disputed", "record-disputed", "negative")
+    entry = _adjudicated(_labels(case, ("neutral", "negative")), "negative")
+
+    result = _evaluate(tmp_path, [case], [entry])
+
+    decision = result["sentiment_three_class"]["scored_units"][0]["label_decision"]
+    assert decision["original_annotation_labels"] == ["neutral", "negative"]
+    assert decision["original_annotator_ids"] == ["annotator-0", "annotator-1"]
+    assert decision["adjudicated_by"] == "project owner"
+    assert decision["adjudication_rule_arm"].startswith("negative_arm")
+
+
+@pytest.mark.parametrize("overrides,reason", [
+    ({"adjudicator_id": "  "}, "adjudication_missing_named_adjudicator"),
+    ({"final_label": "mixed"}, "adjudication_final_label_not_in_formal_classes"),
+    ({"original_answers_preserved": False}, "adjudication_original_answers_not_preserved"),
+    ({"rule_source": ""}, "adjudication_missing_recorded_basis"),
+    ({"evidence_refs": []}, "adjudication_evidence_missing_or_mismatched"),
+])
+def test_an_invalid_adjudication_keeps_the_unit_excluded(tmp_path, overrides, reason):
+    case = _case("disputed", "event-disputed", "record-disputed", "negative")
+    entry = _adjudicated(_labels(case, ("neutral", "negative")),
+                         **{"final_label": "negative", **overrides})
+
+    result = _evaluate(tmp_path, [case], [entry])
+
+    assert result["sentiment_three_class"]["denominator"] == 0
+    reasons = result["sentiment_three_class"]["exclusion_reasons"]
+    assert "independent_labels_disagree_no_adjudication" in reasons
+    assert reason in reasons
+
+
+def test_an_adjudication_cannot_stand_in_for_a_missing_second_label(tmp_path):
+    case = _case("single", "event-single", "record-single", "negative")
+    entry = _adjudicated(_labels(case, ("negative",)), "negative")
+
+    result = _evaluate(tmp_path, [case], [entry])
+
+    assert result["sentiment_three_class"]["denominator"] == 0
+    assert result["sentiment_three_class"]["exclusion_reasons"][
+        "fewer_than_two_independent_human_labels"] == 1
+
+
+def test_an_adjudication_is_ignored_when_the_labels_already_agree(tmp_path):
+    case = _case("agreed", "event-agreed", "record-agreed", "neutral")
+    entry = _adjudicated(_labels(case, ("neutral", "neutral")), "negative")
+
+    result = _evaluate(tmp_path, [case], [entry])
+
+    scored = result["sentiment_three_class"]["scored_units"][0]
+    assert scored["truth"] == "neutral"
+    assert scored["label_basis"] == "unanimous_independent_labels"
+
+
+def test_label_basis_accounting_keeps_agreement_and_adjudication_apart(tmp_path):
+    agreed = _case("agreed", "event-agreed", "record-agreed", "neutral")
+    disputed = _case("disputed", "event-disputed", "record-disputed", "negative")
+    entries = [_labels(agreed), _adjudicated(_labels(disputed, ("neutral", "negative")), "negative")]
+
+    result = _evaluate(tmp_path, [agreed, disputed], entries)
+    accounting = result["label_basis_accounting"]
+
+    assert accounting["raw_agreement"]["units"] == 1
+    assert accounting["adjudicated"]["units"] == 1
+    assert accounting["coverage_after_adjudication"]["units"] == 2
+    assert accounting["excluded_label_disagreement_unresolved"]["units"] == 0
+    assert accounting["raw_agreement_share_of_covered"] == {
+        "numerator": 1, "denominator": 2, "value": 0.5}
+
+
+def test_label_basis_accounting_reports_an_unresolved_disagreement(tmp_path):
+    case = _case("disputed", "event-disputed", "record-disputed", "negative")
+
+    result = _evaluate(tmp_path, [case], [_labels(case, ("neutral", "negative"))])
+    accounting = result["label_basis_accounting"]
+
+    assert accounting["raw_agreement"]["units"] == 0
+    assert accounting["adjudicated"]["units"] == 0
+    assert accounting["coverage_after_adjudication"]["units"] == 0
+    assert accounting["excluded_label_disagreement_unresolved"]["units"] == 1
+    assert accounting["raw_agreement_share_of_covered"]["value"] is None
+    assert accounting["raw_agreement_share_of_covered"]["undefined_reason"]

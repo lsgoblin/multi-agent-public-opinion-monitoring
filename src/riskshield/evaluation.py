@@ -151,20 +151,66 @@ def _source_reasons(case: dict[str, Any], root: Path) -> list[str]:
     return sorted(set(reasons))
 
 
-def _labels_for_case(case: dict[str, Any], label_map: dict[str, dict[str, Any]], root: Path) -> tuple[str | None, list[str]]:
+def _adjudication_for_case(entry: dict[str, Any], root: Path) -> tuple[str | None, list[str], dict[str, Any]]:
+    """Resolve a recorded adjudication for a unit whose two labels disagree.
+
+    An adjudication is accepted only when it is a *recorded decision about a
+    disagreement*: a named adjudicator, a final label inside the formal classes,
+    a recorded basis, resolvable evidence, and an explicit statement that both
+    original answers were preserved. The last one is what stops this path from
+    becoming a way to quietly rewrite an inconvenient label -- the original
+    annotations have to still be present, and they are what the agreement audit
+    reads.
+
+    Nothing here invents a label. A missing, malformed or unverifiable
+    adjudication leaves the unit excluded exactly as before.
+    """
+    adjudication = entry.get("adjudication")
+    if adjudication is None:
+        return None, [], {}
+    if not isinstance(adjudication, dict):
+        return None, ["adjudication_not_an_object"], {}
+    reasons: list[str] = []
+    if not isinstance(adjudication.get("adjudicator_id"), str) or not adjudication["adjudicator_id"].strip():
+        reasons.append("adjudication_missing_named_adjudicator")
+    label = adjudication.get("final_label")
+    if label not in SENTIMENTS:
+        reasons.append("adjudication_final_label_not_in_formal_classes")
+    if adjudication.get("original_answers_preserved") is not True:
+        reasons.append("adjudication_original_answers_not_preserved")
+    if not isinstance(adjudication.get("rule_source"), str) or not adjudication["rule_source"].strip():
+        reasons.append("adjudication_missing_recorded_basis")
+    refs = adjudication.get("evidence_refs", [])
+    if label in SENTIMENTS and (not isinstance(refs, list)
+                                or not any(_ref_matches(ref, label, root) for ref in refs)):
+        reasons.append("adjudication_evidence_missing_or_mismatched")
+    if reasons:
+        return None, sorted(set(reasons)), {}
+    return label, [], adjudication
+
+
+def _labels_for_case(case: dict[str, Any], label_map: dict[str, dict[str, Any]],
+                     root: Path) -> tuple[str | None, list[str], dict[str, Any]]:
+    """Human gold for one case, plus how that gold was arrived at.
+
+    The third element records the *basis*: unanimous independent labels, or a
+    recorded adjudication of a disagreement. It exists so the report can state
+    raw agreement and post-adjudication coverage as two separate numbers instead
+    of one blended rate.
+    """
     reasons: list[str] = []
     entry = label_map.get(case.get("evaluation_id", ""))
     if entry is None:
-        return None, ["missing_separate_evaluation_label"]
+        return None, ["missing_separate_evaluation_label"], {}
     if entry.get("event_id") != case.get("event_id") or entry.get("unit_id") != case.get("unit_id"):
-        return None, ["label_input_identity_mismatch"]
+        return None, ["label_input_identity_mismatch"], {}
     if entry.get("source_record_id") != case.get("target_record_id"):
-        return None, ["label_source_record_mismatch"]
+        return None, ["label_source_record_mismatch"], {}
     if entry.get("text_sha256") != case.get("text_sha256"):
-        return None, ["label_original_text_hash_mismatch"]
+        return None, ["label_original_text_hash_mismatch"], {}
     annotations = entry.get("sentiment_annotations", [])
     if not isinstance(annotations, list):
-        return None, ["invalid_human_annotation_list"]
+        return None, ["invalid_human_annotation_list"], {}
     eligible: list[dict[str, Any]] = []
     seen_annotators: set[str] = set()
     for annotation in annotations:
@@ -192,10 +238,28 @@ def _labels_for_case(case: dict[str, Any], label_map: dict[str, dict[str, Any]],
             reasons.append("annotation_prediction_blinding_not_established")
     labels = {a["label"] for a in eligible}
     if len(eligible) >= 2 and len(labels) != 1:
+        # A disagreement is scoreable only through a recorded adjudication. The
+        # original annotations stay in the entry either way, so the agreement
+        # audit keeps reading what each annotator actually said.
+        adjudicated, adjudication_reasons, record = _adjudication_for_case(entry, root)
+        if adjudicated is not None:
+            return adjudicated, [], {
+                "label_basis": "adjudicated_disagreement",
+                "adjudicated_by": record.get("adjudicator_id"),
+                "adjudication_basis": record.get("rule_source"),
+                "adjudication_rule_arm": record.get("rule_arm"),
+                "original_annotation_labels": [a["label"] for a in eligible],
+                "original_annotator_ids": [a["annotator_id"] for a in eligible],
+            }
+        reasons.extend(adjudication_reasons)
         reasons.append("independent_labels_disagree_no_adjudication")
     if reasons:
-        return None, sorted(set(reasons))
-    return eligible[0]["label"], []
+        return None, sorted(set(reasons)), {}
+    return eligible[0]["label"], [], {
+        "label_basis": "unanimous_independent_labels",
+        "original_annotation_labels": [a["label"] for a in eligible],
+        "original_annotator_ids": [a["annotator_id"] for a in eligible],
+    }
 
 
 def _prediction_label(predictions: Any, metric: str, root: Path) -> tuple[str | None, list[str]]:
@@ -338,6 +402,54 @@ def _reason_counts(exclusions: list[dict[str, Any]]) -> dict[str, int]:
     return dict(sorted(counts.items()))
 
 
+def _label_basis_accounting(scored: list[dict[str, Any]],
+                            exclusions: list[dict[str, Any]]) -> dict[str, Any]:
+    """Report raw agreement and post-adjudication coverage as separate numbers.
+
+    Blending them into one rate is what would make an adjudicated round look
+    better than it is: the units that needed a decision are exactly the units
+    where two annotators did not agree, and that disagreement is part of the
+    record rather than something the decision erases.
+    """
+    basis_counts: Counter[str] = Counter()
+    for row in scored:
+        basis_counts[row.get("label_basis") or "unspecified"] += 1
+    unanimous = basis_counts.get("unanimous_independent_labels", 0)
+    adjudicated = basis_counts.get("adjudicated_disagreement", 0)
+    covered = unanimous + adjudicated
+    unresolved = sum(1 for row in exclusions
+                     if "independent_labels_disagree_no_adjudication" in row["reasons"])
+    return {
+        "raw_agreement": {
+            "basis": "unanimous_independent_labels",
+            "units": unanimous,
+            "note": "units whose independent human labels were identical before any adjudication",
+        },
+        "adjudicated": {
+            "basis": "adjudicated_disagreement",
+            "units": adjudicated,
+            "note": "units whose independent labels disagreed and a recorded adjudication resolved",
+        },
+        "coverage_after_adjudication": {
+            "units": covered,
+            "note": ("scored units that reached a gold label either unanimously or through a "
+                     "recorded adjudication; this is a coverage figure, not an agreement rate"),
+        },
+        "excluded_label_disagreement_unresolved": {
+            "units": unresolved,
+            "note": "units still excluded because their disagreement has no valid adjudication",
+        },
+        "scored_units_by_basis": dict(sorted(basis_counts.items())),
+        "raw_agreement_share_of_covered": ({
+            "numerator": unanimous, "denominator": covered,
+            "value": round(unanimous / covered, 6),
+        } if covered else {
+            "numerator": 0, "denominator": 0, "value": None,
+            "undefined_reason": "no scored unit carries a human gold label",
+        }),
+    }
+
+
 def evaluate_documents(
     inputs: dict[str, Any],
     labels: dict[str, Any],
@@ -430,7 +542,7 @@ def evaluate_documents(
         if not isinstance(unit_id, str) or not unit_id:
             base_reasons.append("missing_unit_id")
 
-        gold, label_reasons = _labels_for_case(case, label_map, root)
+        gold, label_reasons, label_meta = _labels_for_case(case, label_map, root)
         if case.get("unit_kind") not in {"original_title", "original_post"}:
             label_reasons.append("not_an_original_title_or_post_unit")
         elif (not _is_sha256(case.get("text_sha256"))
@@ -442,6 +554,8 @@ def evaluate_documents(
             sentiment_rows.append({
                 "evaluation_id": case["evaluation_id"], "event_id": event_id,
                 "unit_id": unit_id, "truth": gold, "prediction": predicted,
+                "label_basis": label_meta.get("label_basis"),
+                "label_decision": label_meta,
             })
         else:
             sentiment_exclusions.append({"evaluation_id": case["evaluation_id"], "event_id": event_id,
@@ -556,6 +670,8 @@ def evaluate_documents(
             "reasons": _reason_counts(input_exclusions),
             "excluded_rows": input_exclusions,
         },
+        "label_basis_accounting": _label_basis_accounting(sentiment_rows,
+                                                          sentiment_exclusions),
         "sentiment_three_class": {
             **_ratio(sentiment_correct, n_sentiment, "no records have a valid prediction and unanimous independent labels"),
             "sample_size": n_sentiment,

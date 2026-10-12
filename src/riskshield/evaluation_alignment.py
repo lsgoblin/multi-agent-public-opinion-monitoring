@@ -616,11 +616,16 @@ def unit_gates(unit: dict[str, Any], *, require_direction: bool = False) -> dict
         reasons.append("source_visible_after_cutoff")
 
     annotations = unit.get("annotations", [])
+    adjudication = unit.get("adjudication")
+    has_adjudication = isinstance(adjudication, dict) and adjudication.get("valid") is True
     if len(annotations) < 2:
         reasons.append("fewer_than_two_independent_human_labels")
     elif len({row["annotator_id"] for row in annotations}) != len(annotations):
         reasons.append("annotator_ids_not_distinct")
-    elif not unit.get("labels_agree"):
+    elif not unit.get("labels_agree") and not has_adjudication:
+        # A recorded adjudication resolves a disagreement; it never replaces the
+        # original answers, which stay on the unit and are what the agreement
+        # audit reads.
         reasons.append("independent_labels_disagree_no_adjudication")
 
     prediction = unit.get("prediction")
@@ -641,6 +646,9 @@ def unit_gates(unit: dict[str, Any], *, require_direction: bool = False) -> dict
     return {
         "passed": not reasons,
         "reasons": sorted(set(reasons)),
+        "label_basis": (
+            "adjudicated_disagreement" if has_adjudication and not unit.get("labels_agree")
+            else "unanimous_independent_labels" if unit.get("labels_agree") else None),
         "gates": {
             "source_attribution": not any(
                 reason in reasons for reason in (
@@ -660,6 +668,7 @@ def unit_gates(unit: dict[str, Any], *, require_direction: bool = False) -> dict
                 reason in reasons for reason in (
                     "fewer_than_two_independent_human_labels", "annotator_ids_not_distinct",
                     "independent_labels_disagree_no_adjudication")),
+            "adjudicated_disagreement": bool(has_adjudication and not unit.get("labels_agree")),
             "admitted_formal_prediction": not any(
                 reason in reasons for reason in (
                     "no_admitted_formal_sentiment_prediction",
@@ -829,7 +838,7 @@ def _case_for_unit(unit: dict[str, Any], predictions: dict[str, Any] | None,
 
 
 def _label_entry(unit: dict[str, Any]) -> dict[str, Any]:
-    return {
+    entry = {
         "evaluation_id": f"{unit['source_record_id']}__sentiment",
         "event_id": unit["event_id"],
         "unit_id": unit["unit_id"],
@@ -848,6 +857,21 @@ def _label_entry(unit: dict[str, Any]) -> dict[str, Any]:
             for row in unit["annotations"]
         ],
     }
+    adjudication = unit.get("adjudication")
+    if isinstance(adjudication, dict):
+        # Emitted alongside the original annotations, never instead of them.
+        entry["adjudication"] = {
+            "adjudicator_id": adjudication.get("adjudicator_id"),
+            "final_label": adjudication.get("final_label"),
+            "rule_source": adjudication.get("rule_source"),
+            "rule_arm": adjudication.get("rule_arm"),
+            "decision": adjudication.get("decision"),
+            "adjudicated_at": adjudication.get("adjudicated_at"),
+            "original_answers_preserved": adjudication.get("original_answers_preserved"),
+            "evidence_refs": adjudication.get("evidence_refs", []),
+        }
+        entry["label_origin"] = "independent_human_double_annotation_with_recorded_adjudication"
+    return entry
 
 
 def _prediction_payload(unit: dict[str, Any], admitted: dict[str, Any] | None,

@@ -560,6 +560,149 @@ def test_a_configured_attestation_is_used_instead_of_generating_one(tmp_path):
 
 
 # --------------------------------------------------------------------------
+# group 8: recorded adjudication
+# --------------------------------------------------------------------------
+
+def _adjudication_record(root: Path, rows: list[dict], **overrides) -> None:
+    """A minimal but real adjudication record plus the rule it cites."""
+    _write(root, "adjudication/label-rule-v1.json", {"rule": "fixture rule"})
+    document = {
+        "schema": "riskshield.data_evaluation.adjudication_record.v3",
+        "decided_by": "project owner",
+        "rule_source": "label-rule-v1.json",
+        "records": rows,
+    }
+    document.update(overrides)
+    _write(root, "adjudication/record-v3.json", document)
+
+
+def _adjudication_row(unit_id: str, label: str = "negative", **overrides) -> dict:
+    row = {"unit_id": unit_id, "resolved_label": label,
+           "rule_arm": "negative_arm: fixture", "both_original_answers_preserved": True}
+    row.update(overrides)
+    return row
+
+
+def test_unit_gates_accepts_a_valid_recorded_adjudication(tmp_path):
+    root = _fixture_root(tmp_path, ["u1"])
+    unit = _fixture_unit(root, 0, "u1", annotations=[
+        {"annotator_id": "leo", "label": "neutral"},
+        {"annotator_id": "dick", "label": "negative"},
+    ], labels_agree=False)
+
+    assert "independent_labels_disagree_no_adjudication" in unit_gates(unit)["reasons"]
+
+    _adjudication_record(root, [_adjudication_row("u1")])
+    bench.attach_adjudications([unit], "adjudication/record-v3.json", root)
+
+    gates = unit_gates(unit)
+    assert "independent_labels_disagree_no_adjudication" not in gates["reasons"]
+    assert gates["label_basis"] == "adjudicated_disagreement"
+    assert gates["gates"]["adjudicated_disagreement"] is True
+    assert gates["gates"]["independent_human_labels"] is True
+
+
+@pytest.mark.parametrize("row_overrides", [
+    {"resolved_label": "mixed"},
+    {"both_original_answers_preserved": False},
+])
+def test_unit_gates_rejects_an_invalid_recorded_adjudication(tmp_path, row_overrides):
+    root = _fixture_root(tmp_path, ["u1"])
+    unit = _fixture_unit(root, 0, "u1", annotations=[
+        {"annotator_id": "leo", "label": "neutral"},
+        {"annotator_id": "dick", "label": "negative"},
+    ], labels_agree=False)
+    _adjudication_record(root, [_adjudication_row("u1", **row_overrides)])
+
+    report = bench.attach_adjudications([unit], "adjudication/record-v3.json", root)
+
+    assert report["attached_unit_ids"] == []
+    assert report["invalid_unit_ids"] == ["u1"]
+    assert "independent_labels_disagree_no_adjudication" in unit_gates(unit)["reasons"]
+
+
+def test_attach_adjudications_locates_the_cited_rule(tmp_path):
+    root = _fixture_root(tmp_path, ["u1"])
+    unit = _fixture_unit(root, 0, "u1")
+    _adjudication_record(root, [_adjudication_row("u1")])
+
+    report = bench.attach_adjudications([unit], "adjudication/record-v3.json", root)
+
+    assert report["attached_unit_ids"] == ["u1"]
+    assert report["rule_source_located"] == "adjudication/label-rule-v1.json"
+    assert report["adjudicated_at_recorded"] is None
+    assert "no timestamp" in report["adjudicated_at_note"]
+    assert unit["adjudication"]["evidence_refs"] == [
+        {"path": "adjudication/record-v3.json", "pointer": "/records/0/resolved_label"}]
+
+
+def test_attach_adjudications_refuses_a_document_that_is_not_one(tmp_path):
+    root = _fixture_root(tmp_path, ["u1"])
+    _write(root, "adjudication/record-v3.json", {"schema": "something.else", "records": []})
+
+    with pytest.raises(bench.BenchmarkConfigError, match="not an adjudication record"):
+        bench.attach_adjudications([_fixture_unit(root, 0, "u1")],
+                                   "adjudication/record-v3.json", root)
+
+
+def test_attach_adjudications_without_a_record_leaves_units_untouched(tmp_path):
+    root = _fixture_root(tmp_path, ["u1"])
+    unit = _fixture_unit(root, 0, "u1")
+
+    report = bench.attach_adjudications([unit], None, root)
+
+    assert report["recorded"] is False
+    assert unit["adjudication"] is None
+
+
+def test_label_side_accounting_separates_agreement_from_adjudication(tmp_path):
+    root = _fixture_root(tmp_path, ["u1", "u2"])
+    agreed = _fixture_unit(root, 0, "u1", annotations=[
+        {"annotator_id": "leo", "label": "neutral"},
+        {"annotator_id": "dick", "label": "neutral"}], labels_agree=True)
+    disputed = _fixture_unit(root, 1, "u2", annotations=[
+        {"annotator_id": "leo", "label": "neutral"},
+        {"annotator_id": "dick", "label": "negative"}], labels_agree=False)
+    _adjudication_record(root, [_adjudication_row("u2")])
+    bench.attach_adjudications([agreed, disputed], "adjudication/record-v3.json", root)
+
+    accounting = bench.label_side_accounting([agreed, disputed])
+
+    assert accounting["raw_agreement_units"] == 1
+    assert accounting["adjudicated_units"] == 1
+    assert accounting["coverage_after_adjudication_units"] == 2
+    assert accounting["unresolved_disagreement_units"] == 0
+    assert accounting["raw_agreement_share_of_covered"]["value"] == 0.5
+
+
+def test_an_adjudicated_unit_scores_in_a_full_run(tmp_path, monkeypatch):
+    root = _fixture_root(tmp_path, ["u1"])
+    _write(root, "labels/v18.json",
+           {"annotator_id": "dick", "prediction_exposure": False,
+            "saw_other_annotator_answer": False,
+            "records": [{"unit_id": "u1", "label": "negative"}]})
+    unit = _fixture_unit(root, 0, "u1")
+    _permission_record(root, ["u1"])
+    _write_predictions(root, [unit])
+    _install_units(monkeypatch, [unit])
+    _adjudication_record(root, [_adjudication_row("u1")])
+
+    config = _config(["u1"])
+    config["cohorts"][0]["adjudication_record"] = "adjudication/record-v3.json"
+    report = bench.run_benchmark(config, root)
+
+    cohort = report["cohorts"][0]
+    assert cohort["gated_unit_ids"] == ["u1"]
+    assert cohort["adjudication_report"]["attached_unit_ids"] == ["u1"]
+    assert cohort["label_side_accounting"]["adjudicated_units"] == 1
+    scored = report["headline"]["scored_units"][0]
+    assert scored["truth"] == "negative"
+    assert scored["label_basis"] == "adjudicated_disagreement"
+    assert report["formal_combined"]["metrics"]["label_basis_accounting"][
+        "coverage_after_adjudication"]["units"] == 1
+
+
+# --------------------------------------------------------------------------
 # group 7: the command line contract
 # --------------------------------------------------------------------------
 

@@ -42,7 +42,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from riskshield.evaluation import evaluate_documents
+from riskshield.evaluation import _adjudication_for_case, evaluate_documents
 from riskshield.evaluation_alignment import (
     INPUT_SCHEMA,
     LABEL_SCHEMA,
@@ -88,7 +88,12 @@ PERMISSION_GATE = "no_recorded_source_permission_evidence"
 
 LABEL_SIDE_AGREED = "two_independent_labels_agree"
 LABEL_SIDE_DISAGREE = "independent_labels_disagree_engine_cannot_represent_adjudication"
+LABEL_SIDE_ADJUDICATED = "independent_labels_disagree_resolved_by_recorded_adjudication"
 LABEL_SIDE_INSUFFICIENT = "fewer_than_two_independent_labels"
+
+# The adjudication record is an existing frozen evidence document; this module
+# reads it and binds units to it. It never rewrites it.
+ADJUDICATION_SCHEMA_PREFIX = "riskshield.data_evaluation.adjudication_record."
 
 
 class BenchmarkConfigError(ValueError):
@@ -243,11 +248,145 @@ def attach_annotations(units: list[dict[str, Any]], sources: list[dict[str, Any]
 
 def label_side_status(unit: dict[str, Any]) -> str:
     annotations = unit.get("annotations", [])
+    adjudication = unit.get("adjudication")
     if len(annotations) < 2:
         return LABEL_SIDE_INSUFFICIENT
     if len({row["label"] for row in annotations}) == 1:
         return LABEL_SIDE_AGREED
+    if isinstance(adjudication, dict) and adjudication.get("valid") is True:
+        return LABEL_SIDE_ADJUDICATED
     return LABEL_SIDE_DISAGREE
+
+
+def label_side_accounting(units: list[dict[str, Any]]) -> dict[str, Any]:
+    """Raw agreement and post-adjudication coverage, counted separately.
+
+    These are two different numbers over the same candidate set. Reporting one
+    blended "agreement" figure is what hides how many labels needed a decision.
+    """
+    counts: dict[str, int] = {}
+    for unit in units:
+        key = label_side_status(unit)
+        counts[key] = counts.get(key, 0) + 1
+    agreed = counts.get(LABEL_SIDE_AGREED, 0)
+    adjudicated = counts.get(LABEL_SIDE_ADJUDICATED, 0)
+    covered = agreed + adjudicated
+    return {
+        "candidate_units": len(units),
+        "by_status": dict(sorted(counts.items())),
+        "raw_agreement_units": agreed,
+        "adjudicated_units": adjudicated,
+        "coverage_after_adjudication_units": covered,
+        "unresolved_disagreement_units": counts.get(LABEL_SIDE_DISAGREE, 0),
+        "insufficient_label_units": counts.get(LABEL_SIDE_INSUFFICIENT, 0),
+        "raw_agreement_share_of_covered": ({
+            "numerator": agreed, "denominator": covered,
+            "value": round(agreed / covered, 6),
+        } if covered else {
+            "numerator": 0, "denominator": 0, "value": None,
+            "undefined_reason": "no candidate unit carries two independent human labels",
+        }),
+    }
+
+
+def _resolve_rule_source(rule_source: Any, record_path: str, root: Path) -> str | None:
+    """Locate the rule a recorded adjudication says it applied.
+
+    The frozen record cites the rule by file name, so the name is resolved next
+    to the record first and then against the material root. A basis that cannot
+    be located is not a basis, and the caller reports that rather than assuming
+    one.
+    """
+    if not isinstance(rule_source, str) or not rule_source.strip():
+        return None
+    for candidate in (Path(record_path).parent / rule_source, Path(rule_source)):
+        if (root / candidate).is_file():
+            return candidate.as_posix()
+    return None
+
+
+def attach_adjudications(units: list[dict[str, Any]], adjudication_record: str | None,
+                         root: Path) -> dict[str, Any]:
+    """Bind each unit to its entry in a recorded adjudication document.
+
+    Validity is decided by the engine's own ``_adjudication_for_case`` rather
+    than by a second copy of the rules here: if the engine would not accept the
+    adjudication, the gate must not treat the unit as labelled either. That is
+    the same no-drift property the denominator invariant enforces for scoring.
+    """
+    if adjudication_record is None:
+        for unit in units:
+            unit["adjudication"] = None
+        return {"recorded": False, "path": None, "attached_unit_ids": [],
+                "invalid_unit_ids": [], "units": {},
+                "note": "no adjudication record configured; a label disagreement stays excluded"}
+
+    document = _load(root, adjudication_record)
+    schema = document.get("schema")
+    if not isinstance(schema, str) or not schema.startswith(ADJUDICATION_SCHEMA_PREFIX):
+        raise BenchmarkConfigError(
+            f"{adjudication_record} is not an adjudication record (schema={schema!r}).")
+    rows = document.get("records")
+    if not isinstance(rows, list):
+        raise BenchmarkConfigError(f"{adjudication_record} needs a records array.")
+
+    located_rule = _resolve_rule_source(document.get("rule_source"), adjudication_record, root)
+    by_unit: dict[str, tuple[int, dict[str, Any]]] = {}
+    for index, row in enumerate(rows):
+        if isinstance(row, dict) and isinstance(row.get("unit_id"), str):
+            by_unit.setdefault(row["unit_id"], (index, row))
+
+    attached: list[str] = []
+    invalid: list[str] = []
+    report: dict[str, Any] = {}
+    for unit in units:
+        match = by_unit.get(unit["unit_id"])
+        if match is None:
+            unit["adjudication"] = None
+            continue
+        index, row = match
+        block = {
+            "adjudicator_id": document.get("decided_by"),
+            "final_label": row.get("resolved_label"),
+            "rule_source": located_rule or document.get("rule_source"),
+            "rule_source_declared": document.get("rule_source"),
+            "rule_source_located": located_rule is not None,
+            "rule_arm": row.get("rule_arm"),
+            "decision": row.get("resolution"),
+            "adjudicated_at": document.get("decided_at"),
+            "original_answers_preserved": row.get("both_original_answers_preserved"),
+            "evidence_refs": [{"path": adjudication_record,
+                               "pointer": f"/records/{index}/resolved_label"}],
+        }
+        resolved, reasons, _ = _adjudication_for_case({"adjudication": block}, root)
+        block["valid"] = resolved is not None
+        block["invalid_reasons"] = reasons
+        unit["adjudication"] = block
+        report[unit["unit_id"]] = {
+            "final_label": block["final_label"],
+            "adjudicator_id": block["adjudicator_id"],
+            "rule_arm": block["rule_arm"],
+            "valid": block["valid"],
+            "invalid_reasons": reasons,
+            "original_answers_preserved": block["original_answers_preserved"],
+        }
+        (attached if block["valid"] else invalid).append(unit["unit_id"])
+    return {
+        "recorded": True,
+        "path": adjudication_record,
+        "schema": schema,
+        "sha256": sha256_file(root, adjudication_record),
+        "decided_by": document.get("decided_by"),
+        "rule_source_declared": document.get("rule_source"),
+        "rule_source_located": located_rule,
+        "adjudicated_at_recorded": document.get("decided_at"),
+        "adjudicated_at_note": (
+            "the frozen adjudication record carries no timestamp; none is invented here"
+            if document.get("decided_at") is None else "recorded in the adjudication document"),
+        "attached_unit_ids": sorted(attached),
+        "invalid_unit_ids": sorted(invalid),
+        "units": report,
+    }
 
 
 # --------------------------------------------------------------------------- #
@@ -466,6 +605,12 @@ def eligibility_rows(units: list[dict[str, Any]]) -> list[dict[str, Any]]:
             "cutoff_provenance": unit.get("cutoff_provenance"),
             "split": unit.get("split"),
             "label_side_status": label_side_status(unit),
+            "label_basis": gates.get("label_basis"),
+            "adjudication_valid": bool(isinstance(unit.get("adjudication"), dict)
+                                       and unit["adjudication"].get("valid") is True),
+            "adjudication_final_label": (unit.get("adjudication") or {}).get("final_label"),
+            "adjudication_rule_arm": (unit.get("adjudication") or {}).get("rule_arm"),
+            "original_answers_still_present": len(unit.get("annotations", [])) >= 2,
             "annotation_count": len(unit.get("annotations", [])),
             "annotator_ids": [row.get("annotator_id") for row in unit.get("annotations", [])],
             "annotation_labels": [row.get("label") for row in unit.get("annotations", [])],
@@ -487,6 +632,7 @@ def evaluate_cohort(cohort: dict[str, Any], units: list[dict[str, Any]], *,
     """Label, admit, gate and score one cohort from its already-derived units."""
     units = [dict(unit) for unit in units]
     annotation_report = attach_annotations(units, cohort.get("annotation_sources", []), root)
+    adjudication_report = attach_adjudications(units, cohort.get("adjudication_record"), root)
     permission_report = load_permission_record(units, cohort.get("permission_record"), root)
     prediction_report = admit_predictions(units, cohort.get("prediction_document"), root)
 
@@ -529,6 +675,8 @@ def evaluate_cohort(cohort: dict[str, Any], units: list[dict[str, Any]], *,
         "metrics": metrics,
         "eligibility_table": rows,
         "annotation_report": annotation_report,
+        "adjudication_report": adjudication_report,
+        "label_side_accounting": label_side_accounting(units),
         "permission_report": permission_report,
         "prediction_report": prediction_report["admission"],
         "gated_unit_ids": gated_ids,
@@ -656,6 +804,8 @@ def run_benchmark(config: dict[str, Any], root: Path,
         "cutoff_attestation": cutoff_state,
         "identity_overlap_between_cohorts": overlaps,
         "expectations_all_match": all(cohort["expectation_matches"] for cohort in cohorts),
+        "label_side_accounting": label_side_accounting(
+            [unit for cohort in cohorts for unit in cohort["units"]]),
         "cohorts": [
             {key: value for key, value in cohort.items()
              if key not in ("units", "cases", "labels", "metrics")} | {
