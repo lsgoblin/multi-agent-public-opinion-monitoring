@@ -989,6 +989,7 @@ def test_the_trajectory_loader_builds_one_unit_per_sealed_event(tmp_path):
     assert [unit["unit_id"] for unit in units] == ["evt-1", "evt-2"]
     assert units[0]["cutoff"] == TRAJ_CUTOFF
     assert units[0]["visible_at"] == TRAJ_CUTOFF
+    assert units[0]["unit_kind"] == bench.TRAJECTORY_UNIT_KIND
     assert units[0]["source_version"].endswith("/chat/completions") is False
     assert units[0]["publisher"] == "Hacker News (Algolia daily series)"
     assert units[0]["human_direction_label"] is None

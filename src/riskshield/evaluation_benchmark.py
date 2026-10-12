@@ -868,6 +868,7 @@ def trajectory_units(root: Path, cohort: dict[str, Any]) -> list[dict[str, Any]]
         units.append({
             "unit_id": event["event_id"],
             "event_id": event["event_id"],
+            "unit_kind": TRAJECTORY_UNIT_KIND,
             "split": event.get("split") or "holdout",
             "source_record_id": f"{event['event_id']}__sealed_baseline_series",
             "publisher": f"{source.get('source_family')} (Algolia daily series)",
