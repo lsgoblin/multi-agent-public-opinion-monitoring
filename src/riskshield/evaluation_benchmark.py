@@ -159,6 +159,14 @@ def validate_config(config: dict[str, Any]) -> None:
                 if not isinstance(cohort.get(field), str) or not cohort[field].strip():
                     raise BenchmarkConfigError(
                         f"cohort {cohort_id}: a collected cohort needs {field}.")
+        if cohort.get("track", TRACK_SENTIMENT) not in TRACKS:
+            raise BenchmarkConfigError(
+                f"cohort {cohort_id}: track must be one of {list(TRACKS)}.")
+        if cohort.get("track") == TRACK_DIRECTION:
+            for field in ("event_frame", "event_root"):
+                if not isinstance(cohort.get(field), str) or not cohort[field].strip():
+                    raise BenchmarkConfigError(
+                        f"cohort {cohort_id}: a direction cohort needs {field}.")
         for field in ("dataset_version", "label_version"):
             if not isinstance(cohort.get(field), str) or not cohort[field].strip():
                 raise BenchmarkConfigError(f"cohort {cohort_id}: {field} is required.")
@@ -1226,10 +1234,43 @@ def eligibility_rows(units: list[dict[str, Any]]) -> list[dict[str, Any]]:
     return rows
 
 
+TRACK_SENTIMENT = "sentiment"
+TRACK_DIRECTION = "direction"
+TRACKS = (TRACK_SENTIMENT, TRACK_DIRECTION)
+
+
+def cohort_track(cohort: dict[str, Any]) -> str:
+    """Which metric track a cohort feeds. Defaults to sentiment for compatibility."""
+    track = cohort.get("track", TRACK_SENTIMENT)
+    if track not in TRACKS:
+        raise BenchmarkConfigError(
+            f"cohort {cohort.get('cohort_id')}: track must be one of {list(TRACKS)}, got {track!r}.")
+    return track
+
+
 def evaluate_cohort(cohort: dict[str, Any], units: list[dict[str, Any]], *,
                     root: Path, cutoffs_document: str | None,
                     out_dir_relative: str) -> dict[str, Any]:
-    """Label, admit, gate and score one cohort from its already-derived units."""
+    """Label, admit, gate and score one cohort, on whichever track it declares.
+
+    The two tracks differ in what a unit is, which admission point the
+    prediction goes through, and which denominator invariant applies. They share
+    the entry point, the configuration shape and the reporting shape, so a
+    reader does not have to learn two systems to compare them -- but they never
+    share a denominator.
+    """
+    if cohort_track(cohort) == TRACK_DIRECTION:
+        return _evaluate_direction_cohort(cohort, units, root=root,
+                                          out_dir_relative=out_dir_relative)
+    return _evaluate_sentiment_cohort(cohort, units, root=root,
+                                      cutoffs_document=cutoffs_document,
+                                      out_dir_relative=out_dir_relative)
+
+
+def _evaluate_sentiment_cohort(cohort: dict[str, Any], units: list[dict[str, Any]], *,
+                               root: Path, cutoffs_document: str | None,
+                               out_dir_relative: str) -> dict[str, Any]:
+    """Label, admit, gate and score one sentiment cohort from its derived units."""
     units = [dict(unit) for unit in units]
     annotation_report = attach_annotations(units, cohort.get("annotation_sources", []), root)
     adjudication_report = attach_adjudications(units, cohort.get("adjudication_record"), root)
@@ -1265,6 +1306,7 @@ def evaluate_cohort(cohort: dict[str, Any], units: list[dict[str, Any]], *,
     expected = sorted(cohort["expected_gated_unit_ids"])
     return {
         "schema": ELIGIBILITY_SCHEMA,
+        "track": TRACK_SENTIMENT,
         "cohort_id": cohort["cohort_id"],
         "unit_source": cohort["unit_source"],
         "dataset_version": cohort["dataset_version"],
@@ -1286,6 +1328,122 @@ def evaluate_cohort(cohort: dict[str, Any], units: list[dict[str, Any]], *,
         "candidate_count": len(units),
         "gated_count": len(gated_units),
         "scoreable_without_permission_record": sorted(without_permission),
+        "consistency_check": consistency,
+    }
+
+
+def _direction_eligibility_rows(units: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """One row per candidate event, listing every gate and every gap.
+
+    The direction track has no permission gate, because the material is a public
+    discussion series rather than an archived post whose licence is in question.
+    That difference is stated in the row rather than left implicit.
+    """
+    rows: list[dict[str, Any]] = []
+    for unit in units:
+        gate = trajectory_direction_gate(unit)
+        rows.append({
+            "event_id": unit["event_id"],
+            "subject": (unit.get("publisher") or "").split(" (")[0],
+            "source_record_id": unit.get("source_record_id"),
+            "source_version": unit.get("source_version"),
+            "cutoff": unit.get("cutoff"),
+            "visible_at": unit.get("visible_at"),
+            "split": unit.get("split"),
+            "sealed_evidence_sha256": unit.get("sealed_evidence_sha256"),
+            "prediction_label": (unit.get("prediction") or {}).get("label"),
+            "prediction_admitted": (unit.get("prediction") or {}).get("admitted") is True,
+            "human_direction_label": unit.get("human_direction_label"),
+            "direction_annotation_count": len(unit.get("direction_annotations", [])),
+            "direction_labels": [row["label"] for row in unit.get("direction_annotations", [])],
+            "direction_annotation_exclusions": unit.get("direction_annotation_exclusions", []),
+            "gated": gate["passed"],
+            "all_gaps": gate["reasons"],
+            "gap_count": len(gate["reasons"]),
+        })
+    return rows
+
+
+def _evaluate_direction_cohort(cohort: dict[str, Any], units: list[dict[str, Any]], *,
+                               root: Path, out_dir_relative: str) -> dict[str, Any]:
+    """Label, admit, gate and score one trajectory cohort."""
+    units = [dict(unit) for unit in units]
+    annotation_report = attach_direction_labels(units, cohort.get("annotation_sources", []), root)
+    prediction_report = admit_trajectory_predictions(units, root, out_dir_relative)
+
+    rows = _direction_eligibility_rows(units)
+    gated_units = [unit for unit in units if trajectory_direction_gate(unit)["passed"]]
+    gated_ids = sorted(unit["unit_id"] for unit in gated_units)
+    excluded_ids = {unit["unit_id"] for unit in units} - set(gated_ids)
+
+    cases, labels, metrics = score_trajectory_set(
+        gated_units,
+        dataset_version=cohort["dataset_version"],
+        label_version=cohort["label_version"],
+        evidence_root=root,
+        package_relative=prediction_report["package_relative"])
+    consistency = assert_direction_denominator_matches(gated_units, metrics)
+
+    expected = sorted(cohort["expected_gated_unit_ids"])
+    splits: dict[str, int] = {}
+    for unit in units:
+        key = unit.get("split") or "holdout"
+        splits[key] = splits.get(key, 0) + 1
+    return {
+        "schema": ELIGIBILITY_SCHEMA,
+        "track": TRACK_DIRECTION,
+        "cohort_id": cohort["cohort_id"],
+        "unit_source": cohort["unit_source"],
+        "dataset_version": cohort["dataset_version"],
+        "label_version": cohort["label_version"],
+        "units": units,
+        "cases": cases,
+        "labels": labels,
+        "metrics": metrics,
+        "eligibility_table": rows,
+        "annotation_report": annotation_report,
+        "prediction_report": prediction_report["admission"],
+        "evidence_package": prediction_report["package_relative"],
+        "evidence_package_digest": prediction_report["package_digest"],
+        "gated_unit_ids": gated_ids,
+        "excluded_unit_ids": sorted(excluded_ids),
+        "expected_gated_unit_ids": expected,
+        "expectation_matches": expected == gated_ids,
+        "candidate_count": len(units),
+        "gated_count": len(gated_units),
+        "split_counts": dict(sorted(splits.items())),
+        "consistency_check": consistency,
+    }
+
+
+def evaluate_combined_direction(cohorts: list[dict[str, Any]], *, root: Path,
+                                dataset_version: str,
+                                label_version: str) -> dict[str, Any]:
+    """Score the union of the direction cohorts' gated events."""
+    units: list[dict[str, Any]] = []
+    for cohort in cohorts:
+        units.extend(unit for unit in cohort["units"] if unit["unit_id"] in cohort["gated_unit_ids"])
+    seen: set[str] = set()
+    duplicates: list[str] = []
+    for unit in units:
+        if unit["unit_id"] in seen:
+            duplicates.append(unit["unit_id"])
+        seen.add(unit["unit_id"])
+    if duplicates:
+        raise BenchmarkInvariantError(
+            f"the same event was admitted by more than one cohort: {sorted(set(duplicates))}")
+    package_relative = (cohorts[0]["evidence_package"] if cohorts
+                        else "trajectory-evidence-package.json")
+    _, _, metrics = score_trajectory_set(
+        units, dataset_version=dataset_version, label_version=label_version,
+        evidence_root=root, package_relative=package_relative)
+    consistency = assert_direction_denominator_matches(units, metrics)
+    return {
+        "dataset_version": dataset_version,
+        "label_version": label_version,
+        "unit_ids": sorted(unit["unit_id"] for unit in units),
+        "contributing_cohorts": sorted(cohort["cohort_id"] for cohort in cohorts),
+        "metrics": metrics,
         "consistency_check": consistency,
     }
 
@@ -1365,33 +1523,56 @@ def run_benchmark(config: dict[str, Any], root: Path,
                                        cutoffs_document=cutoff_state["reference"],
                                        out_dir_relative=relative_out))
 
-    # Two cohorts may not name the same unit, event or source record. Overlapping
-    # identities would make the union count one event twice, so this is reported
-    # and refused rather than silently merged.
+    # Two cohorts on the same track may not name the same unit, event or source
+    # record: the union would count it twice. The check is per track on purpose.
+    # The same event legitimately appears in both tracks -- once as a title unit
+    # and once as a trajectory event -- and refusing that would forbid the two
+    # tracks from describing the same events, which is what they are for.
     overlaps: list[dict[str, str]] = []
-    owners: dict[tuple[str, str], str] = {}
+    owners: dict[tuple[str, str, str], str] = {}
     for cohort in cohorts:
+        track = cohort_track(cohort)
         for unit in cohort["units"]:
             for key in ("unit_id", "event_id", "source_record_id"):
                 value = unit.get(key)
                 if not isinstance(value, str):
                     continue
-                previous = owners.setdefault((key, value), cohort["cohort_id"])
+                previous = owners.setdefault((track, key, value), cohort["cohort_id"])
                 if previous != cohort["cohort_id"]:
-                    overlaps.append({"identity_field": key, "identity": value,
+                    overlaps.append({"track": track, "identity_field": key, "identity": value,
                                      "cohorts": f"{previous},{cohort['cohort_id']}"})
     if overlaps:
         raise BenchmarkInvariantError(
-            "cohorts share candidate identities, so the union would double count: "
+            "cohorts on the same track share candidate identities, so the union would double "
+            "count: "
             f"{overlaps}")
 
+    # Cohorts are grouped by track before anything is combined. A sentiment
+    # cohort and a direction cohort must never share a denominator: one counts
+    # title units, the other counts events, and adding them would produce a
+    # number that means nothing. Identity overlap between the two catalogues is
+    # allowed and expected -- the same event can carry a title unit and a
+    # trajectory event -- so the overlap check above is deliberately per track.
+    by_track: dict[str, list[dict[str, Any]]] = {track: [] for track in TRACKS}
+    for cohort in cohorts:
+        by_track[cohort_track(cohort)].append(cohort)
+
+    sentiment_cohorts = by_track[TRACK_SENTIMENT]
+    direction_cohorts = by_track[TRACK_DIRECTION]
     combined = evaluate_combined(
-        cohorts, root=root, cutoffs_document=cutoff_state["reference"],
+        sentiment_cohorts, root=root, cutoffs_document=cutoff_state["reference"],
         dataset_version=config.get("combined_dataset_version", "combined-formal-set"),
         label_version=config.get("combined_label_version", "combined-formal-labels"))
+    combined_direction = evaluate_combined_direction(
+        direction_cohorts, root=root,
+        dataset_version=config.get("combined_direction_dataset_version",
+                                   "combined-direction-set"),
+        label_version=config.get("combined_direction_label_version",
+                                 "combined-direction-labels"))
 
     headline = combined["metrics"]["sentiment_three_class"]
     negative = combined["metrics"]["negative_identification"]
+    direction_metrics = combined_direction["metrics"]["direction_agreement"]
     return {
         "schema": REPORT_SCHEMA,
         "config_version": config["config_version"],
@@ -1406,7 +1587,7 @@ def run_benchmark(config: dict[str, Any], root: Path,
         "identity_overlap_between_cohorts": overlaps,
         "expectations_all_match": all(cohort["expectation_matches"] for cohort in cohorts),
         "label_side_accounting": label_side_accounting(
-            [unit for cohort in cohorts for unit in cohort["units"]]),
+            [unit for cohort in sentiment_cohorts for unit in cohort["units"]]),
         "cohorts": [
             {key: value for key, value in cohort.items()
              if key not in ("units", "cases", "labels", "metrics")} | {
@@ -1414,11 +1595,41 @@ def run_benchmark(config: dict[str, Any], root: Path,
             }
             for cohort in cohorts
         ],
+        "track_denominators": {
+            "sentiment": {
+                "track": TRACK_SENTIMENT,
+                "cohorts": [cohort["cohort_id"] for cohort in sentiment_cohorts],
+                "scored_unit_ids": combined["unit_ids"],
+                "numerator": headline["numerator"],
+                "denominator": headline["denominator"],
+                "value": headline["value"],
+                "undefined_reason": headline["undefined_reason"],
+            },
+            "direction": {
+                "track": TRACK_DIRECTION,
+                "cohorts": [cohort["cohort_id"] for cohort in direction_cohorts],
+                "scored_event_ids": combined_direction["unit_ids"],
+                "numerator": direction_metrics["numerator"],
+                "denominator": direction_metrics["denominator"],
+                "value": direction_metrics["value"],
+                "undefined_reason": direction_metrics["undefined_reason"],
+            },
+            "note": ("the two tracks count different things -- title units and events -- so their "
+                     "denominators are reported side by side and never added together"),
+        },
         "formal_combined": {
             **combined,
             "headline_definition": (
-                "the union of every cohort's gated units, scored in one engine run; "
-                "per-cohort metrics are diagnostics and are not the headline number"),
+                "the union of every SENTIMENT cohort's gated units, scored in one engine run; "
+                "per-cohort metrics are diagnostics and are not the headline number. The direction "
+                "track is reported separately under formal_combined_direction and is never merged "
+                "into this number"),
+        },
+        "formal_combined_direction": {
+            **combined_direction,
+            "headline_definition": (
+                "the union of every DIRECTION cohort's gated events, scored in one engine run. A "
+                "separate denominator from the sentiment track by construction."),
         },
         "headline": {
             "three_class": {"numerator": headline["numerator"],

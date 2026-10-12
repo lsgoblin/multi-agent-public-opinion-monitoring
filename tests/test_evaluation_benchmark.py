@@ -1117,6 +1117,108 @@ def test_the_direction_denominator_invariant_rejects_a_mismatch():
 
 
 # --------------------------------------------------------------------------
+# group 11: one entry point, two tracks
+# --------------------------------------------------------------------------
+
+def _mixed_config(tmp_path, monkeypatch, *, same_identity: bool = False) -> tuple[Path, dict]:
+    """A config holding one sentiment cohort and one direction cohort."""
+    sentiment_id = "evt-1" if same_identity else "u1"
+    root = _fixture_root(tmp_path, [sentiment_id])
+    _trajectory_root(tmp_path, ["evt-1"])
+    _direction_submissions(root, ["evt-1"], {"evt-1": "escalation"})
+    _permission_record(root, [sentiment_id])
+    sentiment_unit = _fixture_unit(root, 0, sentiment_id)
+    _write_predictions(root, [sentiment_unit])
+    _install_units(monkeypatch, [sentiment_unit])
+
+    config = _config([sentiment_id])
+    direction_cohort = _trajectory_cohort(["evt-1"])
+    direction_cohort["track"] = "direction"
+    config["cohorts"].append(direction_cohort)
+    return root, config
+
+
+def test_a_mixed_config_reports_both_denominators_separately(tmp_path, monkeypatch):
+    root, config = _mixed_config(tmp_path, monkeypatch)
+
+    report = bench.run_benchmark(config, root)
+
+    denominators = report["track_denominators"]
+    assert denominators["sentiment"]["denominator"] == 1
+    assert denominators["sentiment"]["track"] == "sentiment"
+    assert denominators["direction"]["denominator"] == 1
+    assert denominators["direction"]["track"] == "direction"
+    assert denominators["direction"]["scored_event_ids"] == ["evt-1"]
+    assert report["formal_combined"]["metrics"]["sentiment_three_class"]["denominator"] == 1
+    assert report["formal_combined_direction"]["metrics"][
+        "direction_agreement"]["denominator"] == 1
+    assert report["expectations_all_match"] is True
+    assert [row["track"] for row in report["cohorts"]] == ["sentiment", "direction"]
+
+
+def test_the_two_tracks_never_share_a_denominator(tmp_path, monkeypatch):
+    root, config = _mixed_config(tmp_path, monkeypatch)
+
+    report = bench.run_benchmark(config, root)
+
+    sentiment = report["formal_combined"]["metrics"]
+    direction = report["formal_combined_direction"]["metrics"]
+    assert sentiment["sentiment_three_class"]["denominator"] == 1
+    assert sentiment["direction_agreement"]["denominator"] == 0
+    assert direction["direction_agreement"]["denominator"] == 1
+    assert direction["sentiment_three_class"]["denominator"] == 0
+
+
+def test_the_same_identifier_may_appear_in_both_tracks(tmp_path, monkeypatch):
+    """One event can carry a title unit and a trajectory event. That is not double counting."""
+    root, config = _mixed_config(tmp_path, monkeypatch, same_identity=True)
+
+    report = bench.run_benchmark(config, root)
+
+    assert report["identity_overlap_between_cohorts"] == []
+    assert report["track_denominators"]["sentiment"]["denominator"] == 1
+    assert report["track_denominators"]["direction"]["denominator"] == 1
+
+
+def test_two_cohorts_on_one_track_may_not_share_an_identity(tmp_path, monkeypatch):
+    root, config = _mixed_config(tmp_path, monkeypatch)
+    duplicate = dict(config["cohorts"][0])
+    duplicate["cohort_id"] = "second-sentiment-cohort"
+    config["cohorts"].append(duplicate)
+
+    with pytest.raises(bench.BenchmarkInvariantError, match="same track"):
+        bench.run_benchmark(config, root)
+
+
+@pytest.mark.parametrize("missing", ["event_frame", "event_root"])
+def test_a_direction_cohort_needs_its_frame_and_root(missing):
+    payload = _config(["u1"])
+    cohort = _trajectory_cohort(["evt-1"])
+    cohort["track"] = "direction"
+    del cohort[missing]
+    payload["cohorts"] = [cohort]
+
+    with pytest.raises(bench.BenchmarkConfigError, match=missing):
+        bench.validate_config(payload)
+
+
+def test_an_unknown_track_is_refused():
+    payload = _config(["u1"])
+    payload["cohorts"][0]["track"] = "vibes"
+
+    with pytest.raises(bench.BenchmarkConfigError, match="track"):
+        bench.validate_config(payload)
+
+
+def test_a_sentiment_cohort_without_a_track_field_still_defaults_to_sentiment():
+    payload = _config(["u1"])
+
+    bench.validate_config(payload)
+
+    assert bench.cohort_track(payload["cohorts"][0]) == "sentiment"
+
+
+# --------------------------------------------------------------------------
 # group 7: the command line contract
 # --------------------------------------------------------------------------
 
