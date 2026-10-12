@@ -124,3 +124,11 @@ docker compose -p riskshield-demo down
 ## 已验证范围
 
 此前本机 Docker 验证包括构建、健康检查、Web 到 API、离线案例任务、五模块报告、预警以及停止后再次启动的数据持久化。入口容器仍有默认路由，完整容器出口隔离、真实通知和目标域内部署均未验证。详细运行证据保留在本机忽略目录及既有 Git 历史中；当前源码提交不包含这些产物。验收结论见[测试与运行报告](test-report.md)。
+
+### 2026-10-12 当前源码复验
+
+在源码提交 `303cc0cbfa7607375c1e90bb9ee975146514d776` 上，使用 Docker Desktop 4.79.0、Engine 29.5.3 和独立 Compose 项目 `riskshield-alerting` 成功构建镜像 `riskshield:day4-local`（镜像 ID `sha256:83d8fa12111d28c554224bb853fb5d5b3a6e4ee4402a26df8fbef0e2e1292616`）。API `/health` 返回成功，Web 首页返回 HTTP 200。通过 API 导入仓库内固定历史案例并执行 10 Agent × 3 轮离线任务，30/30 决策有效；执行模式为 `offline_dynamic_substitute`，应用账本为 0 次模型调用、0 次网络请求。任务生成五模块报告和蓝色暂定预警；企微、邮件均仅生成 `dry_run` 预览。停止再启动 Compose 服务后，任务、报告、预警 JSON 内容的 SHA-256 均保持一致。以上结果只证明本机工程闭环，不代表真实模型、真实通知或正式业务指标达标。
+
+该提交的 Compose 网络观测结果如下：API 与 Web 只连接 `internal: true` 的 default 网络，容器没有默认路由；从二者向 `1.1.1.1:443` 的 TCP 连接不可达，`example.com` 的外部 DNS 查询失败。`local_gateway` 另接未设为 internal 的 `host_ingress`，容器有默认路由；同一 TCP 探测成功，外部 DNS 查询也成功，因此当前配置**允许入口网关出站**。
+
+两个一次性网络试验没有得到可采用的 Compose-only 修复：普通桥接网络设置 `com.docker.network.bridge.enable_ip_masquerade=false` 后，外部 TCP 与 DNS 仍成功；改为仅连接 `internal: true` 网络时，已发布的 loopback 端口没有映射，HTTP 无法访问，因此不能直接用它替换当前入口网络。当前配置保留本机入口功能，同时明确记录网关可出站；本次探测不等于完整抓包或主机防火墙审计，不能据此声称整个容器组数据不出域。
