@@ -838,12 +838,20 @@ class Day3Simulation:
             bound is what lets one hung backend call block the whole task forever, so the
             engine must be able to stop waiting by itself and not depend on the backend
             (or the model gateway) honouring a socket timeout.
+
+            When both limits are configured the round obeys the EARLIER one. A task
+            deadline must never be extended by a larger per-round budget, or the combined
+            configuration would return later than the deadline promises.
             """
-            if call_timeout_seconds is not None:
-                return call_timeout_seconds
-            if deadline_monotonic is None:
+            if call_timeout_seconds is None and deadline_monotonic is None:
                 return None
-            return max(0.0, deadline_monotonic - time.monotonic())
+            remaining = (None if deadline_monotonic is None
+                         else max(0.0, deadline_monotonic - time.monotonic()))
+            if call_timeout_seconds is None:
+                return remaining
+            if remaining is None:
+                return call_timeout_seconds
+            return min(call_timeout_seconds, remaining)
 
         def record_call_timeout(aid):
             """Record a request we stopped waiting for.

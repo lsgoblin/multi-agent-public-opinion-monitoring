@@ -148,6 +148,49 @@ def test_call_timeout_must_be_a_finite_positive_number(tmp_path):
             engine.advance(run_id, backend, call_timeout_seconds=bad)
 
 
+@pytest.mark.parametrize(("deadline_ms", "budget_ms", "expected_ms"), [
+    (100.0, 500.0, 100.0),   # the task deadline is earlier and must win
+    (500.0, 100.0, 100.0),   # the per-round budget is earlier and must win
+    (100.0, 100.0, 100.0),   # equal
+])
+def test_combined_limits_obey_the_earlier_one(tmp_path, deadline_ms, budget_ms,
+                                             expected_ms):
+    """A larger per-round budget must never extend the task deadline.
+
+    Regression: the budget helper returned ``call_timeout_seconds`` immediately whenever
+    it was set, so a task deadline of 0.1 s combined with a per-round budget of 0.5 s
+    returned after ~0.54 s instead of ~0.1 s.
+    """
+    _, engine, run_id = make_engine(tmp_path, agents=20, rounds=3, concurrency=4)
+    gate = threading.Event()
+    backend = HangsForever(gate, blocked_agents=tuple(
+        f"agent_{index:04d}" for index in range(20)))
+    started = time.perf_counter()
+    result = engine.advance(run_id, backend, collect_performance=True,
+                            deadline_monotonic=time.monotonic() + deadline_ms / 1000.0,
+                            call_timeout_seconds=budget_ms / 1000.0)
+    elapsed_ms = (time.perf_counter() - started) * 1000.0
+    gate.set()
+
+    # It must come back on the earlier limit, with an allowance for bookkeeping.
+    assert elapsed_ms < expected_ms + 250.0, (elapsed_ms, expected_ms)
+    # When the two limits differ, the stricter one must not have been silently replaced
+    # by the looser one.
+    if deadline_ms != budget_ms:
+        assert elapsed_ms < max(deadline_ms, budget_ms) - 50.0, (elapsed_ms, deadline_ms,
+                                                                budget_ms)
+    assert result["status"] == "partial"
+    assert result["opportunities"]["fully_reconciled"] is True
+    assert result["billing"]["cost_reconciles"] is True
+    assert set(result["opportunities"]["buckets"]) == {
+        "valid", "failed", "deadline_exceeded", "not_dispatched_current_round",
+        "not_started_future_rounds"}
+    # Only the first batch was dispatched; nothing new was submitted after the stop.
+    assert result["action_counts"].get("deadline_exceeded", 0) == 4
+    assert result["performance"]["invocations"][0]["stop_reason"] in {
+        "deadline", "call_timeout"}
+
+
 def test_completed_round_then_abandoned_round_still_produces_a_report(tmp_path):
     """Repro of the report failure: round 1 completes, round 2 is abandoned."""
     from riskshield.alerts import Day4Alerts
