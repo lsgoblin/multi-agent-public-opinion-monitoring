@@ -2,7 +2,7 @@
 
 ## 范围与状态
 
-本文给出当前工程的本机运行方式。Docker 配置提供 API、Web、本机入口容器及 SQLite 持久化卷。2026-10-12 已在 Docker Desktop 本机复验健康检查、固定历史案例离线任务、重启持久化和容器级出口探测；容器内没有默认公网路由的观测已通过，Docker Desktop 宿主/虚拟机的完整流量审计及目标域部署仍未验证。G3、G4、G5 均尚未通过，当前只记录本机工程运行。
+本文给出当前工程的本机运行方式。Docker 配置提供 API、Web、本机入口容器及 SQLite 持久化卷。2026-10-12 已在 Docker Desktop 本机复验健康检查、固定历史案例离线任务、重启持久化和出口探测：三个应用容器无法直连公网，但 Docker Desktop WSL2 虚拟机的抽样公网探测成功。完整流量审计及目标域部署仍未验证。G3、G4、G5 均尚未通过，当前只记录本机工程运行。
 
 实际实现见 [Dockerfile](../../Dockerfile)、[Compose 配置](../../compose.yaml)、[依赖配置](../../pyproject.toml)、[API](../../src/riskshield/api.py) 和 [Web](../../ui/app.py)。
 
@@ -141,4 +141,10 @@ docker compose -p riskshield-demo down
 
 标准 `docker compose build` 本次因 Docker Hub `auth.docker.io` 基础镜像令牌请求超时而未完成。运行复验镜像由此前本机镜像 `sha256:83d8fa…` 派生，只复制了新网关模块，ID 为 `sha256:6fbc6a…`；旧镜像另保留为 `riskshield:day4-baseline-20261012`。因此，当前源码的干净基础镜像构建仍待网络可用时复核。
 
-这些观测只覆盖容器网络命名空间中的默认路由、特定公网 TCP/DNS 探测和 Compose 入口行为；没有审计 Docker Desktop Linux 虚拟机/Windows 宿主防火墙、所有目标/协议、宿主服务代理或完整抓包。容器配置的 capability 仍可由有 Docker daemon 管理权限的操作者用于启动额外进程；该权限属于可信控制面。不能据此宣称整个主机或目标域已实现“数据不出域”。真实通知、模型调用、联网采集和外部部署均未执行，G3/G4/G5 状态不变。
+容器配置的 capability 仍可由有 Docker daemon 管理权限的操作者用于启动额外进程；该权限属于可信控制面。上述 VM 探测是少量 TCP/DNS 连通性检查，不是全协议抓包或目标域出口审计；不能据此宣称整个主机或目标域已实现“数据不出域”。真实通知、模型调用、联网采集和外部部署均未执行，G3/G4/G5 状态不变。
+
+### 2026-10-12 Docker Desktop VM/Windows 出口抽样核查
+
+Docker Desktop 使用 WSL2 Linux Engine（内核 `6.6.87.2-microsoft-standard-WSL2`）。在 `docker-desktop` 发行版只读查看到 `eth3` 上存在 IPv4、IPv6 默认路由，DNS 上游为 `10.255.255.254`。VM 对 `1.1.1.1:443` 和 `2606:4700:4700::1111:443` 的零载荷 TCP 握手均成功，解析 `example.com` 成功；从 VM 到本机默认网关 `100.81.255.254:28000` 的 TCP 握手也成功，该端口映射到本机 API。相同 IPv4/IPv6 TCP 及外部 DNS 探测在当前 API、Web、local_gateway 三个容器中均失败（`Network is unreachable` / `Temporary failure in name resolution`）。这说明当前观测到的隔离仅适用于应用容器网络命名空间，Docker Desktop VM 仍具公网出站和访问本机映射服务的路径。
+
+Windows Defender Firewall 的 Domain、Private、Public 配置文件均启用且默认允许出站，允许/阻断日志均关闭；本机可见的启用出站阻断规则数为 0。Docker Desktop 对应 Hyper-V VM Creator 配置也默认允许出站、阻断入站。当前会话不是管理员，`pktmon` 返回“拒绝访问”，因此没有开启或执行主机抓包，也未更改防火墙规则。该检查未覆盖所有连接、协议、代理与流量内容。标准 `docker compose -p riskshield-alerting build --pull --no-cache` 仍在获取 `python:3.12-slim` 元数据时因 Docker Hub token 端点 IPv6 TCP 超时而失败；现有运行容器、镜像标签和数据卷未被替换。
