@@ -38,7 +38,7 @@ import argparse
 import hashlib
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -79,10 +79,18 @@ ELIGIBILITY_SCHEMA = "riskshield.data_evaluation.benchmark_eligibility.v1"
 
 # A cohort's units are derived by the loader named in the config. Adding a new
 # frozen packet means adding a loader here, not editing the scoring path.
+#
+# Two registries, because they need different things: the frozen packets derive
+# everything from fixed documents, while a collected cohort needs its own pool
+# and archive documents named in the config. Splitting them keeps the frozen
+# loaders unchanged rather than widening their signature.
 UNIT_SOURCES = {
     "v24_sentiment_units": _sentiment_units,
     "v19_title_units": _title_units,
 }
+
+CUTOFF_MARGIN_SECONDS = 1800
+DERIVED_CUTOFF_PROVENANCE = "derived_backtest_window_rule_not_historical_freeze"
 
 PERMISSION_GATE = "no_recorded_source_permission_evidence"
 
@@ -137,9 +145,15 @@ def validate_config(config: dict[str, Any]) -> None:
         if cohort_id in seen_cohorts:
             raise BenchmarkConfigError(f"Duplicate cohort_id: {cohort_id}")
         seen_cohorts.add(cohort_id)
-        if cohort.get("unit_source") not in UNIT_SOURCES:
+        if cohort.get("unit_source") not in set(UNIT_SOURCES) | set(COHORT_UNIT_SOURCES):
             raise BenchmarkConfigError(
-                f"cohort {cohort_id}: unit_source must be one of {sorted(UNIT_SOURCES)}.")
+                f"cohort {cohort_id}: unit_source must be one of "
+                f"{sorted(set(UNIT_SOURCES) | set(COHORT_UNIT_SOURCES))}.")
+        if cohort["unit_source"] == "expansion_candidate_pool":
+            for field in ("candidate_pool", "archive_evidence"):
+                if not isinstance(cohort.get(field), str) or not cohort[field].strip():
+                    raise BenchmarkConfigError(
+                        f"cohort {cohort_id}: a collected cohort needs {field}.")
         for field in ("dataset_version", "label_version"):
             if not isinstance(cohort.get(field), str) or not cohort[field].strip():
                 raise BenchmarkConfigError(f"cohort {cohort_id}: {field} is required.")
@@ -474,6 +488,147 @@ def prepare_declared_cutoff_pointers(units: list[dict[str, Any]]) -> None:
             f"/{unit['source_row_key']}/{unit['source_row_index']}/cutoff_utc")
 
 
+def load_expansion_units(root: Path, cohort: dict[str, Any]) -> list[dict[str, Any]]:
+    """Derive units from a collected candidate pool plus its archive evidence.
+
+    A collected cohort differs from a frozen packet in exactly one way: the pool
+    says which posts were selected and the archive document says what the archive
+    returned for them. Both are named in the config, and neither is edited here.
+
+    Each unit's provenance is resolved through two documents on purpose. The pool
+    carries the declared source version; the archive carries the title hash and
+    the retrieval time. A unit whose title hash does not agree between the two is
+    still built, with ``title_hash_match`` false, so the gate reports the
+    mismatch instead of the loader hiding it.
+    """
+    pool_path = cohort.get("candidate_pool")
+    archive_path = cohort.get("archive_evidence")
+    if not isinstance(pool_path, str) or not pool_path.strip():
+        raise BenchmarkConfigError(
+            f"cohort {cohort['cohort_id']}: a collected cohort needs candidate_pool.")
+    if not isinstance(archive_path, str) or not archive_path.strip():
+        raise BenchmarkConfigError(
+            f"cohort {cohort['cohort_id']}: a collected cohort needs archive_evidence.")
+
+    pool = _load(root, pool_path)
+    archive = _load(root, archive_path)
+    rows = pool.get("units")
+    records = archive.get("records")
+    if not isinstance(rows, list) or not rows:
+        raise BenchmarkConfigError(f"{pool_path} needs a nonempty units array.")
+    if not isinstance(records, list):
+        raise BenchmarkConfigError(f"{archive_path} needs a records array.")
+
+    by_ref = {}
+    for position, record in enumerate(records):
+        if isinstance(record, dict) and isinstance(record.get("source_ref"), str):
+            by_ref.setdefault(record["source_ref"], (position, record))
+
+    units: list[dict[str, Any]] = []
+    for index, row in enumerate(rows):
+        if not isinstance(row, dict):
+            raise BenchmarkConfigError(f"{pool_path} unit {index} is not an object.")
+        for field in ("unit_id", "source_record_id", "source_version", "frozen_text",
+                      "text_sha256", "retrieved_on_utc"):
+            if not isinstance(row.get(field), str) or not row[field].strip():
+                raise BenchmarkConfigError(
+                    f"{pool_path} unit {index} needs a nonempty {field}.")
+        match = by_ref.get(row["source_record_id"])
+        if match is None:
+            raise BenchmarkConfigError(
+                f"{archive_path} has no record for {row['source_record_id']}; the pool and the "
+                "archive evidence must describe the same posts.")
+        position, record = match
+        visible_at = record.get("retrieved_on_utc")
+        retrieved = _parse_time(visible_at)
+        if retrieved is None:
+            raise BenchmarkConfigError(
+                f"{archive_path} record {position} has no usable retrieved_on_utc.")
+        cutoff = retrieved + timedelta(seconds=CUTOFF_MARGIN_SECONDS)
+        archive_hash = record.get("title_sha256")
+        subreddit = record.get("subreddit")
+        units.append({
+            "unit_id": row["unit_id"],
+            "event_id": row["unit_id"],
+            "unit_kind": "original_title",
+            "unit_scope": "exact_frozen_title",
+            "source_document": pool_path,
+            "source_row_key": "units",
+            "source_row_index": index,
+            "source_record_id": row["source_record_id"],
+            "post_id": record.get("post_id"),
+            "publisher": (f"Reddit r/{subreddit} archived post" if isinstance(subreddit, str)
+                          and subreddit.strip() else None),
+            "source_version": row["source_version"],
+            "source_version_pointer": f"/units/{index}/source_version",
+            "source_url": row.get("source_url"),
+            "archive_document": archive_path,
+            "archive_pointer": f"/records/{position}",
+            "attribution_class": "archived_public_post_with_archive_record",
+            "permission_basis": ("Public Reddit post archived through the documented Arctic Shift "
+                                 "API; immutable title only, no post body, comment or account data "
+                                 "retained."),
+            "permission_evidence_ref": None,
+            "frozen_text": row["frozen_text"],
+            "text_sha256": row["text_sha256"],
+            "archive_title_sha256": archive_hash,
+            "title_hash_match": bool(
+                isinstance(archive_hash, str)
+                and archive_hash == row["text_sha256"]),
+            "unit_hash_ref": {"path": archive_path,
+                              "pointer": f"/records/{position}/title_sha256"},
+            "visible_at": visible_at,
+            "visible_at_pointer": {"path": archive_path,
+                                   "pointer": f"/records/{position}/retrieved_on_utc"},
+            "cutoff": cutoff.isoformat().replace("+00:00", "Z"),
+            "cutoff_provenance": DERIVED_CUTOFF_PROVENANCE,
+            "cutoff_margin_seconds": CUTOFF_MARGIN_SECONDS,
+            "source_record_pointer": {"path": archive_path,
+                                      "pointer": f"/records/{position}/source_ref"},
+            "annotations": [],
+            "labels_agree": False,
+            "human_exclusions": ["fewer_than_two_independent_human_labels"],
+            "dataset_split": row.get("dataset_split"),
+            "prediction": None,
+            "prediction_source": None,
+        })
+    return units
+
+
+COHORT_UNIT_SOURCES = {
+    "expansion_candidate_pool": load_expansion_units,
+}
+
+
+def _parse_time(value: Any) -> datetime | None:
+    """Parse an ISO 8601 timestamp that carries a timezone, or return None."""
+    if not isinstance(value, str) or not value.strip():
+        return None
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        return None
+    return parsed.astimezone(timezone.utc)
+
+
+def select_unit_source(name: str):
+    """Return a ``(root, cohort) -> units`` loader for a cohort.
+
+    Frozen loaders ignore the cohort argument, so both registries present the
+    same call shape to the caller.
+    """
+    if name in COHORT_UNIT_SOURCES:
+        return COHORT_UNIT_SOURCES[name]
+    if name in UNIT_SOURCES:
+        frozen = UNIT_SOURCES[name]
+        return lambda root, cohort: frozen(root)
+    raise BenchmarkConfigError(
+        f"unknown unit_source {name!r}; known sources are "
+        f"{sorted(set(UNIT_SOURCES) | set(COHORT_UNIT_SOURCES))}.")
+
+
 # --------------------------------------------------------------------------- #
 # prediction side
 # --------------------------------------------------------------------------- #
@@ -750,7 +905,8 @@ def run_benchmark(config: dict[str, Any], root: Path,
     # declares its own cutoff in the frozen packet.
     cohort_units: list[tuple[dict[str, Any], list[dict[str, Any]]]] = []
     for cohort in config["cohorts"]:
-        units = [dict(unit) for unit in UNIT_SOURCES[cohort["unit_source"]](root)]
+        loader = select_unit_source(cohort["unit_source"])
+        units = [dict(unit) for unit in loader(root, cohort)]
         prepare_declared_cutoff_pointers(units)
         cohort_units.append((cohort, units))
 

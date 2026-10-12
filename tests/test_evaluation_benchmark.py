@@ -703,6 +703,186 @@ def test_an_adjudicated_unit_scores_in_a_full_run(tmp_path, monkeypatch):
 
 
 # --------------------------------------------------------------------------
+# group 9: a collected (expansion) cohort
+# --------------------------------------------------------------------------
+
+def _expansion_title(index: int) -> str:
+    return f"Expansion fixture title {index} about an insurance claim decision"
+
+
+def _expansion_documents(root: Path, unit_ids: list[str], *, archive_hash_for=None) -> None:
+    """A candidate pool plus the archive evidence that proves its titles."""
+    units = []
+    records = []
+    for index, unit_id in enumerate(unit_ids):
+        title = _expansion_title(index)
+        text_sha = hashlib.sha256(title.encode("utf-8")).hexdigest()
+        units.append({
+            "unit_id": unit_id,
+            "post_id": f"exp{index}",
+            "subreddit": "Insurance",
+            "source_record_id": f"reddit_archived_post_exp{index}",
+            "source_version": SOURCE_VERSION,
+            "frozen_text": title,
+            "text_sha256": text_sha,
+            "source_url": f"https://www.reddit.com/comments/exp{index}/",
+            "created_at_utc": "2024-01-01T00:00:00Z",
+            "retrieved_on_utc": "2024-01-01T00:00:15Z",
+            "dataset_split": "development_set" if index % 2 == 0 else "final_evaluation_set",
+        })
+        records.append({
+            "source_ref": f"reddit_archived_post_exp{index}",
+            "post_id": f"exp{index}",
+            "subreddit": "Insurance",
+            "title_sha256": (archive_hash_for or {}).get(unit_id, text_sha),
+            "created_at_utc": "2024-01-01T00:00:00Z",
+            "retrieved_on_utc": "2024-01-01T00:00:15Z",
+        })
+    _write(root, "expansion/pool.json",
+           {"schema": "riskshield.data_evaluation.candidate_pool.v1", "units": units})
+    _write(root, "expansion/archive.json",
+           {"schema": "riskshield.final_benchmark.archive_post_evidence.v1", "records": records})
+
+
+def _expansion_cohort(unit_ids: list[str], **overrides) -> dict:
+    cohort = {
+        "cohort_id": "expansion",
+        "unit_source": "expansion_candidate_pool",
+        "dataset_version": "expansion-v1",
+        "label_version": "expansion-labels-v1",
+        "annotation_sources": [{"path": "labels/v16.json"}, {"path": "labels/v18.json"}],
+        "prediction_document": "pred/predictions.json",
+        "permission_record": "auth/permission.json",
+        "candidate_pool": "expansion/pool.json",
+        "archive_evidence": "expansion/archive.json",
+        "expected_gated_unit_ids": sorted(unit_ids),
+    }
+    cohort.update(overrides)
+    return cohort
+
+
+def _expansion_config(unit_ids: list[str], **cohort_overrides) -> dict:
+    config = _config(unit_ids)
+    config["cohorts"] = [_expansion_cohort(unit_ids, **cohort_overrides)]
+    return config
+
+
+def test_the_expansion_loader_derives_units_from_the_pool_and_the_archive(tmp_path):
+    root = _fixture_root(tmp_path, ["exp_u1"])
+    _expansion_documents(root, ["exp_u1"])
+    cohort = _expansion_cohort(["exp_u1"])
+
+    units = bench.load_expansion_units(root, cohort)
+
+    assert len(units) == 1
+    unit = units[0]
+    assert unit["unit_id"] == "exp_u1"
+    assert unit["event_id"] == "exp_u1"
+    assert unit["publisher"] == "Reddit r/Insurance archived post"
+    assert unit["title_hash_match"] is True
+    assert unit["archive_title_sha256"] == unit["text_sha256"]
+    assert unit["cutoff_provenance"] == bench.DERIVED_CUTOFF_PROVENANCE
+    assert unit["visible_at"] == "2024-01-01T00:00:15Z"
+    assert unit["cutoff"] == "2024-01-01T00:30:15Z"
+    assert unit["dataset_split"] == "development_set"
+    assert unit["permission_evidence_ref"] is None
+
+
+def test_the_expansion_loader_refuses_a_pool_post_missing_from_the_archive(tmp_path):
+    root = _fixture_root(tmp_path, ["exp_u1"])
+    _expansion_documents(root, ["exp_u1"])
+    _write(root, "expansion/archive.json",
+           {"schema": "x", "records": [{"source_ref": "something_else",
+                                        "title_sha256": "0" * 64}]})
+
+    with pytest.raises(bench.BenchmarkConfigError, match="no record for"):
+        bench.load_expansion_units(root, _expansion_cohort(["exp_u1"]))
+
+
+def test_the_expansion_loader_reports_a_title_hash_mismatch_rather_than_hiding_it(tmp_path):
+    root = _fixture_root(tmp_path, ["exp_u1"])
+    _expansion_documents(root, ["exp_u1"], archive_hash_for={"exp_u1": "f" * 64})
+
+    unit = bench.load_expansion_units(root, _expansion_cohort(["exp_u1"]))[0]
+
+    assert unit["title_hash_match"] is False
+    assert unit["archive_title_sha256"] == "f" * 64
+    assert "original_text_hash_missing_or_mismatched" in unit_gates(unit)["reasons"]
+
+
+@pytest.mark.parametrize("missing", ["candidate_pool", "archive_evidence"])
+def test_a_collected_cohort_needs_both_documents(missing):
+    payload = _expansion_config(["exp_u1"])
+    del payload["cohorts"][0][missing]
+
+    with pytest.raises(bench.BenchmarkConfigError, match=missing):
+        bench.validate_config(payload)
+
+
+def test_an_unknown_unit_source_names_the_known_ones():
+    payload = _config(["u1"], unit_source="not_a_loader")
+
+    with pytest.raises(bench.BenchmarkConfigError, match="expansion_candidate_pool"):
+        bench.validate_config(payload)
+
+
+@pytest.mark.parametrize("field", ["unit_id", "source_record_id", "source_version",
+                                   "frozen_text", "text_sha256", "retrieved_on_utc"])
+def test_a_pool_unit_missing_a_required_field_is_refused(tmp_path, field):
+    root = _fixture_root(tmp_path, ["exp_u1"])
+    _expansion_documents(root, ["exp_u1"])
+    pool = json.loads((root / "expansion/pool.json").read_text(encoding="utf-8"))
+    del pool["units"][0][field]
+    _write(root, "expansion/pool.json", pool)
+
+    with pytest.raises(bench.BenchmarkConfigError, match=field):
+        bench.load_expansion_units(root, _expansion_cohort(["exp_u1"]))
+
+
+def test_an_expansion_cohort_scores_end_to_end(tmp_path):
+    unit_ids = ["exp_u1", "exp_u2"]
+    root = _fixture_root(tmp_path, unit_ids)
+    _expansion_documents(root, unit_ids)
+    cohort = _expansion_cohort(unit_ids)
+    _permission_record(root, unit_ids)
+
+    units = bench.load_expansion_units(root, cohort)
+    for unit in units:
+        unit["_root"] = str(root)
+    _write_predictions(root, units)
+
+    report = bench.run_benchmark(_expansion_config(unit_ids), root)
+
+    row = report["cohorts"][0]
+    assert row["gated_unit_ids"] == unit_ids
+    assert row["consistency_check"]["denominator_equals_admitted_count"] is True
+    assert report["headline"]["three_class"]["denominator"] == 2
+    assert report["headline"]["three_class"]["numerator"] == 2
+    assert report["expectations_all_match"] is True
+    assert report["cutoff_attestation"]["generated"] is True
+    assert (root / report["cutoff_attestation"]["reference"]).is_file()
+
+
+def test_an_expansion_unit_without_a_permission_entry_is_excluded(tmp_path):
+    unit_ids = ["exp_u1", "exp_u2"]
+    root = _fixture_root(tmp_path, unit_ids)
+    _expansion_documents(root, unit_ids)
+    _permission_record(root, [unit_ids[0]])
+
+    units = bench.load_expansion_units(root, _expansion_cohort(unit_ids))
+    for unit in units:
+        unit["_root"] = str(root)
+    _write_predictions(root, units)
+
+    report = bench.run_benchmark(
+        _expansion_config(unit_ids, expected_gated_unit_ids=[unit_ids[0]]), root)
+
+    row = report["cohorts"][0]
+    assert row["gated_unit_ids"] == [unit_ids[0]]
+    assert row["excluded_unit_ids"] == [unit_ids[1]]
+
+
+# --------------------------------------------------------------------------
 # group 7: the command line contract
 # --------------------------------------------------------------------------
 
