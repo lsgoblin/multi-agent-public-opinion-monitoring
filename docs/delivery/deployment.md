@@ -2,7 +2,7 @@
 
 ## 范围与状态
 
-本文给出当前工程的本机运行方式。Docker 配置提供 API、Web、本机入口容器及 SQLite 持久化卷。2026-10-09 实机复验使用当前共享工作树源码完成无缓存构建、启动、固定历史案例离线任务、Web 报告/预警访问及重启持久化核对。入口容器的完整公网出口限制仍未通过。G3、G4、G5 均尚未通过，当前只记录本机工程运行。
+本文给出当前工程的本机运行方式。Docker 配置提供 API、Web、本机入口容器及 SQLite 持久化卷。2026-10-12 已在 Docker Desktop 本机复验健康检查、固定历史案例离线任务、重启持久化和容器级出口探测；容器内没有默认公网路由的观测已通过，Docker Desktop 宿主/虚拟机的完整流量审计及目标域部署仍未验证。G3、G4、G5 均尚未通过，当前只记录本机工程运行。
 
 实际实现见 [Dockerfile](../../Dockerfile)、[Compose 配置](../../compose.yaml)、[依赖配置](../../pyproject.toml)、[API](../../src/riskshield/api.py) 和 [Web](../../ui/app.py)。
 
@@ -76,7 +76,7 @@ API、Web、local_gateway 使用同一镜像。Web 通过内部网络服务名 `
 - Web 容器设置 `RISKSHIELD_API_URL=http://api:8000` 和 `STREAMLIT_BROWSER_GATHER_USAGE_STATS=false`。
 - 容器内服务监听 `0.0.0.0` 以供 Compose 网络使用；主机发布仍限制在 `127.0.0.1`。
 - `RISKSHIELD_HOST_API_PORT` / `RISKSHIELD_HOST_WEB_PORT` 控制入口主机端口，默认 8000/8501。
-- local_gateway 连接内部网络和 host_ingress；当前实测 API/Web 无默认路由，但入口有默认路由，不能承诺全容器无外发。
+- local_gateway 连接 internal default 和 host_ingress；启动时移除默认 IPv4 路由、拒绝活动 IPv6 默认路由，随后清空 Linux capabilities 并降为 UID/GID 10001。它使用 loopback DNS 上游，仍可解析 Compose 内的 `api`/`web` 服务名；本机映射端口保持仅绑定 `127.0.0.1`。
 - Dockerfile 使用 `pip install --no-cache-dir -e .`，使 `PROJECT_ROOT` 定位到 `/app`，可读取随镜像复制的渠道状态文件。
 - Dockerfile 当前按 `pyproject.toml` 的版本范围安装依赖，构建不读取 `uv.lock`；锁文件仍随源码包提供给主机侧 `uv` 使用。2026-10-09 的镜像构建已成功，但未来依赖解析可能变化。
 
@@ -123,12 +123,22 @@ docker compose -p riskshield-demo down
 
 ## 已验证范围
 
-此前本机 Docker 验证包括构建、健康检查、Web 到 API、离线案例任务、五模块报告、预警以及停止后再次启动的数据持久化。入口容器仍有默认路由，完整容器出口隔离、真实通知和目标域内部署均未验证。详细运行证据保留在本机忽略目录及既有 Git 历史中；当前源码提交不包含这些产物。验收结论见[测试与运行报告](test-report.md)。
+此前本机 Docker 验证包括构建、健康检查、Web 到 API、离线案例任务、五模块报告、预警以及停止后再次启动的数据持久化。2026-10-12 的更新增加了容器内出口限制并通过针对性 TCP/DNS 探测；这不是 Docker Desktop 宿主/虚拟机的全流量审计，也不证明目标域部署、真实通知或正式命题指标。详细运行证据保留在本机忽略目录及既有 Git 历史中；源码提交不包含这些产物。验收结论见[测试与运行报告](test-report.md)。
 
-### 2026-10-12 当前源码复验
+### 2026-10-12 初始出口观察（提交 `f857ea1`）
 
 在源码提交 `303cc0cbfa7607375c1e90bb9ee975146514d776` 上，使用 Docker Desktop 4.79.0、Engine 29.5.3 和独立 Compose 项目 `riskshield-alerting` 成功构建镜像 `riskshield:day4-local`（镜像 ID `sha256:83d8fa12111d28c554224bb853fb5d5b3a6e4ee4402a26df8fbef0e2e1292616`）。API `/health` 返回成功，Web 首页返回 HTTP 200。通过 API 导入仓库内固定历史案例并执行 10 Agent × 3 轮离线任务，30/30 决策有效；执行模式为 `offline_dynamic_substitute`，应用账本为 0 次模型调用、0 次网络请求。任务生成五模块报告和蓝色暂定预警；企微、邮件均仅生成 `dry_run` 预览。停止再启动 Compose 服务后，任务、报告、预警 JSON 内容的 SHA-256 均保持一致。以上结果只证明本机工程闭环，不代表真实模型、真实通知或正式业务指标达标。
 
-该提交的 Compose 网络观测结果如下：API 与 Web 只连接 `internal: true` 的 default 网络，容器没有默认路由；从二者向 `1.1.1.1:443` 的 TCP 连接不可达，`example.com` 的外部 DNS 查询失败。`local_gateway` 另接未设为 internal 的 `host_ingress`，容器有默认路由；同一 TCP 探测成功，外部 DNS 查询也成功，因此当前配置**允许入口网关出站**。
+该基线的 Compose 网络观测结果如下：API 与 Web 只连接 `internal: true` 的 default 网络，容器没有默认路由；从二者向 `1.1.1.1:443` 的 TCP 连接不可达，`example.com` 的外部 DNS 查询失败。`local_gateway` 另接未设为 internal 的 `host_ingress`，容器有默认路由；同一 TCP 探测成功，外部 DNS 查询也成功，因此当时的配置允许入口网关出站。
 
-两个一次性网络试验没有得到可采用的 Compose-only 修复：普通桥接网络设置 `com.docker.network.bridge.enable_ip_masquerade=false` 后，外部 TCP 与 DNS 仍成功；改为仅连接 `internal: true` 网络时，已发布的 loopback 端口没有映射，HTTP 无法访问，因此不能直接用它替换当前入口网络。当前配置保留本机入口功能，同时明确记录网关可出站；本次探测不等于完整抓包或主机防火墙审计，不能据此声称整个容器组数据不出域。
+两个一次性网络试验没有得到仅靠网络模式配置的可用修复：普通桥接网络设置 `com.docker.network.bridge.enable_ip_masquerade=false` 后，外部 TCP 与 DNS 仍成功；仅连接 `internal: true` 网络时，已发布的 loopback 端口不可访问。
+
+### 2026-10-12 网关移除默认路由复验
+
+`local_gateway` 现在通过 [local_gateway.py](../../src/riskshield/local_gateway.py) 在启动时删除容器网络命名空间中的 IPv4 默认路由，若检测到活动 IPv6 默认路由则拒绝启动；随后清空网关进程的 capability bounding/effective/permitted 集并切换到 UID/GID 10001。Compose 给网关配置的 capability 限于 `NET_ADMIN`、`SETUID`、`SETGID`、`SETPCAP`，并启用 `no-new-privileges`。网关 DNS 上游设为 `127.0.0.1`，外部域名查询失败，Compose 内部 `api`/`web` 服务名解析仍成功。API/Web 继续只连接 `internal: true` 网络。入口发布仍仅为 `127.0.0.1:28000→8000` 与 `127.0.0.1:28501→8501`。
+
+在独立 Compose 项目和原 `riskshield-alerting` 项目中均观察到：三个容器对 `1.1.1.1:443` 的 IPv4 TCP 连接不可达；网关 IPv6 TCP 连接不可达；三个容器对 `example.com` 的 DNS 查询失败。API `/health` 成功、Web HTTP 200；独立项目的固定历史案例完成 10 Agent × 3 轮、30/30 有效决策，`offline_dynamic_substitute`、`model_calls=0`、`network_requests=0`。停止再启动后，任务哈希不变。原 `riskshield-alerting` 命名卷保留，既有 job/report/alert 响应哈希与应用后相同。
+
+标准 `docker compose build` 本次因 Docker Hub `auth.docker.io` 基础镜像令牌请求超时而未完成。运行复验镜像由此前本机镜像 `sha256:83d8fa…` 派生，只复制了新网关模块，ID 为 `sha256:6fbc6a…`；旧镜像另保留为 `riskshield:day4-baseline-20261012`。因此，当前源码的干净基础镜像构建仍待网络可用时复核。
+
+这些观测只覆盖容器网络命名空间中的默认路由、特定公网 TCP/DNS 探测和 Compose 入口行为；没有审计 Docker Desktop Linux 虚拟机/Windows 宿主防火墙、所有目标/协议、宿主服务代理或完整抓包。容器配置的 capability 仍可由有 Docker daemon 管理权限的操作者用于启动额外进程；该权限属于可信控制面。不能据此宣称整个主机或目标域已实现“数据不出域”。真实通知、模型调用、联网采集和外部部署均未执行，G3/G4/G5 状态不变。
