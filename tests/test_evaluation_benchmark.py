@@ -1386,6 +1386,68 @@ def test_a_direction_adjudication_record_is_validated_before_it_is_trusted(tmp_p
         bench.attach_direction_adjudications([unit], "direction/not-an-adjudication.json", root)
 
 
+def test_metrics_are_reported_for_each_declared_split(tmp_path):
+    """The development set and the final evaluation set must be readable apart.
+
+    A split that is only recorded per unit, and never scored per split, cannot
+    show that anything was reserved -- which is the whole point of reserving it.
+    """
+    unit_ids = ["exp_u1", "exp_u2", "exp_u3", "exp_u4"]
+    root = _fixture_root(tmp_path, unit_ids)
+    _expansion_documents(root, unit_ids)
+    _permission_record(root, unit_ids)
+    units = bench.load_expansion_units(root, _expansion_cohort(unit_ids))
+    for unit in units:
+        unit["_root"] = str(root)
+    _write_predictions(root, units)
+
+    report = bench.run_benchmark(_expansion_config(unit_ids), root)
+
+    by_split = report["formal_combined"]["metrics_by_split"]
+    assert set(by_split) == {"development_set", "final_evaluation_set"}
+    for block in by_split.values():
+        assert block["metrics"]["sentiment_three_class"]["denominator"] == len(block["unit_ids"])
+    total = sum(len(block["unit_ids"]) for block in by_split.values())
+    assert total == report["formal_combined"]["metrics"]["sentiment_three_class"]["denominator"]
+    assert "not a substitute for the split that was reserved" in (
+        report["formal_combined"]["metrics_by_split_note"])
+
+
+def test_a_direction_cohort_reports_its_splits_separately(tmp_path):
+    root = _fixture_root(tmp_path, [])
+    _trajectory_root(tmp_path, ["evt-1", "evt-2"])
+    _direction_submissions(root, ["evt-1", "evt-2"],
+                           {"evt-1": "escalation", "evt-2": "calming"})
+    payload = _config(["u1"])
+    payload["cohorts"] = [_trajectory_cohort(["evt-1", "evt-2"])]
+
+    report = bench.run_benchmark(payload, root)
+
+    by_split = report["formal_combined_direction"]["metrics_by_split"]
+    assert set(by_split) == {"holdout"}
+    assert by_split["holdout"]["metrics"]["direction_agreement"]["denominator"] == 2
+
+
+def test_the_frozen_units_are_reported_as_unassigned_rather_than_given_a_split(tmp_path, monkeypatch):
+    """The frozen set predates the split rule, and inventing one now would be post hoc.
+
+    Applying the hash rule retroactively would partition material that has already
+    been scored, and a later claim about a reserved split would then rest on a
+    boundary drawn after the fact. It is reported as unassigned instead.
+    """
+    root = _fixture_root(tmp_path, ["u1"])
+    _permission_record(root, ["u1"])
+    unit = _fixture_unit(root, 0, "u1")
+    _write_predictions(root, [unit])
+    _install_units(monkeypatch, [unit])
+
+    report = bench.run_benchmark(_config(["u1"]), root)
+
+    by_split = report["formal_combined"]["metrics_by_split"]
+    assert list(by_split) == ["unassigned"]
+    assert by_split["unassigned"]["unit_ids"] == ["u1"]
+
+
 # --------------------------------------------------------------------------
 # group 7: the command line contract
 # --------------------------------------------------------------------------

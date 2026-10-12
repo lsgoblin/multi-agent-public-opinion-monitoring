@@ -1616,12 +1616,25 @@ def evaluate_combined_direction(cohorts: list[dict[str, Any]], *, root: Path,
         units, dataset_version=dataset_version, label_version=label_version,
         evidence_root=root, package_relative=package_relative)
     consistency = assert_direction_denominator_matches(units, metrics)
+    by_split: dict[str, Any] = {}
+    for split in sorted({unit.get("split") or "holdout" for unit in units}):
+        members = [unit for unit in units if (unit.get("split") or "holdout") == split]
+        _, _, split_metrics = score_trajectory_set(
+            members, dataset_version=dataset_version, label_version=label_version,
+            evidence_root=root, package_relative=package_relative)
+        by_split[split] = {"event_ids": sorted(unit["unit_id"] for unit in members),
+                           "metrics": split_metrics}
     return {
         "dataset_version": dataset_version,
         "label_version": label_version,
         "unit_ids": sorted(unit["unit_id"] for unit in units),
         "contributing_cohorts": sorted(cohort["cohort_id"] for cohort in cohorts),
         "metrics": metrics,
+        "metrics_by_split": by_split,
+        "metrics_by_split_note": (
+            "the declared splits are scored separately so the final evaluation set can be read on "
+            "its own. The combined number above spans both and is not a substitute for the split "
+            "that was reserved"),
         "consistency_check": consistency,
     }
 
@@ -1651,12 +1664,27 @@ def evaluate_combined(cohorts: list[dict[str, Any]], *, root: Path,
         evidence_root=root, cutoffs_document=cutoffs_document,
         admitted_by_unit=admitted_by_unit, predictions_document="")
     consistency = assert_denominator_matches(units, all_excluded, metrics)
+    by_split: dict[str, Any] = {}
+    for split in sorted({unit.get("dataset_split") or "unassigned" for unit in units}):
+        members = [unit for unit in units
+                   if (unit.get("dataset_split") or "unassigned") == split]
+        _, _, split_metrics = score_units(
+            members, dataset_version=dataset_version, label_version=label_version,
+            evidence_root=root, cutoffs_document=cutoffs_document,
+            admitted_by_unit=admitted_by_unit, predictions_document="")
+        by_split[split] = {"unit_ids": sorted(unit["unit_id"] for unit in members),
+                           "metrics": split_metrics}
     return {
         "dataset_version": dataset_version,
         "label_version": label_version,
         "unit_ids": sorted(unit["unit_id"] for unit in units),
         "contributing_cohorts": sorted(cohort["cohort_id"] for cohort in cohorts),
         "metrics": metrics,
+        "metrics_by_split": by_split,
+        "metrics_by_split_note": (
+            "the declared splits are scored separately so the final evaluation set can be read on "
+            "its own. The combined number above spans both and is not a substitute for the split "
+            "that was reserved"),
         "consistency_check": consistency,
     }
 
