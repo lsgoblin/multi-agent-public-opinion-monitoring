@@ -883,6 +883,239 @@ def test_an_expansion_unit_without_a_permission_entry_is_excluded(tmp_path):
 
 
 # --------------------------------------------------------------------------
+# group 10: the trajectory track
+# --------------------------------------------------------------------------
+
+TRAJ_CUTOFF = "2024-03-01T00:00:00Z"
+
+
+def _seal_event(root: Path, run_dir: str, event_id: str, *, leak: int = 0,
+                query: str = "Example Insurer") -> dict:
+    base = f"trajectory/{run_dir}"
+    evidence = {
+        "event_id": event_id,
+        "subject": event_id,
+        "event_deduplication": "one controversy",
+        "cutoff": TRAJ_CUTOFF,
+        "cutoff_basis": "fixture",
+        "baseline_window_utc": ["2024-02-23T00:00:00Z", TRAJ_CUTOFF],
+        "observation_window_utc": [TRAJ_CUTOFF, "2024-03-09T00:00:00Z"],
+        "baseline_daily_series": {
+            "2024-02-23": {"story": {"nb_hits": 2}, "comment": {"nb_hits": 5}},
+            "2024-02-24": {"story": {"nb_hits": 1}, "comment": {"nb_hits": 3}},
+        },
+        "source": {"source_family": "Hacker News",
+                   "endpoint": "https://hn.algolia.com/api/v1/search_by_date",
+                   "query": query, "numeric_filter": "fixture"},
+        "title_screen_applied": False,
+    }
+    sealed_document = {**evidence, "baseline_totals": {"stories": 3, "comments": 8},
+                       "baseline_is_empty": False, "frame_document": "trajectory/frame.json"}
+    _write(root, f"{base}/sealed-input-v1.json", sealed_document)
+    evidence_digest = hashlib.sha256(
+        json.dumps(evidence, ensure_ascii=False, sort_keys=True,
+                   separators=(",", ":")).encode("utf-8")).hexdigest()
+    _write(root, f"{base}/input-freeze-record-v1.json", {
+        "schema": "riskshield.data_evaluation.trajectory_input_freeze.v1",
+        "event_id": event_id, "frozen_at": "2024-03-01T00:00:00Z",
+        "sealed_evidence_sha256": evidence_digest,
+        "sealed_input_path": f"{base}/sealed-input-v1.json",
+        "baseline_days_fetched": 2,
+        "observation_days_fetched_in_phase_1": leak,
+        "observation_leak_days": ["2024-03-02"] if leak else [],
+        "predictor_saw_only_the_baseline_window": leak == 0,
+    })
+    _write(root, f"{base}/prediction-v1.json", {
+        "schema": "riskshield.data_evaluation.trajectory_prediction.v1",
+        "event_id": event_id, "task_type": "event_direction",
+        "label": "escalation", "reason": "fixture",
+        "execution_mode": "formal_model_run_v1",
+        "method_version": "fixture-direction-v1",
+        "run_id": f"run_fixture_{event_id}",
+        "predicted_at": "2024-03-01T00:00:00Z",
+        "input_binding": {"sealed_input_path": f"{base}/sealed-input-v1.json",
+                          "sealed_evidence_sha256": evidence_digest,
+                          "frozen_at": "2024-03-01T00:00:00Z"},
+        "labels_accessed": False, "outcomes_accessed": False,
+    })
+    return {"run_dir": run_dir, "event_id": event_id,
+            "subject": event_id, "query": query, "cutoff": TRAJ_CUTOFF}
+
+
+def _trajectory_root(tmp_path: Path, event_ids: list[str], **seal_overrides) -> Path:
+    events = [_seal_event(tmp_path, f"event-{index + 1}", event_id, **seal_overrides)
+              for index, event_id in enumerate(event_ids)]
+    _write(tmp_path, "trajectory/frame.json",
+           {"schema": "riskshield.data_evaluation.trajectory_event_frame.v1",
+            "events": events})
+    return tmp_path
+
+
+def _direction_submissions(root: Path, event_ids: list[str], labels: dict[str, str]) -> None:
+    _write(root, "direction/pass-a.json",
+           {"annotator_id": "leo", "prediction_exposure": False,
+            "saw_other_annotator_answer": False,
+            "units": [{"unit_id": event_id, "direction_label": labels[event_id]}
+                      for event_id in event_ids]})
+    _write(root, "direction/pass-b.json",
+           {"annotator_id": "dick", "prediction_exposure": False,
+            "saw_other_annotator_answer": False,
+            "records": [{"unit_id": event_id, "direction_label": labels[event_id]}
+                        for event_id in event_ids]})
+
+
+def _trajectory_cohort(event_ids: list[str], **overrides) -> dict:
+    cohort = {
+        "cohort_id": "trajectory",
+        "unit_source": "trajectory_event_frame",
+        "dataset_version": "trajectory-v1",
+        "label_version": "trajectory-labels-v1",
+        "event_frame": "trajectory/frame.json",
+        "event_root": "trajectory",
+        "annotation_sources": [{"path": "direction/pass-a.json"},
+                               {"path": "direction/pass-b.json"}],
+        "expected_gated_unit_ids": sorted(event_ids),
+        "outputs_dir": "out/run",
+    }
+    cohort.update(overrides)
+    return cohort
+
+
+def test_the_trajectory_loader_builds_one_unit_per_sealed_event(tmp_path):
+    root = _trajectory_root(tmp_path, ["evt-1", "evt-2"])
+
+    units = bench.trajectory_units(root, _trajectory_cohort(["evt-1", "evt-2"]))
+
+    assert [unit["unit_id"] for unit in units] == ["evt-1", "evt-2"]
+    assert units[0]["cutoff"] == TRAJ_CUTOFF
+    assert units[0]["visible_at"] == TRAJ_CUTOFF
+    assert units[0]["source_version"].endswith("/chat/completions") is False
+    assert units[0]["publisher"] == "Hacker News (Algolia daily series)"
+    assert units[0]["human_direction_label"] is None
+
+
+def test_the_trajectory_loader_refuses_an_event_with_no_sealed_input(tmp_path):
+    root = _trajectory_root(tmp_path, ["evt-1"])
+    (root / "trajectory/event-1/sealed-input-v1.json").unlink()
+
+    with pytest.raises(bench.BenchmarkConfigError, match="no sealed input"):
+        bench.trajectory_units(root, _trajectory_cohort(["evt-1"]))
+
+
+def test_the_trajectory_loader_refuses_an_event_that_leaked_the_observation_window(tmp_path):
+    root = _trajectory_root(tmp_path, ["evt-1"], leak=1)
+
+    with pytest.raises(bench.BenchmarkConfigError, match="not ex-ante"):
+        bench.trajectory_units(root, _trajectory_cohort(["evt-1"]))
+
+
+def test_direction_labels_attach_only_when_blind_and_distinct(tmp_path):
+    root = _trajectory_root(tmp_path, ["evt-1"])
+    _direction_submissions(root, ["evt-1"], {"evt-1": "calming"})
+    units = bench.trajectory_units(root, _trajectory_cohort(["evt-1"]))
+
+    report = bench.attach_direction_labels(units, _trajectory_cohort(["evt-1"])["annotation_sources"],
+                                           root)
+
+    assert report["units"]["evt-1"]["attached"] == 2
+    assert units[0]["human_direction_label"] == "calming"
+    assert bench.trajectory_direction_gate(units[0])["reasons"] == [
+        "no_admitted_formal_direction_prediction"]
+
+
+def test_a_repeated_direction_annotator_is_not_counted_twice(tmp_path):
+    root = _trajectory_root(tmp_path, ["evt-1"])
+    _write(root, "direction/pass-a.json",
+           {"annotator_id": "leo", "prediction_exposure": False,
+            "saw_other_annotator_answer": False,
+            "units": [{"unit_id": "evt-1", "direction_label": "calming"}]})
+    _write(root, "direction/pass-b.json",
+           {"annotator_id": "leo", "prediction_exposure": False,
+            "saw_other_annotator_answer": False,
+            "records": [{"unit_id": "evt-1", "direction_label": "calming"}]})
+    units = bench.trajectory_units(root, _trajectory_cohort(["evt-1"]))
+
+    bench.attach_direction_labels(units, _trajectory_cohort(["evt-1"])["annotation_sources"], root)
+
+    assert len(units[0]["direction_annotations"]) == 1
+    assert units[0]["direction_annotation_exclusions"] == ["annotator_ids_not_distinct_in_pass-b"]
+
+
+def test_a_stable_human_label_is_reported_not_mapped_onto_two_labels(tmp_path):
+    root = _trajectory_root(tmp_path, ["evt-1"])
+    _direction_submissions(root, ["evt-1"], {"evt-1": "stable"})
+    units = bench.trajectory_units(root, _trajectory_cohort(["evt-1"]))
+    bench.attach_direction_labels(units, _trajectory_cohort(["evt-1"])["annotation_sources"], root)
+
+    reasons = bench.trajectory_direction_gate(units[0])["reasons"]
+
+    assert "human_direction_label_outside_the_engine_label_space" in reasons
+
+
+def test_a_disagreeing_direction_pair_is_excluded(tmp_path):
+    root = _trajectory_root(tmp_path, ["evt-1"])
+    _write(root, "direction/pass-a.json",
+           {"annotator_id": "leo", "prediction_exposure": False,
+            "saw_other_annotator_answer": False,
+            "units": [{"unit_id": "evt-1", "direction_label": "calming"}]})
+    _write(root, "direction/pass-b.json",
+           {"annotator_id": "dick", "prediction_exposure": False,
+            "saw_other_annotator_answer": False,
+            "records": [{"unit_id": "evt-1", "direction_label": "escalation"}]})
+    units = bench.trajectory_units(root, _trajectory_cohort(["evt-1"]))
+    bench.attach_direction_labels(units, _trajectory_cohort(["evt-1"])["annotation_sources"], root)
+
+    assert "direction_labels_disagree_no_adjudication" in \
+        bench.trajectory_direction_gate(units[0])["reasons"]
+
+
+def test_trajectory_predictions_pass_through_the_same_admission_point(tmp_path):
+    root = _trajectory_root(tmp_path, ["evt-1", "evt-2"])
+    units = bench.trajectory_units(root, _trajectory_cohort(["evt-1", "evt-2"]))
+
+    outcome = bench.admit_trajectory_predictions(units, root, "out/run")
+
+    assert outcome["admission"]["counts"] == {"rows": 2, "admitted": 2, "rejected": 0,
+                                              "unmatched": 0}
+    assert all(unit["prediction"]["admitted"] for unit in units)
+    assert (root / outcome["package_relative"]).is_file()
+    assert outcome["admission"]["task_type"] == "event_direction"
+
+
+def test_the_trajectory_track_scores_its_own_denominator(tmp_path):
+    event_ids = ["evt-1", "evt-2"]
+    root = _trajectory_root(tmp_path, event_ids)
+    _direction_submissions(root, event_ids, {"evt-1": "escalation", "evt-2": "escalation"})
+    cohort = _trajectory_cohort(event_ids)
+    units = bench.trajectory_units(root, cohort)
+    bench.attach_direction_labels(units, cohort["annotation_sources"], root)
+    admission = bench.admit_trajectory_predictions(units, root, cohort["outputs_dir"])
+    gated = [unit for unit in units if bench.trajectory_direction_gate(unit)["passed"]]
+    assert len(gated) == 2
+
+    _, _, metrics = bench.score_trajectory_set(
+        gated, dataset_version="trajectory-v1", label_version="trajectory-labels-v1",
+        evidence_root=root, package_relative=admission["package_relative"])
+    consistency = bench.assert_direction_denominator_matches(gated, metrics)
+
+    assert metrics["direction_agreement"]["denominator"] == 2
+    assert metrics["direction_agreement"]["numerator"] == 2
+    assert metrics["sentiment_three_class"]["denominator"] == 0
+    assert metrics["sentiment_three_class"]["undefined_reason"]
+    assert consistency["admitted_equals_scored"] is True
+    assert consistency["engine_scored_event_ids"] == event_ids
+
+
+def test_the_direction_denominator_invariant_rejects_a_mismatch():
+    units = [{"event_id": "evt-1"}]
+    metrics = {"direction_agreement": {"scored_events": [], "sample_size_events": 0,
+                                       "denominator": 0}}
+
+    with pytest.raises(bench.BenchmarkInvariantError, match="different event set"):
+        bench.assert_direction_denominator_matches(units, metrics)
+
+
+# --------------------------------------------------------------------------
 # group 7: the command line contract
 # --------------------------------------------------------------------------
 

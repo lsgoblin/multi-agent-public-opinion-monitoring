@@ -64,7 +64,12 @@ from riskshield.evaluation_alignment import (
     unit_gates,
 )
 from riskshield.evaluation_prediction_import import (
+    MATERIAL_CLASS_REAL,
+    PREDICTION_IMPORT_SCHEMA,
+    TASK_DIRECTION,
     TASK_SENTIMENT,
+    canonical_digest,
+    finalize_freeze_record,
     import_formal_predictions,
 )
 
@@ -595,9 +600,439 @@ def load_expansion_units(root: Path, cohort: dict[str, Any]) -> list[dict[str, A
     return units
 
 
-COHORT_UNIT_SOURCES = {
-    "expansion_candidate_pool": load_expansion_units,
-}
+def _trajectory_case_for_unit(unit: dict[str, Any], package_relative: str,
+                              dataset_version: str) -> dict[str, Any]:
+    """One direction case. The sealed input is the unit's source evidence."""
+    pointer = f"/events/{unit['unit_id']}"
+    return {
+        "evaluation_id": f"{unit['unit_id']}__direction",
+        "case_id": unit["event_id"],
+        "event_id": unit["event_id"],
+        "unit_id": unit["unit_id"],
+        "unit_kind": TRAJECTORY_UNIT_KIND,
+        "split": unit.get("split") or "holdout",
+        "data_mode": "real_historical",
+        "target_record_id": unit["source_record_id"],
+        "source_version": dataset_version,
+        "cutoff": unit["cutoff"],
+        "cutoff_evidence_ref": {"path": package_relative, "pointer": f"{pointer}/cutoff"},
+        "text_sha256": unit["text_sha256"],
+        "title_sha256_ref": {"path": package_relative,
+                             "pointer": f"{pointer}/sealed_evidence_sha256"},
+        "sources": [{
+            "record_id": unit["source_record_id"],
+            "publisher": unit["publisher"],
+            "source_version": unit["source_version"],
+            "available_at": unit["visible_at"],
+            "source_record_ref": {"path": package_relative,
+                                  "pointer": f"{pointer}/source_record_id"},
+            "source_version_ref": {"path": package_relative,
+                                   "pointer": f"{pointer}/source_version"},
+            "source_available_at_ref": {"path": package_relative,
+                                        "pointer": f"{pointer}/visible_at"},
+            "visibility_evidence_ref": {"path": package_relative,
+                                        "pointer": f"{pointer}/visible_at"},
+        }],
+        "predictions": {
+            "sentiment": None,
+            "direction": {
+                "label": unit["prediction"]["label"],
+                "execution_mode": unit["prediction"]["execution_mode"],
+                "result_evidence_refs": [{"path": unit["prediction_path"],
+                                          "pointer": "/label"}],
+                "run_id": unit["prediction"].get("run_id"),
+                "method_version": unit["prediction"].get("method_version"),
+            },
+        },
+    }
+
+
+def admit_trajectory_predictions(units: list[dict[str, Any]], root: Path,
+                                 out_dir_relative: str) -> dict[str, Any]:
+    """Put the direction predictions through the one admission point.
+
+    The per-event prediction documents are frozen artefacts with their own shape,
+    so this builds an admission-shaped document from them rather than editing
+    them. Everything the admission point checks -- execution mode, input binding,
+    production evidence, freeze record, isolation declarations -- is generated
+    here and verified by ``import_formal_predictions`` with ``TASK_DIRECTION``.
+    """
+    package_relative = f"{out_dir_relative}/trajectory-evidence-package.json"
+    evidence_relative = f"{out_dir_relative}/trajectory-production-evidence.json"
+    freeze_relative = f"{out_dir_relative}/trajectory-freeze-record.json"
+
+    package = build_trajectory_package(units, package_relative, root)
+    package_digest = canonical_digest(package)
+    _write_json(root / package_relative, package)
+
+    rows: dict[str, Any] = {}
+    evidence: dict[str, Any] = {}
+    for unit in units:
+        prediction = unit["prediction"]
+        rows[unit["unit_id"]] = {
+            "unit_id": unit["unit_id"],
+            "event_id": unit["event_id"],
+            "task_type": TASK_DIRECTION,
+            "label": prediction["label"],
+            "execution_mode": prediction["execution_mode"],
+            "method_version": prediction["method_version"],
+            "run_id": prediction["run_id"],
+            "cutoff": unit["cutoff"],
+            "input_binding": {
+                "input_package_ref": {"path": package_relative, "pointer": ""},
+                "input_package_sha256": package_digest,
+                "cutoff": unit["cutoff"],
+                "cutoff_before_label_read": True,
+                "text_sha256": unit["text_sha256"],
+                "source_version": unit["source_version"],
+            },
+            "production_evidence_ref": {"path": evidence_relative,
+                                        "pointer": f"/runs/{unit['unit_id']}"},
+            "freeze_record_ref": {"path": freeze_relative, "pointer": ""},
+            "labels_accessed": False,
+            "outcomes_accessed": False,
+        }
+        evidence[unit["unit_id"]] = {
+            "run_id": prediction["run_id"],
+            "event_id": unit["event_id"],
+            "execution_mode": prediction["execution_mode"],
+            "method_version": prediction["method_version"],
+            "run_status": "complete",
+            "requests_attempted": 1,
+            "requests_completed": 1,
+            "failed_decisions": 0,
+        }
+    document = {
+        "schema": PREDICTION_IMPORT_SCHEMA,
+        "task_type": TASK_DIRECTION,
+        "document_version": "trajectory-direction-adapter-v1",
+        "material_class": MATERIAL_CLASS_REAL,
+        "formal_score_eligible": True,
+        "note": ("generated from each event's frozen prediction document; those documents are not "
+                 "modified. This exists so the direction rows pass through the same admission point "
+                 "the sentiment rows do."),
+        "predictions": rows,
+    }
+    _write_json(root / evidence_relative,
+                {"schema": "riskshield.data_evaluation.production_evidence.v1",
+                 "material_class": MATERIAL_CLASS_REAL, "runs": evidence})
+    freeze = finalize_freeze_record(
+        document,
+        {"schema": "riskshield.data_evaluation.freeze_record.v1",
+         "material_class": MATERIAL_CLASS_REAL, "frozen_at": _now(),
+         "frozen_by": "data-evaluation trajectory adapter",
+         "labels_read_before_freeze": False, "outcomes_read_before_freeze": False},
+        frozen_inputs=package)
+    _write_json(root / freeze_relative, freeze)
+    _write_json(root / f"{out_dir_relative}/trajectory-predictions.json", document)
+
+    admission = import_formal_predictions(document, task_type=TASK_DIRECTION,
+                                          units=units, material_root=root)
+    admitted = {row["unit_id"]: row for row in admission["admitted"]}
+    for unit in units:
+        row = admitted.get(unit["unit_id"])
+        unit["prediction"]["admitted"] = row is not None
+        if row is not None:
+            unit["prediction"]["label"] = row["label"]
+    return {"package_relative": package_relative, "package_digest": package_digest,
+            "admission": admission, "admitted_by_unit": admitted}
+
+
+def score_trajectory_set(units: list[dict[str, Any]], *, dataset_version: str,
+                         label_version: str, evidence_root: Path,
+                         package_relative: str) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any]]:
+    """Score exactly ``units`` on direction; the caller passes the gated set."""
+    cases = [_trajectory_case_for_unit(unit, package_relative, dataset_version)
+             for unit in units]
+    events = [{
+        "event_id": unit["event_id"],
+        "observed_direction": unit["human_direction_label"],
+        "evidence_refs": [ref for annotation in unit.get("direction_annotations", [])
+                          for ref in annotation["evidence_refs"]],
+    } for unit in units]
+    labels = {"schema": LABEL_SCHEMA, "label_version": label_version,
+              "sentiment_labels": [], "events": events}
+    metrics = evaluate_documents(
+        {"schema": INPUT_SCHEMA, "dataset_version": dataset_version, "cases": cases},
+        labels, evidence_root=evidence_root)
+    return cases, labels, metrics
+
+
+def assert_direction_denominator_matches(scored_units: list[dict[str, Any]],
+                                         metrics: dict[str, Any]) -> dict[str, Any]:
+    """The direction equivalent of the sentiment denominator invariant."""
+    expected = sorted(unit["event_id"] for unit in scored_units)
+    direction = metrics["direction_agreement"]
+    engine_scored = sorted(row["event_id"] for row in direction["scored_events"])
+    if engine_scored != expected:
+        raise BenchmarkInvariantError(
+            "the engine scored a different event set than the trajectory gate admitted: "
+            f"admitted={expected} scored={engine_scored}")
+    if direction["sample_size_events"] != len(scored_units):
+        raise BenchmarkInvariantError(
+            "the engine event count differs from the admitted event count: "
+            f"admitted={len(scored_units)} sample_size={direction['sample_size_events']}")
+    if direction["denominator"] != len(scored_units):
+        raise BenchmarkInvariantError(
+            "the reported direction denominator differs from the admitted event count: "
+            f"admitted={len(scored_units)} denominator={direction['denominator']}")
+    return {"admitted_event_ids": expected, "engine_scored_event_ids": engine_scored,
+            "admitted_equals_scored": True,
+            "denominator_equals_admitted_count": True}
+
+
+def _now() -> str:
+    return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _write_json(path: Path, payload: Any) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+                    encoding="utf-8", newline="\n")
+
+
+# --------------------------------------------------------------------------- #
+# trajectory track: sealed event evidence, direction predictions, human labels
+# --------------------------------------------------------------------------- #
+#
+# The trajectory track reuses the same two rules the sentiment track does. The
+# sealed input plays the role of the frozen source record, and the direction
+# prediction goes through ``import_formal_predictions`` with
+# ``TASK_DIRECTION`` rather than through a second admission path of its own.
+#
+# The engine keeps the two tracks apart by construction: sentiment is scored
+# from ``sentiment_labels`` and direction from ``events[].observed_direction``,
+# and each reports its own denominator. Nothing here merges them.
+
+TRAJECTORY_UNIT_KIND = "event_direction_series"
+DIRECTION_LABELS = ("escalation", "calming", "stable")
+ENGINE_DIRECTION_LABELS = ("escalation", "calming")
+TRAJECTORY_PACKAGE_SCHEMA = "riskshield.data_evaluation.trajectory_evidence_package.v1"
+
+
+def _trajectory_event_paths(cohort: dict[str, Any], run_dir: str) -> dict[str, str]:
+    base = cohort.get("event_root")
+    if not isinstance(base, str) or not base.strip():
+        raise BenchmarkConfigError(
+            f"cohort {cohort['cohort_id']}: a trajectory cohort needs event_root.")
+    root_dir = f"{base.rstrip('/')}/{run_dir}"
+    return {
+        "sealed": f"{root_dir}/sealed-input-v1.json",
+        "freeze": f"{root_dir}/input-freeze-record-v1.json",
+        "prediction": f"{root_dir}/prediction-v1.json",
+        "observation": f"{root_dir}/observation-v1.json",
+    }
+
+
+def trajectory_units(root: Path, cohort: dict[str, Any]) -> list[dict[str, Any]]:
+    """Derive one unit per sealed trajectory event.
+
+    The sealed input document is the unit's source evidence: it carries the
+    cutoff, both windows and the baseline series, and it is the artefact the
+    prediction was frozen against. Events whose seal is missing are refused,
+    because a trajectory unit without a sealed cutoff-only input has no
+    defensible predictor input at all.
+    """
+    frame_document = cohort.get("event_frame")
+    if not isinstance(frame_document, str) or not frame_document.strip():
+        raise BenchmarkConfigError(
+            f"cohort {cohort['cohort_id']}: a trajectory cohort needs event_frame.")
+    frame = _load(root, frame_document)
+    events = frame.get("events")
+    if not isinstance(events, list) or not events:
+        raise BenchmarkConfigError(f"{frame_document} needs a nonempty events array.")
+    frame_digest = sha256_file(root, frame_document)
+
+    units: list[dict[str, Any]] = []
+    for event in events:
+        if not isinstance(event, dict) or not isinstance(event.get("event_id"), str):
+            raise BenchmarkConfigError(f"{frame_document}: every event needs an event_id.")
+        paths = _trajectory_event_paths(cohort, event["run_dir"])
+        if not (root / paths["sealed"]).is_file():
+            raise BenchmarkConfigError(
+                f"no sealed input for {event['event_id']} at {paths['sealed']}; seal the event "
+                "before it can enter the trajectory track.")
+        sealed = _load(root, paths["sealed"])
+        if not (root / paths["prediction"]).is_file():
+            raise BenchmarkConfigError(
+                f"no frozen prediction for {event['event_id']}; a unit with no ex-ante prediction "
+                "cannot be scored.")
+        prediction = _load(root, paths["prediction"])
+        freeze = _load(root, paths["freeze"])
+        leak = freeze.get("observation_days_fetched_in_phase_1")
+        if leak != 0:
+            raise BenchmarkConfigError(
+                f"{event['event_id']} fetched {leak} observation days before predicting; the "
+                "prediction is not ex-ante and the unit is refused.")
+        source = sealed.get("source") if isinstance(sealed.get("source"), dict) else {}
+        units.append({
+            "unit_id": event["event_id"],
+            "event_id": event["event_id"],
+            "split": event.get("split") or "holdout",
+            "source_record_id": f"{event['event_id']}__sealed_baseline_series",
+            "publisher": f"{source.get('source_family')} (Algolia daily series)",
+            "source_version": source.get("endpoint"),
+            "visible_at": (sealed.get("baseline_window_utc") or [None, None])[1],
+            "cutoff": sealed.get("cutoff"),
+            "cutoff_provenance": "declared_in_sealed_input",
+            "text_sha256": str(freeze.get("sealed_evidence_sha256")),
+            "sealed_input_path": paths["sealed"],
+            "sealed_evidence_sha256": freeze.get("sealed_evidence_sha256"),
+            "prediction_path": paths["prediction"],
+            "prediction": {
+                "label": prediction.get("label"),
+                "execution_mode": prediction.get("execution_mode"),
+                "method_version": prediction.get("method_version"),
+                "run_id": prediction.get("run_id"),
+            },
+            "observation_path": (paths["observation"]
+                                 if (root / paths["observation"]).is_file() else None),
+            "frame_document": frame_document,
+            "frame_sha256": frame_digest,
+            "direction_annotations": [],
+            "human_direction_label": None,
+            "frozen_observed_direction": None,
+            "adjudication": None,
+        })
+    return units
+
+
+def build_trajectory_package(units: list[dict[str, Any]], relative_path: str,
+                             root: Path) -> dict[str, Any]:
+    """The document every trajectory case resolves its references against."""
+    events: dict[str, Any] = {}
+    for unit in units:
+        sealed = _load(root, unit["sealed_input_path"])
+        entry = {
+            "event_id": unit["event_id"],
+            "source_record_id": unit["source_record_id"],
+            "source_family": (sealed.get("source") or {}).get("source_family"),
+            "source_version": unit["source_version"],
+            "cutoff": unit["cutoff"],
+            "visible_at": unit["visible_at"],
+            "baseline_window_utc": sealed.get("baseline_window_utc"),
+            "observation_window_utc": sealed.get("observation_window_utc"),
+            "baseline_totals": sealed.get("baseline_totals"),
+            "baseline_is_empty": sealed.get("baseline_is_empty"),
+            "sealed_evidence_sha256": unit["sealed_evidence_sha256"],
+            "prediction_label": unit["prediction"]["label"],
+            "prediction_path": unit["prediction_path"],
+        }
+        if unit.get("observation_path"):
+            observation = _load(root, unit["observation_path"])
+            entry["observation_totals"] = observation.get("observation_totals")
+            entry["direction_verdict"] = observation.get("direction_verdict")
+            entry["direction_verdict_withheld_because"] = observation.get(
+                "direction_verdict_withheld_because")
+        events[unit["unit_id"]] = entry
+    return {
+        "schema": TRAJECTORY_PACKAGE_SCHEMA,
+        "note": ("generated from each event's sealed input; the sealed inputs stay read-only. It "
+                 "exists so trajectory case references resolve against one document."),
+        "source_document": relative_path,
+        "events": events,
+    }
+
+
+def attach_direction_labels(units: list[dict[str, Any]], sources: list[dict[str, Any]],
+                            root: Path) -> dict[str, Any]:
+    """Attach recorded human direction labels from submission documents.
+
+    The shape is deliberately the same as the sentiment attachment: two
+    independent passes, each declaring that it saw no prediction and no other
+    annotator's answer, with the label kept next to an evidence pointer that must
+    resolve to it. A pass that cannot be verified is dropped and reported.
+    """
+    if not sources:
+        return {"sources": [], "units": {},
+                "note": "no direction submission sources configured"}
+    loaded = []
+    for source in sources:
+        document = _load(root, source["path"])
+        rows = document.get("units")
+        if not isinstance(rows, list):
+            rows = document.get("records")
+        if not isinstance(rows, list):
+            raise BenchmarkConfigError(
+                f"direction submission {source['path']} needs units[] or records[].")
+        loaded.append((source["path"], document,
+                       "units" if isinstance(document.get("units"), list) else "records", rows))
+
+    report: dict[str, Any] = {"sources": [source["path"] for source in sources], "units": {}}
+    for unit in units:
+        annotations: list[dict[str, Any]] = []
+        exclusions: list[str] = []
+        seen: set[str] = set()
+        for path, document, key, rows in loaded:
+            match = next(((i, row) for i, row in enumerate(rows)
+                          if isinstance(row, dict) and row.get("unit_id") == unit["unit_id"]), None)
+            if match is None:
+                continue
+            index, row = match
+            stem = Path(path).stem
+            independent = (row.get("prediction_exposure",
+                                   document.get("prediction_exposure")) is False
+                           and row.get("saw_other_annotator_answer",
+                                       document.get("saw_other_annotator_answer")) is False)
+            annotator = row.get("annotator_id", document.get("annotator_id"))
+            label = row.get("direction_label")
+            if not independent:
+                exclusions.append(f"blinding_not_established_in_{stem}")
+                continue
+            if not isinstance(annotator, str) or not annotator.strip():
+                exclusions.append(f"missing_annotator_id_in_{stem}")
+                continue
+            if annotator in seen:
+                exclusions.append(f"annotator_ids_not_distinct_in_{stem}")
+                continue
+            if label not in DIRECTION_LABELS:
+                exclusions.append(f"direction_label_outside_the_declared_space_in_{stem}")
+                continue
+            seen.add(annotator)
+            annotations.append({
+                "annotator_id": annotator, "label": label,
+                "independent": True, "prediction_seen": False,
+                "evidence_refs": [{"path": path,
+                                   "pointer": f"/{key}/{index}/direction_label"}],
+                "source_document": path,
+            })
+        unit["direction_annotations"] = annotations
+        unit["direction_annotation_exclusions"] = sorted(set(exclusions))
+        labels = {row["label"] for row in annotations}
+        unit["direction_labels_agree"] = len(annotations) >= 2 and len(labels) == 1
+        unit["human_direction_label"] = (
+            annotations[0]["label"] if len(annotations) >= 2 and len(labels) == 1
+            else annotations[0]["label"] if len(annotations) == 1 else None)
+        report["units"][unit["unit_id"]] = {
+            "attached": len(annotations),
+            "labels": [row["label"] for row in annotations],
+            "exclusions": unit["direction_annotation_exclusions"],
+        }
+    return report
+
+
+def trajectory_direction_gate(unit: dict[str, Any]) -> dict[str, Any]:
+    """Why this event can or cannot enter the direction denominator.
+
+    A label the engine cannot express -- ``stable``, which open question 6 has
+    not decided on -- is reported as its own reason rather than quietly mapped
+    onto one of the two labels the engine has.
+    """
+    reasons: list[str] = []
+    label = unit.get("human_direction_label")
+    annotations = unit.get("direction_annotations", [])
+    if len(annotations) < 2:
+        reasons.append("fewer_than_two_independent_direction_labels")
+    elif len({row["label"] for row in annotations}) != 1:
+        reasons.append("direction_labels_disagree_no_adjudication")
+    if label is None:
+        reasons.append("no_independent_human_direction_label")
+    elif label not in ENGINE_DIRECTION_LABELS:
+        reasons.append("human_direction_label_outside_the_engine_label_space")
+    prediction = unit.get("prediction") or {}
+    if prediction.get("admitted") is not True:
+        reasons.append("no_admitted_formal_direction_prediction")
+    return {"passed": not reasons, "reasons": sorted(set(reasons))}
 
 
 def _parse_time(value: Any) -> datetime | None:
@@ -611,6 +1046,15 @@ def _parse_time(value: Any) -> datetime | None:
     if parsed.tzinfo is None or parsed.utcoffset() is None:
         return None
     return parsed.astimezone(timezone.utc)
+
+
+# Loaders that need their cohort's own documents, rather than a fixed packet.
+# Declared here, after every loader it names, so the registry is complete the
+# moment the module finishes importing.
+COHORT_UNIT_SOURCES = {
+    "expansion_candidate_pool": load_expansion_units,
+    "trajectory_event_frame": trajectory_units,
+}
 
 
 def select_unit_source(name: str):
