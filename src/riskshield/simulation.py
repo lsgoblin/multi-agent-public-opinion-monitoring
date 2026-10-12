@@ -1547,6 +1547,11 @@ class Day3Simulation:
                 db.executemany(
                     "UPDATE simulation_agents SET state=? WHERE run_id=? AND agent_id=?",
                     [(_json(state), run_id, aid) for aid, state in state_by_id.items()])
+                # A round that was previously abandoned left a ledger row behind. Resuming
+                # the run retries that same round, so the stale row must be replaced
+                # rather than colliding with the primary key.
+                db.execute("DELETE FROM simulation_rounds WHERE run_id=? AND round_number=?",
+                           (run_id, round_number))
                 db.execute("INSERT INTO simulation_rounds VALUES (?, ?, ?)",
                            (run_id, round_number, _json(stats)))
                 if over_budget:

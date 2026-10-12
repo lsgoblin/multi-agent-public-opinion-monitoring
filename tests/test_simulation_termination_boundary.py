@@ -264,6 +264,120 @@ def test_an_incomplete_run_is_never_marked_as_a_success_result(tmp_path):
         "账本完整（不代表结果真实或关口通过）")
 
 
+# ------------------------------------------------------- residue and late answers
+
+class LateResponder(PricedSubstitute):
+    """Blocks until released, then produces a perfectly valid decision.
+
+    This is the dangerous shape: the engine already recorded the request as
+    ``deadline_exceeded``, and the worker later really does return a decision.
+    """
+
+    def __init__(self, gate, hold_agents):
+        self.gate = gate
+        self.hold_agents = set(hold_agents)
+        self.returned_after_release = 0
+
+    def decide(self, observation):
+        if observation["agent_id"] in self.hold_agents:
+            self.gate.wait()
+            self.returned_after_release += 1
+        return super().decide(observation)
+
+
+def live_worker_threads():
+    return [t for t in threading.enumerate() if t.name.startswith("riskshield-decision")]
+
+
+def test_repeated_timeouts_do_not_accumulate_threads(tmp_path):
+    """Worker threads are bounded and daemon, so repeated stops cannot pile up."""
+    baseline = len(live_worker_threads())
+    for _ in range(3):
+        _, engine, run_id = make_engine(tmp_path, agents=6, rounds=2, concurrency=3)
+        gate = threading.Event()
+        backend = LateResponder(gate, hold_agents=tuple(
+            f"agent_{index:04d}" for index in range(1, 4)))
+        engine.advance(run_id, backend, collect_performance=True,
+                       call_timeout_seconds=0.1)
+        gate.set()
+        time.sleep(0.05)
+        assert len(live_worker_threads()) <= baseline + 3 + 1
+    assert all(thread.daemon for thread in live_worker_threads())
+
+
+def test_a_late_response_never_touches_the_ledger(tmp_path):
+    """A result arriving after the stop must not reach the run at all."""
+    store, engine, run_id = make_engine(tmp_path, agents=6, rounds=2, concurrency=3)
+    gate = threading.Event()
+    held = tuple(f"agent_{index:04d}" for index in range(1, 4))
+    backend = LateResponder(gate, hold_agents=held)
+    result = engine.advance(run_id, backend, collect_performance=True,
+                            call_timeout_seconds=0.1)
+
+    def snapshot():
+        with store.connect() as db:
+            actions = {row["agent_id"]: dict(row) for row in db.execute(
+                "SELECT agent_id, status, decision, usage, cost_cny FROM "
+                "simulation_actions WHERE run_id=?", (run_id,))}
+            messages = db.execute("SELECT COUNT(*) FROM simulation_messages "
+                                  "WHERE run_id=?", (run_id,)).fetchone()[0]
+            memories = db.execute("SELECT COUNT(*) FROM simulation_memories "
+                                  "WHERE run_id=?", (run_id,)).fetchone()[0]
+        return actions, messages, memories
+
+    before = snapshot()
+    cost_before = result["cost_cny"]
+    # Let the abandoned workers finish; they produce valid decisions that must be dropped.
+    gate.set()
+    time.sleep(0.4)
+    after = snapshot()
+
+    assert backend.returned_after_release == len(held)
+    assert before[0] == after[0], "a late result changed the action ledger"
+    assert before[1] == after[1] and before[2] == after[2], (
+        "a late result wrote messages or memories")
+    for agent_id in held:
+        row = after[0][agent_id]
+        assert row["status"] == "deadline_exceeded"
+        assert row["decision"] is None and row["usage"] is None
+    summary = engine.summary(run_id)
+    assert summary["cost_cny"] == cost_before
+    assert summary["billing"]["cost_reconciles"] is True
+    assert summary["opportunities"]["fully_reconciled"] is True
+
+
+def test_a_stopped_run_can_be_resumed_without_a_ledger_collision(tmp_path):
+    """Retrying an abandoned round must replace its ledger row, not collide with it.
+
+    Regression: the abandoned round leaves a ``simulation_rounds`` row behind, so the
+    resumed attempt hit ``UNIQUE constraint failed: simulation_rounds.run_id,
+    simulation_rounds.round_number``.
+    """
+    store, engine, run_id = make_engine(tmp_path, agents=4, rounds=2, concurrency=2)
+    gate = threading.Event()
+    first = engine.advance(run_id, LateResponder(gate, hold_agents=("agent_0001",)),
+                           collect_performance=True, call_timeout_seconds=0.1)
+    gate.set()
+    time.sleep(0.2)
+    assert first["status"] == "partial"
+
+    # A fresh engine instance proves the retry reads only what was persisted.
+    restarted = Day3Simulation(Store(store.path))
+    second = restarted.advance(run_id, PricedSubstitute(), collect_performance=True)
+    assert second["status"] == "complete"
+    assert second["completed_rounds"] == 2
+    # The abandoned request keeps its own outcome and is not silently retried.
+    assert second["action_counts"].get("deadline_exceeded", 0) == 1
+    assert second["opportunities"]["fully_reconciled"] is True
+    assert second["opportunities"]["buckets"]["not_dispatched_current_round"] == 0
+    assert second["billing"]["cost_reconciles"] is True
+    with store.connect() as db:
+        rounds = [row["round_number"] for row in db.execute(
+            "SELECT round_number FROM simulation_rounds WHERE run_id=? "
+            "ORDER BY round_number", (run_id,))]
+    assert rounds == [1, 2]
+
+
 def test_report_rejects_a_ledger_whose_completed_rounds_are_not_a_prefix(tmp_path):
     """The relaxed gate must still reject a genuinely inconsistent ledger."""
     from riskshield.reporting import Day4Reports, ReportError
