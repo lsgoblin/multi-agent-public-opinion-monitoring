@@ -1,6 +1,7 @@
 """Report claims are bound to one persisted run and its cutoff-qualified graph."""
 
 import json
+import threading
 from decimal import Decimal
 
 import pytest
@@ -42,6 +43,66 @@ def prepared(tmp_path):
     run_id = engine.create_run(CASE_ID, GRAPH_ID, agent_count=2, rounds=2)
     engine.advance(run_id, OfflineBackend())
     return store, run_id
+
+
+class TimesOutAfterFirstRound(OfflineBackend):
+    """Answers round 1, then blocks forever once an agent has memory (i.e. round 2+)."""
+
+    def __init__(self, gate):
+        self.gate = gate
+
+    def decide(self, observation):
+        if observation.get("memories"):
+            self.gate.wait()
+        return super().decide(observation)
+
+
+def test_a_run_whose_last_round_timed_out_still_reconciles_and_reports(tmp_path):
+    """Round statistics must reconcile when a round contains ``deadline_exceeded`` rows.
+
+    Regression, and the report builder is called *directly* on purpose: when this ran
+    through the alert layer, ``assess`` refused the run first, so the ledger check below was
+    never reached and the defect stayed hidden behind that refusal. ``deadline_exceeded``
+    rows are dispatched requests that were not waited for, so they belong to the round's
+    undecided total and must not be added into the stranded ("never sent") field.
+    """
+    store = Store(tmp_path / "timeout-report.db")
+    Day3Simulation(store)
+    prepare_synthetic_case(store)
+    engine = Day3Simulation(store)
+    run_id = engine.create_run(CASE_ID, GRAPH_ID, agent_count=2, rounds=2, concurrency=2,
+                              seed=4)
+    gate = threading.Event()
+    try:
+        summary = engine.advance(run_id, TimesOutAfterFirstRound(gate),
+                                 collect_performance=True, call_timeout_seconds=0.2)
+    finally:
+        gate.set()
+
+    assert summary["status"] == "partial"
+    assert summary["completed_rounds"] == 2
+    counts = summary["action_counts"]
+    assert counts.get("valid") == 2
+    assert counts.get("deadline_exceeded") == 2
+    assert counts.get("not_dispatched", 0) == 0
+    assert counts.get("failed", 0) == 0
+
+    # The ledger states the three outcomes separately; the report must agree with each.
+    round_two = [row for row in summary["rounds"] if row["round"] == 2][0]
+    assert round_two["valid_decisions"] == 0
+    assert round_two["deadline_exceeded_requests"] == 2
+    assert round_two["not_dispatched_current_round"] == 0
+
+    report = Day4Reports(store).build(run_id)
+    integrity = report["overview"]["run_integrity"]
+    assert integrity["complete"] is False
+    # The report reconciles the three outcomes separately against the ledger: two decided
+    # decisions in round 1, two requests dispatched and then not waited for in round 2, and
+    # nothing failed and nothing left unsent.
+    assert integrity["valid_decisions"] == 2
+    assert integrity["failed_decisions"] == 0
+    assert integrity["deadline_exceeded_decisions"] == 2
+    assert integrity["abandoned_rounds"] == []
 
 
 def test_report_has_five_evidence_bound_modules_and_persists(tmp_path):

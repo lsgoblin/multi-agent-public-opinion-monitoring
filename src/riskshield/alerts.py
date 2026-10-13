@@ -9,6 +9,7 @@ import uuid
 from datetime import datetime, timezone
 
 from riskshield.evidence import EvidencePipeline
+from riskshield.reporting import Day4Reports
 from riskshield.simulation import Day3Simulation
 from riskshield.store import Store
 
@@ -49,6 +50,8 @@ class Day4Alerts:
         self.store = store
         self.simulation = Day3Simulation(store)
         self.evidence = EvidencePipeline(store)
+        # Used to find a round whose ledger reconciles before a risk level is produced.
+        self.reports = Day4Reports(store)
         with store.connect() as db:
             db.executescript("""
                 CREATE TABLE IF NOT EXISTS day4_alerts (
@@ -87,7 +90,34 @@ class Day4Alerts:
                     for item in graph["claims"])):
             raise AlertError("graph has no eligible cutoff sources")
 
-        round_number = run["completed_rounds"]
+        # Which round may be assessed. The latest recorded round is the natural choice, but
+        # it can hold no decision at all: a round that stopped on a timeout, a pool that was
+        # spent, or a capacity refusal records requests without any usable decision. Reading
+        # an empty round would produce a risk level with nothing behind it, so the assessment
+        # falls back to the most recent round that actually decided something -- and only to
+        # a round the report builder can also reconcile, so the alert never rests on a round
+        # the report would reject.
+        latest_recorded_round = run["completed_rounds"]
+        valid_by_round = self.reports.valid_decisions_by_round(run_id)
+        assessed_round = latest_recorded_round
+        round_fallback = None
+        if valid_by_round.get(assessed_round, 0) < 1:
+            earlier = sorted((number for number, count in valid_by_round.items()
+                              if count >= 1 and number < latest_recorded_round),
+                             reverse=True)
+            if not earlier:
+                raise AlertError(
+                    f"run has no round with a valid decision to assess "
+                    f"({latest_recorded_round} recorded round(s)); no risk level is produced")
+            assessed_round = earlier[0]
+            round_fallback = {
+                "reason": ("latest recorded round has no valid decision; fell back to the "
+                           "most recent round with valid decisions and a reconciled ledger"),
+                "latest_recorded_round": latest_recorded_round,
+                "assessed_round": assessed_round,
+            }
+
+        round_number = assessed_round
         with self.store.connect() as db:
             rows = [dict(row) for row in db.execute(
                 "SELECT agent_id, status, decision, observation_refs FROM simulation_actions "
@@ -149,6 +179,11 @@ class Day4Alerts:
             limitations.append("Run is incomplete or contains failed decisions; classify valid latest-round actions only.")
         if run_undecided:
             limitations.append("Some requests were never decided (dispatched but not waited for, or never sent); they are undecided, not failed.")
+        if round_fallback is not None:
+            limitations.append(
+                f"Latest recorded round {latest_recorded_round} has no valid decision; this "
+                f"assessment is based on round {round_number} of an incomplete run and must "
+                f"not be read as the current complete result.")
         execution_mode = (config.get("backend") or {}).get(
             "type", config.get("backend_mode"))
         if snapshot["data_mode"] == "real_historical" and execution_mode == "offline_dynamic_substitute":
@@ -176,6 +211,16 @@ class Day4Alerts:
             "decisions_all_valid": total_failures == 0 and run_undecided == 0,
             "alert_is_success_result": (run["status"] == "complete" and
                                         total_failures == 0 and run_undecided == 0),
+            # Which round this assessment actually rests on, and whether that is the latest
+            # one. A fallback is never presented as the current result.
+            "assessed_round": round_number,
+            "latest_recorded_round": latest_recorded_round,
+            "round_fallback": round_fallback,
+            "assessment_basis": ("latest_recorded_round" if round_fallback is None
+                                 else "earlier_round_with_valid_decisions"),
+            "assessment_basis_label": (
+                "基于最新已记录轮次" if round_fallback is None
+                else f"基于第 {round_number} 轮的不完整运行预警"),
             "assessed_at": assessed_at,
             # Local rule detection time; it is not the historical event's first-public time.
             "discovered_at": assessed_at,
@@ -183,6 +228,15 @@ class Day4Alerts:
             "sent_at": None,
             "metrics": {
                 "round": round_number, "run_status": run["status"],
+                # The metrics below describe the round this assessment rests on, which is not
+                # necessarily the latest one; ``latest_recorded_round`` above names the other.
+                "assessed_round": round_number,
+                "assessed_round_valid_decisions": len(valid),
+                "assessed_round_failed_decisions": len(failed),
+                "assessed_round_undecided_requests": len(undecided),
+                "assessed_round_simulated_messages": message_count,
+                # Kept because existing consumers read these names; after a fallback they
+                # describe the assessed round, which ``round_fallback`` states explicitly.
                 "latest_round_valid_decisions": len(valid),
                 "latest_round_failed_decisions": len(failed),
                 "latest_round_undecided_requests": len(undecided),

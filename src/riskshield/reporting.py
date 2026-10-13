@@ -126,6 +126,143 @@ def _emotion_module(config, agents, actions, messages, rounds, distributions):
             "note": "按已声明状态转移规则重建的模拟状态；不是逐轮原始快照，也不是观测到的公众情绪。"}
 
 
+def _walk_loaded(run_id: str, ctx: dict, *, check_claim_text: bool = False) -> dict:
+    """Reconcile a loaded run's rounds against its own ledger.
+
+    Shared by the report builder and, through it, the alert layer's round fallback: a round
+    the alert assesses must be one the report can also reconcile, and one validation rule in
+    one place cannot drift away from itself. ``ctx`` carries the rows that were already
+    loaded (see ``_ledger_walk``); ``check_claim_text`` adds the stricter source-claim
+    comparison the report itself requires.
+    """
+    run = ctx["run"]
+    config = ctx["config"]
+    graph = ctx["graph"]
+    eligible = ctx["eligible"]
+    actions = ctx["actions"]
+    messages = ctx["messages"]
+    rounds = ctx["rounds"]
+    memories = ctx["memories"]
+    action_map = ctx["action_map"]
+    message_map = ctx["message_map"]
+
+    if len(action_map) != len(actions) or len(message_map) != len(messages):
+        raise ReportError("Run ledger is incomplete or inconsistent")
+    if check_claim_text:
+        # A run whose source claims no longer match the records they cite must not be
+        # reported from, because every citation below is resolved through them.
+        records = ctx["records"]
+        for claim in graph["claims"]:
+            record = records.get(claim["record_id"])
+            if record is None:
+                raise ReportError("Graph contains unknown, future, or ineligible evidence")
+            if (claim["text"] != record["summary"] or claim["title"] != record["title"]
+                    or claim["source_url"] != record["source_url"]
+                    or _time(claim["available_at"]) != _time(record["available_at"])):
+                raise ReportError("Graph contains unknown, future, or ineligible evidence")
+    # A run that stopped early records the abandoned round too, so its ledger holds one row
+    # per *started* round, not one per *completed* round. Completed rounds must form a
+    # contiguous prefix from round 1 and any abandoned round must follow them, which keeps
+    # the round numbering honest without discarding the round that stopped.
+    round_numbers = [row["round_number"] for row in rounds]
+    abandoned_flags = [bool(json.loads(row["stats"]).get("round_abandoned"))
+                       for row in rounds]
+    completed = run["completed_rounds"]
+    if (round_numbers != list(range(1, len(rounds) + 1))
+            or len(rounds) < completed
+            or abandoned_flags != [False] * completed + [True] * (len(rounds) - completed)
+            or (rounds and abandoned_flags and abandoned_flags[0])):
+        raise ReportError("Run ledger is incomplete or inconsistent")
+
+    distributions = []
+    failed_ids = []
+    undecided_ids = []
+    deadline_exceeded_ids = []
+    abandoned_round_numbers = []
+    cited_source_ids = set()
+    valid_by_round = {}
+    for row in rounds:
+        number = row["round_number"]
+        round_actions = [a for a in actions if a["round_number"] == number]
+        counts = Counter()
+        action_ids = []
+        # Three separate ledger outcomes are counted separately, because they are not the
+        # same fact and must never be folded together:
+        #   failed            -- a decision attempt that came back unusable;
+        #   deadline_exceeded -- dispatched, the engine stopped waiting, outcome unknown;
+        #   not_dispatched    -- never sent at all.
+        expected_failed = 0
+        expected_deadline_exceeded = 0
+        expected_not_dispatched = 0
+        for action in round_actions:
+            aid = _action_id(run_id, number, action["agent_id"])
+            action_ids.append(aid)
+            refs = json.loads(action["observation_refs"])
+            if any(ref not in eligible for ref in refs.get("evidence", [])):
+                raise ReportError("Action observed ineligible source evidence")
+            if any(ref not in message_map
+                   or message_map[ref]["recipient_id"] != action["agent_id"]
+                   or message_map[ref]["round_number"] != number - 1
+                   for ref in refs.get("messages", [])):
+                raise ReportError("Action observed foreign or future messages")
+            if any(ref not in memories or memories[ref]["agent_id"] != action["agent_id"]
+                   or memories[ref]["round_number"] >= number
+                   for ref in refs.get("memories", [])):
+                raise ReportError("Action observed foreign or future memory")
+            decision = json.loads(action["decision"]) if action["decision"] else None
+            if action["status"] == "valid" and decision is not None:
+                if not set(decision["evidence_ids"]) <= (set(refs.get("evidence", [])) |
+                        set(refs.get("messages", [])) | set(refs.get("memories", []))):
+                    raise ReportError("Decision cites evidence outside its observation")
+                cited_source_ids.update(set(decision["evidence_ids"]) & set(eligible))
+                counts[decision["action"]] += 1
+            elif action["status"] == "failed":
+                # A decision attempt that came back unusable.
+                counts["failed_or_invalid"] += 1
+                failed_ids.append(aid)
+                expected_failed += 1
+            elif action["status"] == "deadline_exceeded":
+                # Dispatched, then not waited for: undecided, never a failure and never
+                # "not dispatched". It belongs to the dispatched requests, so it is checked
+                # against ``deadline_exceeded_requests`` and never against the stranded
+                # count.
+                counts["undecided"] += 1
+                undecided_ids.append(aid)
+                deadline_exceeded_ids.append(aid)
+                expected_deadline_exceeded += 1
+            else:
+                # Never sent.
+                counts["undecided"] += 1
+                undecided_ids.append(aid)
+                expected_not_dispatched += 1
+        stats = json.loads(row["stats"])
+        if stats.get("round_abandoned"):
+            abandoned_round_numbers.append(number)
+        # Each outcome is checked against its own recorded field. ``not_dispatched_current_round``
+        # also carries the opportunities an abandoned round never reached, which is why that
+        # field, not ``not_dispatched_requests``, is what the ledger rows reconcile against.
+        stranded_total = stats.get("not_dispatched_current_round", 0)
+        deadline_exceeded_total = stats.get("deadline_exceeded_requests", 0)
+        if (len(round_actions) != stats["decision_requests"]
+                or expected_failed != stats["failed_decisions"]
+                or expected_deadline_exceeded != deadline_exceeded_total
+                or expected_not_dispatched != stranded_total):
+            raise ReportError("Round statistics disagree with action ledger")
+        valid_by_round[number] = sum(count for action, count in counts.items()
+                                     if action not in {"failed_or_invalid", "undecided"})
+        distributions.append({"round": number,
+                              "action_counts": dict(sorted(counts.items())),
+                              "decision_count": len(round_actions),
+                              "action_ids": action_ids,
+                              "round_abandoned": bool(stats.get("round_abandoned"))})
+    return {
+        "distributions": distributions, "failed_ids": failed_ids,
+        "undecided_ids": undecided_ids, "deadline_exceeded_ids": deadline_exceeded_ids,
+        "abandoned_round_numbers": abandoned_round_numbers,
+        "cited_source_ids": cited_source_ids, "valid_by_round": valid_by_round,
+    }
+
+
 class Day4Reports:
     def __init__(self, store: Store):
         self.store = store
@@ -133,6 +270,91 @@ class Day4Reports:
             db.execute("""CREATE TABLE IF NOT EXISTS day4_reports (
                 report_id TEXT PRIMARY KEY, run_id TEXT NOT NULL, body TEXT NOT NULL
             )""")
+
+    def valid_decisions_by_round(self, run_id: str) -> dict:
+        """How many valid decisions each round of a run holds, after ledger validation.
+
+        The alert layer needs to fall back to an earlier round when the latest one decided
+        nothing, and the round it falls back to must be one the report builder can also
+        reconcile. Running the builder's own ledger walk -- not a second, weaker check --
+        keeps one validation rule in one place instead of two that drift apart.
+
+        Raises ``ReportError`` when the run's ledger is inconsistent, which is the signal
+        that no round may be assessed from it.
+        """
+        return dict(self._ledger_walk(run_id)["valid_by_round"])
+
+    def _ledger_walk(self, run_id: str) -> dict:
+        """Load a run and walk its rounds exactly as the report does.
+
+        Returns the per-round distributions the report needs plus, for the alert layer, the
+        count of valid decisions per round. Both callers therefore agree on what a
+        reconciled and assessable round is.
+        """
+        with self.store.connect() as db:
+            run = db.execute("SELECT * FROM simulation_runs WHERE run_id=?", (run_id,)).fetchone()
+            if run is None:
+                raise KeyError(run_id)
+            run = dict(run)
+            graph_row = db.execute("SELECT * FROM graphs WHERE graph_id=?",
+                                   (run["graph_id"],)).fetchone()
+            if graph_row is None:
+                raise ReportError("Run graph is missing")
+            graph_row = dict(graph_row)
+            records = {r["record_id"]: json.loads(r["body"]) for r in db.execute(
+                "SELECT record_id, body FROM records WHERE case_id=?", (run["case_id"],))}
+            actions = [dict(r) for r in db.execute(
+                "SELECT * FROM simulation_actions WHERE run_id=? ORDER BY round_number, agent_id",
+                (run_id,))]
+            messages = [dict(r) for r in db.execute(
+                "SELECT * FROM simulation_messages WHERE run_id=? ORDER BY round_number, message_id",
+                (run_id,))]
+            rounds = [dict(r) for r in db.execute(
+                "SELECT * FROM simulation_rounds WHERE run_id=? ORDER BY round_number",
+                (run_id,))]
+            memories = {r["memory_id"]: dict(r) for r in db.execute(
+                "SELECT * FROM simulation_memories WHERE run_id=?", (run_id,))}
+            agents = [dict(r) for r in db.execute(
+                "SELECT agent_id, persona, state FROM simulation_agents WHERE run_id=? "
+                "ORDER BY agent_id", (run_id,))]
+        try:
+            case = self.store.snapshot(run["case_id"])
+        except KeyError:
+            raise ReportError("Run case is missing") from None
+        config = json.loads(run["config"])
+        graph = json.loads(graph_row["body"])
+        if (graph_row["case_id"] != run["case_id"] or graph["case_id"] != run["case_id"]
+                or graph_row["cutoff"] != case["cutoff"] or graph["cutoff"] != case["cutoff"]
+                or config.get("cutoff") != case["cutoff"]
+                or graph_row["version"] != case["version"]
+                or graph["source_version"] != case["version"]
+                or config.get("source_version") != case["version"]
+                or config.get("data_mode") != case["data_mode"]):
+            raise ReportError("Run, graph, and case identity or version do not match")
+        cutoff = _time(case["cutoff"])
+        if run["status"] == "complete" and run["completed_rounds"] != config["rounds"]:
+            raise ReportError("Complete run does not contain every configured round")
+        eligible = {}
+        for claim in graph["claims"]:
+            record = records.get(claim["record_id"])
+            if (record is None or record["role"] != "input_candidate"
+                    or record["available_at"] is None
+                    or record["data_mode"] != case["data_mode"]
+                    or _time(record["available_at"]) > cutoff):
+                raise ReportError("Graph claim is not cutoff-eligible input evidence")
+            eligible[claim["record_id"]] = record
+        message_map = {m["message_id"]: m for m in messages}
+        if not eligible:
+            raise ReportError("Graph has no eligible evidence")
+        action_map = {(a["round_number"], a["agent_id"]): a for a in actions}
+        ctx = {
+            "run": run, "config": config, "graph": graph, "graph_row": graph_row,
+            "case": case, "eligible": eligible, "actions": actions, "messages": messages,
+            "rounds": rounds, "memories": memories, "agents": agents,
+            "action_map": action_map, "message_map": message_map, "records": records,
+        }
+        ctx.update(_walk_loaded(run_id, ctx))
+        return ctx
 
     def build(self, run_id: str, risk_assessment: dict | None = None) -> dict:
         if risk_assessment is not None and not isinstance(risk_assessment, dict):
@@ -216,102 +438,19 @@ class Day4Reports:
 
         action_map = {(a["round_number"], a["agent_id"]): a for a in actions}
         message_map = {m["message_id"]: m for m in messages}
-        # A run that stopped early records the abandoned round too, so its ledger holds
-        # one row per *started* round, not one row per *completed* round. Completed rounds
-        # must form a contiguous prefix from round 1, and any abandoned round must follow
-        # them; that keeps the round numbering honest without discarding the accounting of
-        # the round that stopped. A report is still allowed, and the caller marks it
-        # incomplete through ``run_status``/``integrity_label``.
-        round_numbers = [r["round_number"] for r in rounds]
-        abandoned_flags = [bool(json.loads(r["stats"]).get("round_abandoned"))
-                           for r in rounds]
-        completed_flags = [not flag for flag in abandoned_flags]
-        expected_completed = list(range(1, run["completed_rounds"] + 1))
-        ledger_inconsistent = (
-            len(action_map) != len(actions) or len(message_map) != len(messages)
-            or round_numbers != list(range(1, len(rounds) + 1))
-            or completed_flags != [True] * run["completed_rounds"] + [False] * (
-                len(rounds) - run["completed_rounds"])
-            or [number for number, flag in zip(round_numbers, completed_flags) if flag] !=
-            expected_completed
-            or (rounds and abandoned_flags and abandoned_flags[0]))
-        if ledger_inconsistent:
-            raise ReportError("Run ledger is incomplete or inconsistent")
-        if risk_assessment is not None:
-            evidence_refs = risk_assessment.get("evidence_refs", {})
-            if not isinstance(evidence_refs, dict):
-                raise ReportError("risk_assessment evidence_refs must be an object")
-            for key, expected in (("case_id", run["case_id"]), ("graph_id", run["graph_id"]),
-                                  ("cutoff", case["cutoff"]),
-                                  ("source_version", case["version"])):
-                if key in evidence_refs and evidence_refs[key] != expected:
-                    raise ReportError(f"risk_assessment evidence_refs {key} does not match")
-            if any(ref not in eligible for ref in evidence_refs.get("source_record_ids", [])):
-                raise ReportError("risk_assessment cites ineligible source evidence")
-            for ref in evidence_refs.get("action_refs", []):
-                if (ref.get("run_id") != run_id
-                        or (ref.get("round"), ref.get("agent_id")) not in action_map):
-                    raise ReportError("risk_assessment cites an action outside this run")
-
-        distributions = []
-        failed_ids = []
-        undecided_ids = []
-        deadline_exceeded_ids = []
-        abandoned_round_numbers = []
-        cited_source_ids = set()
-        for row in rounds:
-            number = row["round_number"]
-            round_actions = [a for a in actions if a["round_number"] == number]
-            counts = Counter()
-            action_ids = []
-            expected_failed = 0
-            expected_undecided = 0
-            for action in round_actions:
-                aid = _action_id(run_id, number, action["agent_id"])
-                action_ids.append(aid)
-                refs = json.loads(action["observation_refs"])
-                if any(ref not in eligible for ref in refs.get("evidence", [])):
-                    raise ReportError("Action observed ineligible source evidence")
-                if any(ref not in message_map or message_map[ref]["recipient_id"] != action["agent_id"]
-                       or message_map[ref]["round_number"] != number - 1
-                       for ref in refs.get("messages", [])):
-                    raise ReportError("Action observed foreign or future messages")
-                if any(ref not in memories or memories[ref]["agent_id"] != action["agent_id"]
-                       or memories[ref]["round_number"] >= number
-                       for ref in refs.get("memories", [])):
-                    raise ReportError("Action observed foreign or future memory")
-                decision = json.loads(action["decision"]) if action["decision"] else None
-                if action["status"] == "valid" and decision is not None:
-                    if not set(decision["evidence_ids"]) <= (set(refs.get("evidence", [])) |
-                            set(refs.get("messages", [])) | set(refs.get("memories", []))):
-                        raise ReportError("Decision cites evidence outside its observation")
-                    cited_source_ids.update(set(decision["evidence_ids"]) & set(eligible))
-                    counts[decision["action"]] += 1
-                elif action["status"] == "failed":
-                    # A decision attempt that came back unusable.
-                    counts["failed_or_invalid"] += 1
-                    failed_ids.append(aid)
-                    expected_failed += 1
-                else:
-                    # not_dispatched (never sent) or deadline_exceeded (stopped waiting).
-                    # Neither is a failed decision attempt, so they are reported as
-                    # undecided rather than inflating the failure count.
-                    counts["undecided"] += 1
-                    undecided_ids.append(aid)
-                    expected_undecided += 1
-                    if action["status"] == "deadline_exceeded":
-                        deadline_exceeded_ids.append(aid)
-            stats = json.loads(row["stats"])
-            if stats.get("round_abandoned"):
-                abandoned_round_numbers.append(number)
-            if (len(round_actions) != stats["decision_requests"]
-                    or expected_failed != stats["failed_decisions"]
-                    or expected_undecided != stats.get(
-                        "not_dispatched_current_round", expected_undecided)):
-                raise ReportError("Round statistics disagree with action ledger")
-            distributions.append({"round": number, "action_counts": dict(sorted(counts.items())),
-                                  "decision_count": len(round_actions), "action_ids": action_ids,
-                                  "round_abandoned": bool(stats.get("round_abandoned"))})
+        ctx = {
+            "run": run, "config": config, "graph": graph, "graph_row": graph_row,
+            "case": case, "eligible": eligible, "actions": actions, "messages": messages,
+            "rounds": rounds, "memories": memories, "agents": agents,
+            "action_map": action_map, "message_map": message_map, "records": records,
+        }
+        walked = _walk_loaded(run_id, ctx, check_claim_text=True)
+        distributions = walked["distributions"]
+        failed_ids = walked["failed_ids"]
+        undecided_ids = walked["undecided_ids"]
+        deadline_exceeded_ids = walked["deadline_exceeded_ids"]
+        abandoned_round_numbers = walked["abandoned_round_numbers"]
+        cited_source_ids = walked["cited_source_ids"]
 
         # A run with failed decisions, an abandoned round, or fewer rounds than configured
         # may still produce a report, but that report must say so rather than read as a
