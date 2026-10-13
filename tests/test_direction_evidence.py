@@ -435,6 +435,54 @@ def test_the_live_entry_refuses_a_missing_case(cli_root):
     assert "not in this store" in (result.stdout + result.stderr)
 
 
+# ---------------------------------------------- the cutoff boundary, compared as time
+
+def _live_tier_module():
+    import importlib.util
+    path = PROJECT_ROOT / "scripts" / "run_live_tier.py"
+    spec = importlib.util.spec_from_file_location("live_tier_under_test", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_the_same_instant_written_two_ways_is_not_a_boundary_violation():
+    """`Z` and `+00:00` are the same instant; only a string comparison disagrees.
+
+    The graph stores availability as "...Z" while the snapshot cutoff reads back as
+    "...+00:00". Comparing those as text made material that is exactly at the cutoff look
+    post-cutoff, which is how this was found: the pilot was refused for material a few
+    milliseconds inside its own boundary.
+    """
+    module = _live_tier_module()
+    cutoff, problem = module.parse_instant("2023-07-25T15:53:54+00:00", what="cutoff")
+    assert problem is None
+    at_boundary, problem = module.parse_instant("2023-07-25T15:53:54Z", what="claim")
+    assert problem is None
+    assert at_boundary == cutoff
+    assert not at_boundary > cutoff
+    # Sanity: as raw text the two are different strings, which is why the parse is required.
+    assert "2023-07-25T15:53:54Z" != "2023-07-25T15:53:54+00:00"
+
+
+def test_material_genuinely_after_the_cutoff_is_still_refused():
+    module = _live_tier_module()
+    cutoff, _ = module.parse_instant("2023-07-25T15:53:54Z", what="cutoff")
+    after, problem = module.parse_instant("2023-07-25T15:54:10Z", what="claim")
+    assert problem is None
+    assert after > cutoff
+
+
+def test_a_time_without_a_timezone_is_refused_rather_than_compared():
+    module = _live_tier_module()
+    instant, problem = module.parse_instant("2023-07-25T15:53:54", what="cutoff")
+    assert instant is None
+    assert "no timezone" in problem
+    for bad in (None, "", "not-a-time"):
+        instant, problem = module.parse_instant(bad, what="claim")
+        assert instant is None and problem
+
+
 def test_the_live_entry_dry_run_dispatches_nothing(cli_root):
     """A dry run proves the entry point and the cutoff boundary, and reports zero calls."""
     import threading

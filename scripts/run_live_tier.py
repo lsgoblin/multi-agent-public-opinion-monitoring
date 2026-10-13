@@ -19,6 +19,7 @@ import argparse
 import hashlib
 import json
 import os
+from datetime import datetime
 import sys
 import tempfile
 import time
@@ -56,6 +57,13 @@ class _DryRunReservation:
     price_version = "dry-run-reservation-v1"
     describe_routes = None
 
+    # Defaults grounded in the measured 500x30 run rather than invented: that run cost
+    # 2.88427524 CNY for 15,000 calls, i.e. 0.000192 CNY per call. The default below carries
+    # roughly a 2.6x margin over the measured rate, so a reservation that passes the budget
+    # check is not an optimistic fiction, and a run whose real cost would breach the cap is
+    # still refused. Passing --dry-run-prices replaces these with the adapter's real prices.
+    DEFAULT_RESERVATION_CNY = "0.0005"
+
     def __init__(self, *, prices: dict | None = None):
         self._prices = prices or {}
         self.calls = 0
@@ -64,11 +72,12 @@ class _DryRunReservation:
     def pricing(self, observation):
         from riskshield.simulation import DecisionPricing
         role = observation["persona"]["role"]
-        spec = self._prices.get(role, {})
+        spec = self._prices.get(role) or self._prices.get("*") or {}
         return DecisionPricing(
             requested_model=spec.get("model", f"dry-run-{role}"),
             price_version=self.price_version,
-            reservation_cny=Decimal(str(spec.get("reservation_cny", "0.05"))),
+            reservation_cny=Decimal(str(spec.get("reservation_cny",
+                                                self.DEFAULT_RESERVATION_CNY))),
             input_cny_per_million=Decimal(str(spec.get("input_cny_per_million", "0"))),
             cached_input_cny_per_million=Decimal(str(
                 spec.get("cached_input_cny_per_million", "0"))),
@@ -79,6 +88,27 @@ class _DryRunReservation:
 
     def decide(self, observation):
         raise AssertionError("a dry run must not dispatch a decision")
+
+
+def parse_instant(value, *, what: str):
+    """Parse an ISO time to an aware instant, returning ``(instant, problem)``.
+
+    A Z suffix and a +00:00 offset denote the same instant but are different strings, so the
+    cutoff boundary must be compared as time rather than as text. A value with no timezone is
+    refused rather than compared naively.
+    """
+    if isinstance(value, datetime):
+        instant = value
+    elif isinstance(value, str) and value.strip():
+        try:
+            instant = datetime.fromisoformat(value.replace("Z", "+00:00"))
+        except ValueError:
+            return None, f"{what} is not a parsable time: {value!r}"
+    else:
+        return None, f"{what} is missing"
+    if instant.tzinfo is None or instant.utcoffset() is None:
+        return None, f"{what} carries no timezone: {value!r}"
+    return instant, None
 
 
 def resolve_db_path(raw: str) -> Path:
@@ -226,9 +256,19 @@ def main() -> int:
         if not claims:
             raise SystemExit(f"graph {graph_id!r} has no cutoff-eligible claims")
         cutoff = snapshot["cutoff"]
+        # Compare instants, not strings. The graph stores times as "...Z" while the snapshot
+        # cutoff can read back as "...+00:00"; as text those differ, so a string comparison
+        # would refuse material that is plainly inside the cutoff.
+        cutoff_instant, problem = parse_instant(cutoff, what="case cutoff")
+        if problem:
+            raise SystemExit(problem)
         for claim in claims:
-            available = claim.get("available_at")
-            if not isinstance(available, str) or available > cutoff:
+            available_instant, problem = parse_instant(
+                claim.get("available_at"),
+                what=f"graph claim {claim.get('claim_id')!r} availability")
+            if problem:
+                raise SystemExit(problem)
+            if available_instant > cutoff_instant:
                 raise SystemExit(
                     f"graph claim {claim.get('claim_id')!r} is visible after the cutoff "
                     f"{cutoff}; the run would consume post-cutoff material")
