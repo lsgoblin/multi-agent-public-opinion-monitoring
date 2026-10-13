@@ -1939,11 +1939,20 @@ def run_benchmark(config: dict[str, Any], root: Path,
             "direction": {
                 "track": TRACK_DIRECTION,
                 "cohorts": [cohort["cohort_id"] for cohort in direction_cohorts],
-                "scored_event_ids": combined_direction["unit_ids"],
+                # The brief's direction denominator counts the events the binary
+                # metric scored. It used to be fed the wider diagnostic set, so a
+                # five-event denominator sat next to a nine-event id list. The
+                # diagnostic has its own list, under
+                # formal_combined_direction.metrics.direction_three_class, where its
+                # denominator lives too.
+                "scored_event_ids": combined_direction["binary_direction_event_ids"],
                 "numerator": direction_metrics["numerator"],
                 "denominator": direction_metrics["denominator"],
                 "value": direction_metrics["value"],
                 "undefined_reason": direction_metrics["undefined_reason"],
+                "scored_event_ids_note": ("equals the binary denominator exactly. The three-class "
+                                          "diagnostic covers a different, wider set and reports it "
+                                          "beside its own denominator"),
             },
             "note": ("the two tracks count different things -- title units and events -- so their "
                      "denominators are reported side by side and never added together"),

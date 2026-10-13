@@ -593,3 +593,47 @@ def test_coverage_reports_every_stage_of_the_funnel():
     assert block["gate_exclusions"]["count"] == 1
     assert block["not_scored"]["declared_cannot_judge"]["count"] == 1
     assert block["not_scored"]["label_but_no_recorded_prediction"]["count"] == 1
+
+def test_evaluate_files_keeps_its_old_behaviour_when_the_root_is_omitted(tmp_path):
+    """The new parameter is keyword-only and optional, so old callers are untouched."""
+    import inspect
+
+    from riskshield.evaluation import evaluate_files
+
+    parameters = inspect.signature(evaluate_files).parameters
+    assert parameters["evidence_root"].kind is inspect.Parameter.KEYWORD_ONLY
+    assert parameters["evidence_root"].default is None
+    # The two positional parameters keep their names and order.
+    assert list(parameters)[:2] == ["inputs_path", "labels_path"]
+
+
+def test_evaluate_files_forwards_the_root_to_the_engine(tmp_path, monkeypatch):
+    """The contract the other branch depends on is that the root is forwarded.
+
+    Asserting this through a full score would need a case that passes every other
+    gate, and a half-built case fails before file resolution is ever attempted --
+    which is what the first version of this test did, silently measuring nothing.
+    The interface is therefore checked where it lives.
+    """
+    from riskshield import evaluation
+
+    captured = {}
+
+    def fake(inputs, labels, **kwargs):
+        captured.update(kwargs)
+        return {"sentiment_three_class": {"denominator": 0}}
+
+    monkeypatch.setattr(evaluation, "evaluate_documents", fake)
+    inputs = tmp_path / "inputs.json"
+    labels = tmp_path / "labels.json"
+    inputs.write_text(json.dumps({"schema": INPUT_SCHEMA, "dataset_version": "v1",
+                                  "cases": []}), encoding="utf-8")
+    labels.write_text(json.dumps({"schema": LABEL_SCHEMA, "label_version": "l1",
+                                  "sentiment_labels": [], "events": []}), encoding="utf-8")
+
+    evaluation.evaluate_files(inputs, labels, evidence_root=tmp_path / "material")
+    assert captured["evidence_root"] == tmp_path / "material"
+
+    evaluation.evaluate_files(inputs, labels)
+    from pathlib import Path as _Path
+    assert captured["evidence_root"] == _Path.cwd()
