@@ -13,7 +13,8 @@ from datetime import datetime, timezone
 from decimal import Decimal
 
 from riskshield.evidence import CollectionError, EvidencePipeline
-from riskshield.simulation import Day3Simulation, DecisionResult, SimulationError
+from riskshield.simulation import (CapacityExhaustedError, Day3Simulation, DecisionResult,
+                                   SimulationError)
 from riskshield.alerts import AlertError, Day4Alerts
 from riskshield.reporting import Day4Reports, ReportError
 from riskshield.schemas import AgentDecision, CaseImport
@@ -37,6 +38,9 @@ _FAILURE_CATEGORIES = frozenset({
     # "simulation_error" so an incomplete-but-reported task is distinguishable from one
     # that produced no evidence at all.
     "incomplete_run_reported",
+    # The process-wide in-flight ceiling was reached, so the task stopped without
+    # dispatching everything it was asked to. Never retried automatically.
+    "capacity_exhausted",
 })
 
 
@@ -63,6 +67,10 @@ def _seconds_between(start: str, end: str) -> float:
 def _failure_category(exc: Exception) -> str:
     if isinstance(exc, TaskError):
         return "data_integrity_error"
+    if isinstance(exc, CapacityExhaustedError):
+        # Checked before SimulationError because it is a subclass; "the process ran out of
+        # in-flight capacity" must not be reported as a simulation input error.
+        return "capacity_exhausted"
     if isinstance(exc, SimulationError):
         return "simulation_error"
     if isinstance(exc, AlertError):

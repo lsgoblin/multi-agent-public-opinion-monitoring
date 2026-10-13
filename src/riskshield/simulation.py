@@ -20,6 +20,7 @@ from typing import Protocol
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from riskshield.capacity import (PROCESS_CAPACITY, CapacityError, configured_limit)
 from riskshield.evidence import EvidencePipeline
 from riskshield.schemas import AgentDecision
 from riskshield.store import Store
@@ -44,6 +45,21 @@ DEFAULT_TASK_BUDGET_CNY = Decimal("5.00")
 
 class SimulationError(ValueError):
     pass
+
+
+class CapacityExhaustedError(SimulationError):
+    """The process in-flight ceiling was reached, so requests were refused.
+
+    Deliberately not a plain ``SimulationError``: "we ran out of process capacity" is a
+    different operational fact from "the simulation input was wrong", and a task must be
+    able to report ``capacity_exhausted`` without inventing a new task status.
+    """
+
+    reason = "capacity_exhausted"
+
+    def __init__(self, message: str, *, rejected_requests: int = 0):
+        super().__init__(message)
+        self.rejected_requests = rejected_requests
 
 
 class DaemonCallPool:
@@ -388,6 +404,15 @@ class Day3Simulation:
                 1 <= concurrency <= 128 and 0 <= role_offset < len(ROLES)):
             raise SimulationError(
                 "agent_count, rounds, concurrency or role_offset outside Day 3 limits")
+        # Checked before anything is written or dispatched: a task whose own concurrency
+        # cannot fit inside the process ceiling would otherwise fail mid-round after some
+        # calls were already paid for. The ceiling is never raised to accommodate it.
+        process_limit = self._checked_process_limit()
+        if concurrency > process_limit:
+            raise SimulationError(
+                f"run concurrency {concurrency} exceeds the process in-flight limit "
+                f"{process_limit}; lower the concurrency or raise "
+                f"RISKSHIELD_MAX_INFLIGHT_CALLS")
         budget_cny = Decimal(str(budget_cny))
         if not Decimal("0") < budget_cny <= MAX_TASK_BUDGET_CNY:
             raise SimulationError("single-run budget must be within ¥30.00")
@@ -794,6 +819,19 @@ class Day3Simulation:
                                 "last bucket."),
         }
 
+    def _checked_process_limit(self) -> int:
+        """Validate the process ceiling before a call can be made.
+
+        The setting is read here rather than trusting a value cached earlier, so a run that
+        is about to dispatch under a broken configuration fails instead of proceeding with
+        a stale ceiling. An unreadable setting must fail at an entry point, not halfway
+        through a run that has already paid for some requests.
+        """
+        try:
+            return configured_limit()
+        except CapacityError as exc:
+            raise SimulationError(str(exc)) from None
+
     def advance(self, run_id: str, backend: DecisionBackend, *, max_rounds: int | None = None,
                 collect_performance: bool = False,
                 stop_event: threading.Event | None = None,
@@ -839,6 +877,9 @@ class Day3Simulation:
             raise SimulationError("failure_policy must be 'stop' or 'continue'")
         if backend.mode not in {"test_substitute", "real_model"}:
             raise SimulationError("backend mode must declare test_substitute or real_model")
+        # Before any observation, reservation or dispatch: an unreadable ceiling must not
+        # be discovered after some of the run has already been paid for.
+        self._checked_process_limit()
         if max_rounds is not None and (type(max_rounds) is not int or max_rounds < 1):
             raise SimulationError("max_rounds must be positive")
         if call_timeout_seconds is not None:
@@ -966,6 +1007,8 @@ class Day3Simulation:
         # threads. The condition is recorded, not inferred from thread counts.
         pool_damaged = False
         pool_damaged_at_round = None
+        capacity_refusal = None
+        capacity_rejected_total = 0
 
         while int(run["completed_rounds"]) < target:
             round_started = time.perf_counter()
@@ -1062,7 +1105,8 @@ class Day3Simulation:
                     if old["error"] and old["error"] not in {
                             "BudgetPreflight", "StopSignal", "DeadlineExceeded",
                             "BackendCallLimit", "StoppedAfterFailure", "BudgetExceeded",
-                            "PoolExhausted", "NotDispatched", "FailedDecisionsTolerated"}:
+                            "PoolExhausted", "CapacityExhausted", "NotDispatched",
+                            "FailedDecisionsTolerated"}:
                         return False
                     db.execute(
                         "UPDATE simulation_actions SET observation_refs=?, decision=NULL, "
@@ -1118,6 +1162,8 @@ class Day3Simulation:
             pool_capacity = None
             pooled_workers_abandoned = 0
             pool_refused_this_round = False
+            capacity_error_text = None
+            capacity_rejected = []
             if final_stop_reason == "budget_preflight":
                 insert_not_dispatched_batch(pending_ids, "BudgetPreflight")
             elif pool_damaged:
@@ -1135,116 +1181,131 @@ class Day3Simulation:
                 reason = "StopSignal" if final_stop_reason == "stop_signal" else "DeadlineExceeded"
                 insert_not_dispatched_batch(pending_ids, reason)
             else:
-                def call(obs, quote, queued_at, queued_wall):
+                def call(obs, quote, queued_at, queued_wall, capacity_token):
                     nonlocal actual_in_flight, actual_peak_in_flight
                     request_audit = None
-                    started_mono = time.perf_counter()
-                    started_wall = datetime.now().astimezone().isoformat()
-
-                    def record_audit(value):
-                        nonlocal request_audit
-                        safe = _safe_request_audit(value)
-                        if safe is None:
-                            raise SimulationError("invalid request audit")
-                        request_audit = safe
-
-                    with in_flight_lock:
-                        actual_in_flight += 1
-                        actual_peak_in_flight = max(actual_peak_in_flight, actual_in_flight)
-                    backend_start = time.perf_counter()
                     try:
-                        decide_with_audit = getattr(backend, "decide_with_audit", None)
-                        if callable(decide_with_audit):
-                            request_audit = {"stage": "before_dispatch"}
-                            result = decide_with_audit(obs, record_audit)
-                            if request_audit["stage"] != "prepared_for_dispatch":
-                                raise SimulationError("decision lacks prepared request audit")
-                        else:
-                            result = backend.decide(obs)
-                    except Exception as exc:
+                        started_mono = time.perf_counter()
+                        started_wall = datetime.now().astimezone().isoformat()
+
+                        def record_audit(value):
+                            nonlocal request_audit
+                            safe = _safe_request_audit(value)
+                            if safe is None:
+                                raise SimulationError("invalid request audit")
+                            request_audit = safe
+
+                        with in_flight_lock:
+                            actual_in_flight += 1
+                            actual_peak_in_flight = max(actual_peak_in_flight,
+                                                        actual_in_flight)
+                        backend_start = time.perf_counter()
+                        try:
+                            decide_with_audit = getattr(backend, "decide_with_audit", None)
+                            if callable(decide_with_audit):
+                                request_audit = {"stage": "before_dispatch"}
+                                result = decide_with_audit(obs, record_audit)
+                                if request_audit["stage"] != "prepared_for_dispatch":
+                                    raise SimulationError(
+                                        "decision lacks prepared request audit")
+                            else:
+                                result = backend.decide(obs)
+                        except Exception as exc:
+                            backend_seconds = time.perf_counter() - backend_start
+                            with in_flight_lock:
+                                actual_in_flight -= 1
+                            ended_mono = time.perf_counter()
+                            ended_wall = datetime.now().astimezone().isoformat()
+                            error = _persisted_error(exc)
+                            rejected_before_send = (
+                                isinstance(exc, SafeDecisionError) and
+                                type(exc.safe_category) is str and
+                                exc.safe_category in {"synthetic_only", "prompt_bound",
+                                                      "live_disabled", "call_limit"})
+                            return {
+                                "status": "not_dispatched" if rejected_before_send
+                                else "failed",
+                                "decision": None, "usage": None,
+                                "cost": Decimal("0") if rejected_before_send
+                                else quote.reservation_cny,
+                                "reserved": Decimal("0") if rejected_before_send
+                                else quote.reservation_cny,
+                                "requested_model": quote.requested_model,
+                                "price_version": quote.price_version, "model": None,
+                                "error": error, "request_audit": request_audit,
+                                "schema_diagnostics": _safe_schema_diagnostics(exc),
+                                "failure_category": error,
+                                "timing": {
+                                    "queued_at": queued_wall, "started_at": started_wall,
+                                    "ended_at": ended_wall,
+                                    "queue_seconds": max(0.0, started_mono - queued_at),
+                                    "backend_seconds": backend_seconds,
+                                    "validation_seconds": 0.0,
+                                    "elapsed_seconds": max(0.0, ended_mono - started_mono),
+                                    "dispatch_evidence": "backend_rejected_before_send"
+                                    if rejected_before_send else (request_audit or {}).get(
+                                        "stage", "backend_invoked"),
+                                },
+                            }
+
                         backend_seconds = time.perf_counter() - backend_start
                         with in_flight_lock:
                             actual_in_flight -= 1
+                        validation_start = time.perf_counter()
+                        try:
+                            decision = AgentDecision.model_validate(result.decision)
+                            allowed = {e["evidence_id"] for e in obs["evidence"]}
+                            allowed.update(m["message_id"] for m in obs["messages"])
+                            allowed.update(m["memory_id"] for m in obs["memories"])
+                            if (decision.agent_id != obs["agent_id"] or
+                                    not set(decision.evidence_ids) <= allowed):
+                                raise SimulationError("invalid agent or inaccessible citation")
+                            cost, usage = self._cost(quote, result.usage)
+                            actual_model = (str(result.model).strip()[:100]
+                                            if result.model else None)
+                            if cost > quote.reservation_cny:
+                                status, decision_data, error = (
+                                    "failed", None, "ReservationExceeded")
+                            else:
+                                status, decision_data, error = (
+                                    "valid", decision.model_dump(), None)
+                            schema_diagnostics = None
+                        except Exception as exc:
+                            status, decision_data = "failed", None
+                            error = _persisted_error(exc)
+                            schema_diagnostics = _safe_schema_diagnostics(exc)
+                            cost, usage = self._cost(quote, getattr(result, "usage", None))
+                            actual_model = (str(getattr(result, "model", "")).strip()[:100]
+                                            or None)
+                        validation_seconds = time.perf_counter() - validation_start
                         ended_mono = time.perf_counter()
                         ended_wall = datetime.now().astimezone().isoformat()
-                        error = _persisted_error(exc)
-                        rejected_before_send = (
-                            isinstance(exc, SafeDecisionError) and
-                            type(exc.safe_category) is str and
-                            exc.safe_category in {"synthetic_only", "prompt_bound",
-                                                  "live_disabled", "call_limit"})
                         return {
-                            "status": "not_dispatched" if rejected_before_send else "failed",
-                            "decision": None, "usage": None,
-                            "cost": Decimal("0") if rejected_before_send
-                            else quote.reservation_cny,
-                            "reserved": Decimal("0") if rejected_before_send
-                            else quote.reservation_cny,
+                            "status": status, "decision": decision_data, "usage": usage,
+                            "cost": cost, "reserved": quote.reservation_cny,
                             "requested_model": quote.requested_model,
-                            "price_version": quote.price_version, "model": None,
+                            "price_version": quote.price_version, "model": actual_model,
                             "error": error, "request_audit": request_audit,
-                            "schema_diagnostics": _safe_schema_diagnostics(exc),
+                            "schema_diagnostics": schema_diagnostics,
                             "failure_category": error,
                             "timing": {
                                 "queued_at": queued_wall, "started_at": started_wall,
                                 "ended_at": ended_wall,
                                 "queue_seconds": max(0.0, started_mono - queued_at),
                                 "backend_seconds": backend_seconds,
-                                "validation_seconds": 0.0,
+                                "validation_seconds": validation_seconds,
                                 "elapsed_seconds": max(0.0, ended_mono - started_mono),
-                                "dispatch_evidence": "backend_rejected_before_send"
-                                if rejected_before_send else (request_audit or {}).get(
+                                "dispatch_evidence": (request_audit or {}).get(
                                     "stage", "backend_invoked"),
                             },
                         }
-
-                    backend_seconds = time.perf_counter() - backend_start
-                    with in_flight_lock:
-                        actual_in_flight -= 1
-                    validation_start = time.perf_counter()
-                    try:
-                        decision = AgentDecision.model_validate(result.decision)
-                        allowed = {e["evidence_id"] for e in obs["evidence"]}
-                        allowed.update(m["message_id"] for m in obs["messages"])
-                        allowed.update(m["memory_id"] for m in obs["memories"])
-                        if (decision.agent_id != obs["agent_id"] or
-                                not set(decision.evidence_ids) <= allowed):
-                            raise SimulationError("invalid agent or inaccessible citation")
-                        cost, usage = self._cost(quote, result.usage)
-                        actual_model = str(result.model).strip()[:100] if result.model else None
-                        if cost > quote.reservation_cny:
-                            status, decision_data, error = "failed", None, "ReservationExceeded"
-                        else:
-                            status, decision_data, error = "valid", decision.model_dump(), None
-                        schema_diagnostics = None
-                    except Exception as exc:
-                        status, decision_data = "failed", None
-                        error = _persisted_error(exc)
-                        schema_diagnostics = _safe_schema_diagnostics(exc)
-                        cost, usage = self._cost(quote, getattr(result, "usage", None))
-                        actual_model = str(getattr(result, "model", "")).strip()[:100] or None
-                    validation_seconds = time.perf_counter() - validation_start
-                    ended_mono = time.perf_counter()
-                    ended_wall = datetime.now().astimezone().isoformat()
-                    return {
-                        "status": status, "decision": decision_data, "usage": usage,
-                        "cost": cost, "reserved": quote.reservation_cny,
-                        "requested_model": quote.requested_model,
-                        "price_version": quote.price_version, "model": actual_model,
-                        "error": error, "request_audit": request_audit,
-                        "schema_diagnostics": schema_diagnostics,
-                        "failure_category": error,
-                        "timing": {
-                            "queued_at": queued_wall, "started_at": started_wall,
-                            "ended_at": ended_wall,
-                            "queue_seconds": max(0.0, started_mono - queued_at),
-                            "backend_seconds": backend_seconds,
-                            "validation_seconds": validation_seconds,
-                            "elapsed_seconds": max(0.0, ended_mono - started_mono),
-                            "dispatch_evidence": (request_audit or {}).get(
-                                "stage", "backend_invoked"),
-                        },
-                    }
+                    finally:
+                        # The slot is handed back here and only here: this is the moment the
+                        # backend call actually finished. A wait timeout deliberately does
+                        # not release it, and a late response still does, exactly once, so a
+                        # slot can neither be reported free while its thread is stuck nor
+                        # leak for the life of the process.
+                        PROCESS_CAPACITY.release(capacity_token)
 
                 def persist_outcomes(batch):
                     nonlocal request_ledger_persist_total, current_cost
@@ -1384,6 +1445,7 @@ class Day3Simulation:
                     round_deadline = (time.monotonic() + round_budget
                                       if round_budget is not None else None)
                     pool = DaemonCallPool(concurrency)
+                    capacity_rejected = []
                     try:
                         while cursor < len(pending) or active:
                             while (cursor < len(pending) and len(active) < concurrency
@@ -1393,11 +1455,27 @@ class Day3Simulation:
                                     final_stop_reason = stop_reason
                                     break
                                 aid = pending[cursor]
+                                # Admitted immediately before the call is dispatched, so a
+                                # refusal costs nothing: no request is sent, no worker is
+                                # created and the opportunity is recorded as not dispatched.
+                                # Nothing here waits for capacity; queuing would hide the
+                                # shortage instead of bounding it.
+                                try:
+                                    token = PROCESS_CAPACITY.acquire(
+                                        reason="round_dispatch", run_id=run_id,
+                                        round_number=round_number, agent_id=aid)
+                                except CapacityError as exc:
+                                    final_stop_reason = "capacity_exhausted"
+                                    capacity_rejected.append(aid)
+                                    capacity_error_text = str(exc)
+                                    capacity_refusal = str(exc)
+                                    capacity_rejected_total += 1
+                                    break
                                 cursor += 1
                                 queued_at = time.perf_counter()
                                 queued_wall = datetime.now().astimezone().isoformat()
                                 pool.submit(aid, call, observation_by_id[aid],
-                                            quote_by_id[aid], queued_at, queued_wall)
+                                            quote_by_id[aid], queued_at, queued_wall, token)
                                 active[aid] = True
                                 peak_in_flight = max(peak_in_flight, len(active))
                             if not active:
@@ -1480,6 +1558,7 @@ class Day3Simulation:
                         "stop_on_failure": "StoppedAfterFailure",
                         "budget_exceeded": "BudgetExceeded",
                         "pool_exhausted": "PoolExhausted",
+                        "capacity_exhausted": "CapacityExhausted",
                     }.get(final_stop_reason, "NotDispatched")
                     # One connection for the whole tail of the round instead of one per
                     # agent. Agents that already produced a persisted outcome (valid,
@@ -1528,6 +1607,12 @@ class Day3Simulation:
                     abandoned_stats["pool_refused"] = True
                 if pool_capacity is not None:
                     abandoned_stats["pool_capacity"] = dict(pool_capacity)
+                if capacity_rejected:
+                    abandoned_stats["capacity"] = {
+                        "rejected_this_round": len(capacity_rejected),
+                        "refusal_reason": capacity_error_text,
+                        "process": PROCESS_CAPACITY.snapshot(),
+                    }
                 if phases is not None:
                     phases["round_started_at"] = round_started_at
                     phases["round_abandoned"] = True
@@ -1608,6 +1693,12 @@ class Day3Simulation:
                 stats["pool_refused"] = True
             if pool_capacity is not None:
                 stats["pool_capacity"] = dict(pool_capacity)
+            if capacity_rejected:
+                stats["capacity"] = {
+                    "rejected_this_round": len(capacity_rejected),
+                    "refusal_reason": capacity_error_text,
+                    "process": PROCESS_CAPACITY.snapshot(),
+                }
             if phases is not None:
                 phases["round_started_at"] = round_started_at
                 phases["phase_timing_note"] = (
@@ -1672,6 +1763,12 @@ class Day3Simulation:
                 final_stop_reason = "budget_exceeded"
                 break
 
+        # The round is settled and persisted before this is raised, so a caller that turns
+        # the refusal into a task outcome still has a complete ledger to read: requests that
+        # were never dispatched carry no cost, and dispatched ones keep their reservation.
+        if capacity_refusal is not None:
+            raise CapacityExhaustedError(
+                capacity_refusal, rejected_requests=capacity_rejected_total)
         return finish()
 
     @staticmethod
@@ -1814,6 +1911,20 @@ class Day3Simulation:
                      "another pool, so the loss stays bounded by one round's concurrency. "
                      "A refused round builds no pool and therefore reports no capacity."),
             "per_round": per_round_pool,
+        }
+        per_round_capacity = [row["capacity"] for row in rounds if row.get("capacity")]
+        summary["capacity"] = {
+            "limit": PROCESS_CAPACITY.limit,
+            "config_source": "RISKSHIELD_MAX_INFLIGHT_CALLS",
+            "used_now": PROCESS_CAPACITY.used(),
+            "rounds_with_refusals": len(per_round_capacity),
+            "rejected_requests": sum(item["rejected_this_round"]
+                                     for item in per_round_capacity),
+            "refusal_reason": next((item["refusal_reason"] for item in per_round_capacity
+                                    if item.get("refusal_reason")), None),
+            "note": ("the process ceiling is shared by every task and run, so a new task "
+                     "cannot reset it; a refused request is never sent, so it costs "
+                     "nothing, and nothing waits in a queue for capacity"),
         }
         summary["billing"] = self._billing_summary(run_id, Decimal(run["cost_cny"]))
         performance = self._performance_summary(run_id)
