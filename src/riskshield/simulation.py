@@ -409,7 +409,9 @@ class Day3Simulation:
         # calls were already paid for. The ceiling is never raised to accommodate it.
         process_limit = self._checked_process_limit()
         if concurrency > process_limit:
-            raise SimulationError(
+            # A capacity refusal, not a malformed run: the same input is valid under a larger
+            # ceiling, so the caller must be able to tell the two apart.
+            raise CapacityExhaustedError(
                 f"run concurrency {concurrency} exceeds the process in-flight limit "
                 f"{process_limit}; lower the concurrency or raise "
                 f"RISKSHIELD_MAX_INFLIGHT_CALLS")

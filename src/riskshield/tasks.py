@@ -8,10 +8,13 @@ notification delivery, or deployment.
 import hashlib
 import json
 import threading
+import time
 import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
 
+from riskshield.capacity import (configured_call_timeout_seconds,
+                                 configured_task_timeout_seconds)
 from riskshield.evidence import CollectionError, EvidencePipeline
 from riskshield.simulation import (CapacityExhaustedError, Day3Simulation, DecisionResult,
                                    SimulationError)
@@ -62,6 +65,21 @@ def _seconds_between(start: str, end: str) -> float:
             or end_at.tzinfo is None or end_at.utcoffset() is None):
         raise TaskError("task timestamps must include a timezone")
     return round((end_at - start_at).total_seconds(), 6)
+
+
+def _deadline_monotonic(input_received_at: str, budget_seconds: float) -> float:
+    """Turn a wall-clock budget into an absolute monotonic deadline.
+
+    The budget is counted from ``input_received_at`` -- when the input was received, not when
+    execution happened to begin -- so time spent queued is charged against it and a resumed
+    task never receives a fresh full budget. Only the remaining seconds are carried over to
+    the monotonic clock the engine compares against.
+    """
+    started = datetime.fromisoformat(input_received_at)
+    if started.tzinfo is None or started.utcoffset() is None:
+        raise TaskError("task timestamps must include a timezone")
+    elapsed = (datetime.now(timezone.utc) - started).total_seconds()
+    return time.monotonic() + (budget_seconds - elapsed)
 
 
 def _failure_category(exc: Exception) -> str:
@@ -521,9 +539,24 @@ class Day4Tasks:
             if run is None or case_row is None:
                 raise TaskError("case or simulation run disappeared before execution")
             self._validate_run_evidence(dict(run), json.loads(case_row["metadata"]))
+            # Both budgets come from configuration and are validated before anything runs.
+            # The round budget bounds one round's wait; the task deadline bounds the whole
+            # task from the moment its input was received. The engine obeys whichever is
+            # earlier, and a resumed task keeps the remaining time rather than a fresh
+            # budget.
+            deadline = _deadline_monotonic(row["input_received_at"],
+                                          configured_task_timeout_seconds())
+            if time.monotonic() >= deadline:
+                raise TaskError("task deadline expired before the simulation could start")
+            # An explicitly configured per-instance budget wins; otherwise the environment
+            # setting applies. Both are bounds, so an explicitly tighter one still holds.
+            round_budget = (self.simulation_call_timeout_seconds
+                            if self.simulation_call_timeout_seconds is not None
+                            else configured_call_timeout_seconds())
             result = self.simulation.advance(
                 run_id, OfflineDynamicSubstitute(),
-                call_timeout_seconds=self.simulation_call_timeout_seconds)
+                call_timeout_seconds=round_budget,
+                deadline_monotonic=deadline)
             # A run that stopped early still produces its five-module report as long as it
             # completed at least one round and its ledger is coherent. The task is NOT
             # presented as a success: it stays ``failed`` with a reason, and the report

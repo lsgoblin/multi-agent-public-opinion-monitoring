@@ -27,6 +27,7 @@ There is no waiting queue and no background retry. Exhaustion is reported immedi
 structured refusal, because queuing would hide a resource shortage rather than bound it.
 """
 
+import math
 import os
 import threading
 from datetime import datetime
@@ -36,6 +37,17 @@ from datetime import datetime
 # engine entry point that could dispatch a call validates it before any call is made.
 CONFIG_ENV = "RISKSHIELD_MAX_INFLIGHT_CALLS"
 DEFAULT_MAX_INFLIGHT_CALLS = 16
+
+# How long one round may wait for the calls it launched. This is a per-round budget, not a
+# per-request timeout: a round with four calls in flight does not get four times as long.
+# 120 s matches the value the recorded real-model runs were driven with.
+CALL_TIMEOUT_ENV = "RISKSHIELD_SIMULATION_CALL_TIMEOUT_SECONDS"
+DEFAULT_CALL_TIMEOUT_SECONDS = 120.0
+
+# The whole-task budget, measured from the moment the input was received -- not from when
+# the simulation happened to start, and not restarted when a task is resumed.
+TASK_TIMEOUT_ENV = "RISKSHIELD_TASK_TIMEOUT_SECONDS"
+DEFAULT_TASK_TIMEOUT_SECONDS = 3600.0
 
 
 class CapacityError(ValueError):
@@ -110,6 +122,20 @@ class InFlightCapacity:
             self._used -= 1
             return True
 
+    def try_admit(self) -> bool:
+        """Whether a new task may be accepted, decided atomically.
+
+        The test and any bookkeeping happen under one lock, so two concurrent requests can
+        never both be told yes on the strength of the same free slot. The caller must treat
+        this as an admission test, not as a reservation: capacity belongs to dispatched
+        calls, so a task admitted here still takes its own slots when it dispatches and is
+        refused then if the process has filled up in the meantime.
+        """
+        with self._lock:
+            if self._limit is None:
+                self._limit = configured_limit()
+            return self._used < self._limit
+
     def snapshot(self) -> dict:
         with self._lock:
             if self._limit is None:
@@ -158,6 +184,50 @@ def configured_limit() -> int:
         raise CapacityError(
             f"{CONFIG_ENV} must be a positive integer, got {raw!r}")
     return value
+
+
+def _positive_setting(name: str, default: float) -> float:
+    """Read a finite positive number, rejecting anything else.
+
+    ``0`` and negatives have no meaning as a budget, and ``inf``/``nan`` would silently
+    disable the bound they are supposed to impose, so all three are configuration errors
+    rather than values to coerce.
+    """
+    raw = os.environ.get(name)
+    if raw is None or raw.strip() == "":
+        return default
+    text = raw.strip()
+    try:
+        value = float(text)
+    except ValueError:
+        raise CapacityError(f"{name} must be a finite positive number, got {raw!r}") from None
+    if not math.isfinite(value) or value <= 0:
+        raise CapacityError(f"{name} must be a finite positive number, got {raw!r}")
+    return value
+
+
+def configured_call_timeout_seconds() -> float:
+    """Per-round wait budget, applied to a round as a whole."""
+    return _positive_setting(CALL_TIMEOUT_ENV, DEFAULT_CALL_TIMEOUT_SECONDS)
+
+
+def configured_task_timeout_seconds() -> float:
+    """Whole-task budget, counted from ``input_received_at``."""
+    return _positive_setting(TASK_TIMEOUT_ENV, DEFAULT_TASK_TIMEOUT_SECONDS)
+
+
+def validate_startup_configuration() -> dict:
+    """Validate every ``RISKSHIELD_*`` resource setting at once.
+
+    Called when the application starts, so a mistyped environment variable stops the
+    application instead of surfacing halfway through a task that has already spent money.
+    Returns the resolved values for logging.
+    """
+    return {
+        CONFIG_ENV: configured_limit(),
+        CALL_TIMEOUT_ENV: configured_call_timeout_seconds(),
+        TASK_TIMEOUT_ENV: configured_task_timeout_seconds(),
+    }
 
 
 # The single process-wide instance. Everything that dispatches a backend call shares it.
