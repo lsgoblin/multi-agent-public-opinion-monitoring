@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="1140" viewBox="0 0 1680 1140" font-family="Microsoft YaHei, Microsoft YaHei UI, SimHei, Segoe UI, sans-serif">
+<rect width="1680" height="1140" fill="#FFFFFF"/>
+<defs><marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#5B6B7C"/></marker></defs>
+<text x="840" y="87.25" font-size="12.5" fill="#4B5563" text-anchor="middle">从案例到五模块报告、四级预警与通知预览的实际控制流；方框左侧标签为承载该步骤的组件</text>
+<text x="840" y="62.38" font-size="23" fill="#1F2937" font-weight="700" text-anchor="middle">风控盾 · 端到端流程（main @ a4ac28b · 2026-10-14）</text>
+<rect x="40" y="150" width="1120" height="84" rx="10" fill="#E8F1FB" stroke="#2E6FB7" stroke-width="1.6"/>
+<text x="58" y="174.30" font-size="11.6" fill="#6B7280" font-weight="700">Web · 处置队列</text>
+<text x="58" y="195.57" font-size="12.8" fill="#1F2937" font-weight="700">① 选择或导入案例，核对 data_mode、来源版本、cutoff 与 cutoff 依据</text>
+<text x="58" y="217.98" font-size="11.3" fill="#4B5563">cutoff 之后才可见的材料只进评测侧（not_input），不得进入图与 Agent 上下文</text>
+<line x1="600" y1="236" x2="600" y2="250" stroke="#5B6B7C" stroke-width="1.8" marker-end="url(#head)"/>
+<rect x="40" y="248" width="1120" height="84" rx="10" fill="#FFF6E5" stroke="#C97B0A" stroke-width="1.6"/>
+<text x="58" y="272.30" font-size="11.6" fill="#6B7280" font-weight="700">API · evidence.py</text>
+<text x="58" y="293.57" font-size="12.8" fill="#1F2937" font-weight="700">② 构建截止证据图：POST /cases/{id}/graph → graph_id</text>
+<text x="58" y="315.98" font-size="11.3" fill="#4B5563">build_mode 记录为 offline_archived_record_projection 或 day2_cutoff_evidence_graph；本机投影不等于在线 GraphRAG</text>
+<line x1="600" y1="334" x2="600" y2="348" stroke="#5B6B7C" stroke-width="1.8" marker-end="url(#head)"/>
+<rect x="40" y="346" width="1120" height="84" rx="10" fill="#E8F1FB" stroke="#2E6FB7" stroke-width="1.6"/>
+<text x="58" y="370.30" font-size="11.6" fill="#6B7280" font-weight="700">API · simulation.py</text>
+<text x="58" y="391.57" font-size="12.8" fill="#1F2937" font-weight="700">③ 创建运行配置：POST /simulations（或 /demos/day4/run、/day4/historical/jobs）→ run_id</text>
+<text x="58" y="413.98" font-size="11.3" fill="#4B5563">配置 Agent 数（界面 1–500）、轮数（1–30）、并发（1–128）与费用上限（≤¥30.00 字段）</text>
+<line x1="600" y1="432" x2="600" y2="446" stroke="#5B6B7C" stroke-width="1.8" marker-end="url(#head)"/>
+<rect x="40" y="444" width="1120" height="84" rx="10" fill="#E8F1FB" stroke="#2E6FB7" stroke-width="1.6"/>
+<text x="58" y="468.30" font-size="11.6" fill="#6B7280" font-weight="700">API · tasks.py</text>
+<text x="58" y="489.57" font-size="12.8" fill="#1F2937" font-weight="700">④ 排入后台任务：POST /jobs → job_id（HTTP 202）</text>
+<text x="58" y="511.98" font-size="11.3" fill="#4B5563">受理前经 PROCESS_CAPACITY.try_admit()；状态 queued → running；任务在 API 进程内线程执行</text>
+<line x1="600" y1="530" x2="600" y2="544" stroke="#5B6B7C" stroke-width="1.8" marker-end="url(#head)"/>
+<rect x="40" y="542" width="1120" height="84" rx="10" fill="#FFF6E5" stroke="#C97B0A" stroke-width="1.6"/>
+<text x="58" y="566.30" font-size="11.6" fill="#6B7280" font-weight="700">执行器 · 逐轮</text>
+<text x="58" y="587.57" font-size="12.8" fill="#1F2937" font-weight="700">⑤ offline_dynamic_substitute 逐轮执行：读截止图证据＋自身记忆＋收到的消息 → 生成动作 → 写回状态与账本</text>
+<text x="58" y="609.98" font-size="11.3" fill="#4B5563">每轮分别记录有效 / 失败 / 超时决策、消息条数与记忆引用；消息与记忆被引用不证明其对动作存在因果影响</text>
+<line x1="600" y1="628" x2="600" y2="642" stroke="#5B6B7C" stroke-width="1.8" marker-end="url(#head)"/>
+<rect x="40" y="640" width="1120" height="84" rx="10" fill="#FFF6E5" stroke="#C97B0A" stroke-width="1.6"/>
+<text x="58" y="664.30" font-size="11.6" fill="#6B7280" font-weight="700">执行器 · 结束判定</text>
+<text x="58" y="685.57" font-size="12.8" fill="#1F2937" font-weight="700">⑥ 全部决策有效 → complete；否则 partial / stopped / failed</text>
+<text x="58" y="707.98" font-size="11.3" fill="#4B5563">API 重启中断 → failed（interrupted_on_restart），不自动续跑；一轮结束不等于所有决策有效</text>
+<line x1="600" y1="726" x2="600" y2="740" stroke="#5B6B7C" stroke-width="1.8" marker-end="url(#head)"/>
+<rect x="40" y="738" width="1120" height="84" rx="10" fill="#E8F1FB" stroke="#2E6FB7" stroke-width="1.6"/>
+<text x="58" y="762.30" font-size="11.6" fill="#6B7280" font-weight="700">reporting.py</text>
+<text x="58" y="783.57" font-size="12.8" fill="#1F2937" font-weight="700">⑦ 生成五模块报告 → report_id（complete 自动生成；部分运行走受限路径）</text>
+<text x="58" y="805.98" font-size="11.3" fill="#4B5563">传播 / 情绪演化 / 关键节点 / 风险 / 建议，各模块绑定同一案例、图与运行；传播与情绪是模拟结果，不是平台实测</text>
+<line x1="600" y1="824" x2="600" y2="838" stroke="#5B6B7C" stroke-width="1.8" marker-end="url(#head)"/>
+<rect x="40" y="836" width="1120" height="84" rx="10" fill="#FFF6E5" stroke="#C97B0A" stroke-width="1.6"/>
+<text x="58" y="860.30" font-size="11.6" fill="#6B7280" font-weight="700">alerts.py</text>
+<text x="58" y="881.57" font-size="12.8" fill="#1F2937" font-weight="700">⑧ 判级：POST /alerts/assess → alert_id</text>
+<text x="58" y="903.98" font-size="11.3" fill="#4B5563">red ≥40% / orange ≥20% / yellow ≥5% / blue，按最后一轮有效决策中模拟投诉意向占比；status = provisional_offline_assessment，阈值未经真实事件校准</text>
+<line x1="600" y1="922" x2="600" y2="936" stroke="#5B6B7C" stroke-width="1.8" marker-end="url(#head)"/>
+<rect x="40" y="934" width="1120" height="84" rx="10" fill="#FFF6E5" stroke="#C97B0A" stroke-width="1.6"/>
+<text x="58" y="958.30" font-size="11.6" fill="#6B7280" font-weight="700">alerts.py</text>
+<text x="58" y="979.57" font-size="12.8" fill="#1F2937" font-weight="700">⑨ 通知预览：POST /alerts/{id}/previews（企业微信 / 邮件）</text>
+<text x="58" y="1001.98" font-size="11.3" fill="#4B5563">delivery_status = dry_run、sent_at = null、network_requests = 0；预览明确写出 OFFLINE PREVIEW ONLY</text>
+<line x1="600" y1="1020" x2="600" y2="1034" stroke="#5B6B7C" stroke-width="1.8" marker-end="url(#head)"/>
+<rect x="40" y="1032" width="1120" height="84" rx="10" fill="#FDECEC" stroke="#C0392B" stroke-width="1.6" stroke-dasharray="7 5"/>
+<text x="58" y="1056.30" font-size="11.6" fill="#6B7280" font-weight="700">evidence.py</text>
+<text x="58" y="1077.57" font-size="12.8" fill="#1F2937" font-weight="700">⑩ 来源引用追问：POST /graphs/{id}/query</text>
+<text x="58" y="1099.98" font-size="11.3" fill="#4B5563">当前为词项匹配标题/摘要并返回来源引用与图邻域；× 带上下文的自然语言追问尚未实现</text>
+<rect x="1190" y="150" width="450" height="290" rx="12" fill="#EEF2F5" stroke="#6B7A8A" stroke-width="1.6"/>
+<text x="1208" y="175.78" font-size="13" fill="#1F2937" font-weight="700">ID 链（同一次演示应能逐环对齐）</text>
+<text x="1208" y="202.08" font-size="11.4" fill="#4B5563">case_id → graph_id → run_id →</text>
+<text x="1208" y="219.75" font-size="11.4" fill="#4B5563">job_id → report_id → alert_id</text>
+<text x="1208" y="255.09" font-size="11.4" fill="#4B5563">本机基线示例：</text>
+<text x="1208" y="272.76" font-size="11.4" fill="#4B5563">case_id = unh_change_20240222_day2_multisource</text>
+<text x="1208" y="290.43" font-size="11.4" fill="#4B5563">graph_id = 936c73951d2ab46f8e0ee6bb</text>
+<text x="1208" y="308.10" font-size="11.4" fill="#4B5563">run_id = run_7aff1ceff6934a1da13e</text>
+<text x="1208" y="325.77" font-size="11.4" fill="#4B5563">job_id = job_02aa0aed4a594ebe995c</text>
+<text x="1208" y="343.44" font-size="11.4" fill="#4B5563">report_id = report_26db8f02583eb98bde5f7490</text>
+<text x="1208" y="361.11" font-size="11.4" fill="#4B5563">alert_id = alert_19fe8d54fd95ea0876eee8b6323fd0c4</text>
+<rect x="1190" y="460" width="450" height="300" rx="12" fill="#FFF6E5" stroke="#C97B0A" stroke-width="1.6"/>
+<text x="1208" y="485.78" font-size="13" fill="#1F2937" font-weight="700">时限与口径（必须与图同时陈述）</text>
+<text x="1208" y="512.08" font-size="11.4" fill="#4B5563">命题要求：事件输入 → 五模块报告 ≤60 分钟；</text>
+<text x="1208" y="529.75" font-size="11.4" fill="#4B5563">红警发现 → 实际推送 ≤30 分钟。</text>
+<text x="1208" y="547.42" font-size="11.4" fill="#4B5563">本机实测：离线替身端到端 0.189624 秒；</text>
+<text x="1208" y="565.09" font-size="11.4" fill="#4B5563">合成事件 500×30 的 931.709 秒只是仿真引擎阶段。</text>
+<text x="1208" y="582.76" font-size="11.4" fill="#4B5563">两项都不能当作完整真实事件的模型 SLA。</text>
+<text x="1208" y="618.10" font-size="11.4" fill="#4B5563">红警时效未验证：没有真实发送与送达回执，</text>
+<text x="1208" y="635.77" font-size="11.4" fill="#4B5563">dry_run 预览耗时不是推送时效。</text>
+<text x="1208" y="671.11" font-size="11.4" fill="#4B5563">complete（任务状态）不等于 G3 / G4 通过；</text>
+<text x="1208" y="688.78" font-size="11.4" fill="#4B5563">仿真传播图不等于平台真实传播。</text>
+<rect x="1190" y="780" width="450" height="180" rx="12" fill="#FFFFFF" stroke="#9AA7B4" stroke-width="1.6"/>
+<text x="1208" y="805.78" font-size="13" fill="#1F2937" font-weight="700">每个步骤的对应文档</text>
+<text x="1208" y="832.08" font-size="11.4" fill="#4B5563">连续演示路径：docs/delivery/user-guide.md 第 2 节</text>
+<text x="1208" y="849.75" font-size="11.4" fill="#4B5563">任务进度与失败处理：同文档第 3 节</text>
+<text x="1208" y="867.42" font-size="11.4" fill="#4B5563">证据图与五模块报告：第 4 节</text>
+<text x="1208" y="885.09" font-size="11.4" fill="#4B5563">四级预警与通知预览：第 5、6 节</text>
+<text x="1208" y="902.76" font-size="11.4" fill="#4B5563">部署与 Docker 运行：docs/delivery/deployment.md</text>
+<text x="1208" y="920.43" font-size="11.4" fill="#4B5563">接口清单与请求示例：docs/delivery/api.md</text>
+<text x="1208" y="938.10" font-size="11.4" fill="#4B5563">运行边界速查表：user-guide.md 末表</text>
+<rect x="1190" y="980" width="450" height="76" rx="12" fill="#FDECEC" stroke="#C0392B" stroke-width="1.6" stroke-dasharray="7 5"/>
+<text x="1208" y="1005.36" font-size="12.6" fill="#9B2C1F" font-weight="700">演示时不得省略的标注</text>
+<text x="1208" y="1029.87" font-size="11.2" fill="#9B2C1F">offline_dynamic_substitute　·　暂定四级阈值　·　dry_run</text>
+<text x="1208" y="1046.67" font-size="11.2" fill="#9B2C1F">来源证据图 ≠ 模拟传播图　·　合成案例 ≠ 真实历史回测</text>
+</svg>

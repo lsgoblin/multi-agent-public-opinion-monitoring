@@ -23,6 +23,8 @@ data/private/
 # Submission docs: track current dated plan/design, keep historical drafts local.
 /docs/design/*
 !/docs/design/当前架构与设计依据-2026-10-11.md
+!/docs/design/技术架构与流程图-2026-10-14.md
+!/docs/design/assets/
 /docs/archive/
 /docs/records/
 /docs/sources/*
