@@ -1645,6 +1645,46 @@ def test_the_diagnostic_invariant_catches_a_dropped_event(tmp_path):
     assert checked["checked"] is True and checked["unaccounted_events"] == []
 
 
+def test_an_adjudicated_label_carries_its_own_evidence(tmp_path):
+    """A resolution matching neither pass still has to resolve its evidence."""
+    root = _fixture_root(tmp_path, [])
+    _trajectory_root(tmp_path, ["evt-1"])
+    _direction_submissions_disagreeing(root, "evt-1", label_a="escalation", label_b="calming")
+    _direction_adjudication(root, "evt-1", label="cannot_judge")
+    cohort = _trajectory_cohort([], expected_excluded_unit_ids=["evt-1"],
+                                direction_adjudication_record="direction/adjudication.json")
+    units = bench.trajectory_units(root, cohort)
+    bench.attach_direction_labels(units, cohort["annotation_sources"], root)
+    bench.attach_direction_adjudications(units, cohort["direction_adjudication_record"], root)
+
+    _, labels_doc, _ = bench.score_trajectory_set(units, dataset_version="v1",
+                                                  label_version="l1", evidence_root=root,
+                                                  package_relative="pkg.json")
+
+    refs = labels_doc["events"][0]["evidence_refs"]
+    assert any("adjudication" in ref["path"] for ref in refs)
+
+
+def test_a_declared_cannot_judge_is_not_reported_as_a_label_space_problem(tmp_path):
+    root = _fixture_root(tmp_path, [])
+    _trajectory_root(tmp_path, ["evt-1"])
+    _direction_submissions_disagreeing(root, "evt-1", label_a="escalation", label_b="calming")
+    _direction_adjudication(root, "evt-1", label="cannot_judge")
+    cohort = _trajectory_cohort([], expected_excluded_unit_ids=["evt-1"],
+                                direction_adjudication_record="direction/adjudication.json")
+
+    result = bench.evaluate_cohort(cohort, bench.trajectory_units(root, cohort),
+                                   root=root, cutoffs_document=None,
+                                   out_dir_relative="out/run")
+
+    gate = bench.trajectory_direction_gate(result["units"][0])
+    assert gate["reasons"] == ["declared_cannot_judge"]
+    diagnostic = result["metrics"]["direction_three_class"]
+    assert diagnostic["denominator"] == 0
+    assert diagnostic["not_scored"]["declared_cannot_judge"]["count"] == 1
+    assert diagnostic["class_support"]["stable"] == 0
+
+
 # --------------------------------------------------------------------------
 # group 7: the command line contract
 # --------------------------------------------------------------------------

@@ -790,8 +790,14 @@ def score_trajectory_set(units: list[dict[str, Any]], *, dataset_version: str,
     events = [{
         "event_id": unit["event_id"],
         "observed_direction": resolved_direction_label(unit),
+        # An adjudicated label needs its own evidence. Relying on the two passes'
+        # refs worked only while the resolution happened to equal one of them; a
+        # resolution that differs from both, such as a declared cannot-judge, had
+        # nothing pointing at it and the event was dropped for missing evidence --
+        # which looked like a data problem and was an omission here.
         "evidence_refs": [ref for annotation in unit.get("direction_annotations", [])
-                          for ref in annotation["evidence_refs"]],
+                          for ref in annotation["evidence_refs"]]
+        + list((unit.get("direction_adjudication") or {}).get("evidence_refs") or []),
     } for unit in units]
     labels = {"schema": LABEL_SCHEMA, "label_version": label_version,
               "sentiment_labels": [], "events": events}
@@ -1246,6 +1252,9 @@ def trajectory_direction_gate(unit: dict[str, Any]) -> dict[str, Any]:
     label = resolved_direction_label(unit)
     if label is None:
         reasons.append("no_independent_human_direction_label")
+    elif label in DIRECTION_UNSCORABLE_LABELS:
+        # A declared refusal is its own outcome, not a label-space problem.
+        reasons.append("declared_cannot_judge")
     elif label not in ENGINE_DIRECTION_LABELS:
         reasons.append("human_direction_label_outside_the_engine_label_space")
 
