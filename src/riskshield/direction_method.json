@@ -50,6 +50,21 @@
   "label_rule": "escalation when escalation_share >= escalation_share_threshold, otherwise calming",
   "undecided_handling": "rows that are not valid are excluded from the universe and counted separately; they never contribute to the share"
  },
+ "admission_conditions": {
+  "note": "These qualify how a label may be used. They are not part of the classification rule, so applying them does not change any label and therefore does not change the method version.",
+  "formal_direction_prediction": [
+   "the run is complete and its last completed round is the configured last round, so the persisted final state the rule reads is the state at the end of the predicted round",
+   "the event carries exactly one direction prediction in the set that would be scored, counting every source",
+   "the prediction is frozen, with the run selected, before any outcome or label is read"
+  ],
+  "tentative_only": [
+   "the run is partial: the label may still be computed and is reported with qualification tentative_partial_run, but it is refused by the formal preflight and must be labelled as tentative analysis wherever it is shown"
+  ],
+  "separate_reports": [
+   "a simulation-derived prediction and a model baseline are separate reports and are never pooled into one event",
+   "a baseline result must never be reported as this method's result, and this method's result must never be reported as a baseline's"
+  ]
+ },
  "method_limits": [
   "The rule reads the simulation's own action vocabulary and local state. It is not calibrated against any observed event trajectory.",
   "It is deterministic for a given ledger, so an identical ledger always yields the same label; it carries no confidence or probability.",

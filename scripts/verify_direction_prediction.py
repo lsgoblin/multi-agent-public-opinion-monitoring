@@ -23,6 +23,7 @@ script says so rather than pretending the path was exercised.
 """
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -32,7 +33,8 @@ sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 from riskshield import evaluation  # noqa: E402
 from riskshield.direction_prediction import (  # noqa: E402
-    DirectionPredictionError, sha256_bytes, write_documents)
+    DirectionPredictionError, sha256_bytes, write_documents,
+    preflight_event_level_uniqueness, preflight_import_references)
 from riskshield.store import Store  # noqa: E402
 
 LABEL_SCHEMA = "riskshield.day5.future-labels.v1"
@@ -76,13 +78,14 @@ def build_synthetic_labels(inputs: dict, *, observed_direction: str,
     }
 
 
-def write_label_evidence(path: Path, inputs: dict, observed_direction: str) -> str:
+def write_label_evidence(path: Path, inputs: dict, observed_direction: str,
+                         material_root: Path) -> str:
     path.write_text(json.dumps({
         "observed_direction": observed_direction,
         "sentiment_label_by_evaluation_id": {case["evaluation_id"]: "neutral"
                                              for case in inputs["cases"]},
     }, ensure_ascii=False, indent=1), encoding="utf-8")
-    return str(path.relative_to(PROJECT_ROOT)).replace("\\", "/")
+    return str(path.relative_to(material_root)).replace("\\", "/")
 
 
 def reference_problems(inputs: dict, evidence_root: Path) -> list:
@@ -123,13 +126,17 @@ def main() -> int:
                              "the prediction, so the wrong-prediction path is exercised")
     parser.add_argument("--unit-kind", default="original_title",
                         choices=["original_title", "original_post"])
+    parser.add_argument("--material-root", default=str(PROJECT_ROOT),
+                        help="absolute directory every reference is resolved against; the "
+                             "evaluator is run from it, and it must contain the output dir")
     args = parser.parse_args()
 
     outdir = Path(args.outdir).expanduser().resolve()
     outdir.mkdir(parents=True, exist_ok=True)
+    material_root = Path(args.material_root).expanduser().resolve()
     store = Store(Path(args.db).expanduser().resolve())
     try:
-        written = write_documents(store, args.run_id, outdir, base=PROJECT_ROOT,
+        written = write_documents(store, args.run_id, outdir, material_root=material_root,
                                  unit_kind=args.unit_kind)
     except DirectionPredictionError as exc:
         raise SystemExit(f"cannot export a prediction: {exc}") from None
@@ -144,7 +151,8 @@ def main() -> int:
     observed = args.observed_direction or ("calming" if predicted == "escalation"
                                            else "escalation")
     label_evidence = outdir / "synthetic-label-evidence-v1.json"
-    label_evidence_relative = write_label_evidence(label_evidence, inputs, observed)
+    label_evidence_relative = write_label_evidence(label_evidence, inputs, observed,
+                                                  material_root)
     labels_path = outdir / "synthetic-future-labels-v1.json"
     labels_path.write_text(json.dumps(build_synthetic_labels(
         inputs, observed_direction=observed,
@@ -152,22 +160,43 @@ def main() -> int:
         encoding="utf-8")
 
     # Resolve references the way the evaluator does, so a broken pointer is reported here.
-    problems = reference_problems(inputs, PROJECT_ROOT)
+    problems = reference_problems(inputs, material_root)
 
-    report = evaluation.evaluate_files(inputs_path, labels_path)
+    # ``riskshield.evaluation.evaluate_files`` hardcodes its evidence root to the process
+    # working directory, so the evaluator is run from the material root here. That coupling
+    # is a shared-interface question raised in the handoff; this script does not work around
+    # it silently, it states where it stands.
+    previous_cwd = Path.cwd()
+    os.chdir(material_root)
+    try:
+        report = evaluation.evaluate_files(inputs_path, labels_path)
+    finally:
+        os.chdir(previous_cwd)
     direction = report["direction_agreement"]
     invalid = direction["excluded_events_or_rows"]
     reasons = sorted({reason for row in invalid for reason in row.get("reasons", [])})
+    uniqueness = preflight_event_level_uniqueness(
+        [{"event_id": inputs["cases"][0]["event_id"],
+          "unit_id": inputs["cases"][0]["unit_id"], "label": predicted,
+          "run_id": inputs["cases"][0]["predictions"]["direction"]["run_id"],
+          "source_label": "simulation",
+          "qualification": inputs["cases"][0]["run_completeness"]["qualification"]}],
+        declared_events={"simulation": {inputs["cases"][0]["event_id"]}})
+    import_check = preflight_import_references(written["import_document"], material_root)
 
     print(f"inputs            : {inputs_path}")
     print(f"labels (synthetic): {labels_path}")
+    print(f"material root     : {material_root}")
     print(f"prediction        : {predicted} (source="
           f"{inputs['cases'][0]['predictions']['direction'].get('prediction_source')})")
+    print(f"qualification     : {inputs['cases'][0]['run_completeness']['qualification']}")
     print(f"observed (synthetic): {observed}")
     print(f"cases             : {len(inputs['cases'])}")
     print(f"unresolved evidence references: {len(problems)}")
     for row in problems:
         print(f"  BROKEN {row}")
+    print(f"import reference check: {'ok' if import_check['ok'] else import_check['problems']}")
+    print(f"event uniqueness  : {'ok' if uniqueness['ok'] else uniqueness}")
     print(f"direction numerator/denominator: "
           f"{direction['numerator']}/{direction['denominator']}")
     print(f"direction scored events: {direction['scored_events']}")
@@ -176,6 +205,8 @@ def main() -> int:
           f"{sorted(report['input_exclusions']['reasons'])}")
 
     ok = (not problems
+          and import_check["ok"]
+          and uniqueness["ok"]
           and len(inputs["cases"]) >= 1
           and all(list(case["predictions"]) == ["direction"] for case in inputs["cases"])
           and direction["denominator"] >= 1)
