@@ -40,6 +40,7 @@ from __future__ import annotations
 import hashlib
 import json
 from datetime import datetime, timezone
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Any
 
@@ -63,7 +64,9 @@ TASK_DIRECTION = "event_direction"
 FORMAL_EXECUTION_MODES = (
     "formal_model_run_v1",
     "sealed_model_run_v1",
+    "live_multi_agent_simulation_v1",
 )
+LIVE_SIMULATION_MODE = "live_multi_agent_simulation_v1"
 
 # Modes that are, by construction, engineering stand-ins. They are listed so the
 # report can name exactly why they were rejected.
@@ -259,15 +262,15 @@ def _check_input_binding(entry: dict[str, Any], root: Path, unit: dict[str, Any]
 
 
 def _check_production_evidence(entry: dict[str, Any], root: Path,
-                               reasons: list[str]) -> None:
+                               reasons: list[str]) -> dict[str, Any]:
     ref = entry.get("production_evidence_ref")
     resolved, failure = _resolve_ref(ref, root)
     if failure is not None:
         reasons.append(f"production_evidence_{failure}")
-        return
+        return {}
     if not isinstance(resolved, dict):
         reasons.append("production_evidence_not_an_object")
-        return
+        return {}
     if resolved.get("run_id") != entry.get("run_id"):
         reasons.append("production_evidence_run_id_mismatch")
     if resolved.get("execution_mode") != entry.get("execution_mode"):
@@ -275,6 +278,124 @@ def _check_production_evidence(entry: dict[str, Any], root: Path,
     status = resolved.get("run_status")
     if status != "complete":
         reasons.append("production_run_not_complete")
+    return resolved
+
+
+def _nonnegative_int(value: Any) -> bool:
+    return type(value) is int and value >= 0
+
+
+def _check_live_simulation(entry: dict[str, Any], document: dict[str, Any],
+                           unit: dict[str, Any], root: Path,
+                           evidence: dict[str, Any], freeze: dict[str, Any],
+                           reasons: list[str]) -> None:
+    """Admit only a complete, ledger-backed real-history simulation export."""
+    if entry.get("execution_mode") != LIVE_SIMULATION_MODE:
+        return
+    if entry.get("task_type") != TASK_DIRECTION or document.get("task_type") != TASK_DIRECTION:
+        reasons.append("simulation_wrong_task_type")
+    if document.get("material_class") != MATERIAL_CLASS_REAL or \
+            document.get("formal_score_eligible") is not True:
+        reasons.append("simulation_not_real_formal_material")
+    if entry.get("prediction_source") != "simulation_derived" or \
+            entry.get("qualification") != "formal_candidate":
+        reasons.append("simulation_prediction_not_formal_candidate")
+
+    binding = entry.get("input_binding")
+    if not isinstance(binding, dict):
+        binding = {}
+    package, failure = _resolve_ref(binding.get("input_package_ref"), root)
+    if failure is None and isinstance(package, dict):
+        if package.get("data_mode") != "real_historical":
+            reasons.append("simulation_input_not_real_historical")
+        if package.get("case_id") != unit.get("event_id") or \
+                _parse_time(package.get("cutoff")) != _parse_time(unit.get("cutoff")) or \
+                package.get("source_version") != unit.get("source_version"):
+            reasons.append("simulation_input_identity_mismatch")
+        records = package.get("records")
+        target = next((record for record in records
+                       if isinstance(record, dict) and
+                       record.get("record_id") == unit.get("unit_id")), None) \
+            if isinstance(records, list) else None
+        if not isinstance(records, list) or not records or target is None:
+            reasons.append("simulation_target_record_missing")
+        else:
+            hashes = {sha256_bytes(target[field].encode("utf-8"))
+                      for field in ("title", "summary")
+                      if isinstance(target.get(field), str)}
+            if unit.get("text_sha256") not in hashes:
+                reasons.append("simulation_target_text_hash_mismatch")
+        if isinstance(records, list) and records and any(
+                not isinstance(record, dict) or
+                _parse_time(record.get("available_at")) is None or
+                _parse_time(package.get("cutoff")) is None or
+                _parse_time(record["available_at"]) > _parse_time(package["cutoff"])
+                for record in records):
+            reasons.append("simulation_input_has_unverified_or_late_record")
+        if freeze.get("frozen_inputs_sha256") != canonical_digest(package):
+            reasons.append("simulation_freeze_input_hash_mismatch")
+
+    if evidence.get("schema") != "riskshield.simulation_scale.ledger_evidence.v1" or \
+            evidence.get("case_id") != unit.get("event_id") or \
+            evidence.get("data_mode") != "real_historical" or \
+            _parse_time(evidence.get("config_cutoff")) != _parse_time(unit.get("cutoff")) or \
+            evidence.get("config_source_version") != unit.get("source_version"):
+        reasons.append("simulation_ledger_identity_mismatch")
+
+    calls = evidence.get("model_calls")
+    by_model = evidence.get("model_calls_by_model")
+    if not _nonnegative_int(calls) or calls == 0 or \
+            not isinstance(by_model, dict) or not by_model or \
+            any(not isinstance(name, str) or not name.strip() or
+                not _nonnegative_int(count) for name, count in by_model.items()) or \
+            (isinstance(calls, int) and isinstance(by_model, dict) and
+             all(_nonnegative_int(count) for count in by_model.values()) and
+             sum(by_model.values()) != calls):
+        reasons.append("simulation_model_call_ledger_invalid")
+    for field in ("requests_with_usage", "unknown_usage_calls", "prompt_tokens",
+                  "completion_tokens", "cached_input_tokens", "valid_decisions",
+                  "rows_without_eligible_evidence"):
+        if not _nonnegative_int(evidence.get(field)):
+            reasons.append(f"simulation_invalid_{field}")
+    if evidence.get("unknown_usage_calls") != 0 or \
+            evidence.get("requests_with_usage") != calls or \
+            evidence.get("rows_without_eligible_evidence") != 0:
+        reasons.append("simulation_unverified_usage_or_evidence")
+    if not _nonnegative_int(evidence.get("valid_decisions")) or \
+            evidence.get("valid_decisions") == 0 or \
+            (_nonnegative_int(calls) and evidence.get("valid_decisions") > calls):
+        reasons.append("simulation_no_valid_decisions")
+    cost = evidence.get("cost_cny")
+    try:
+        parsed_cost = Decimal(str(cost)) if type(cost) in (str, int, float) else None
+    except InvalidOperation:
+        parsed_cost = None
+    if parsed_cost is None or not parsed_cost.is_finite() or parsed_cost < 0 or \
+            not isinstance(evidence.get("price_version"), str) or \
+            not evidence["price_version"].strip():
+        reasons.append("simulation_cost_ledger_invalid")
+
+    completeness = entry.get("run_completeness")
+    if not isinstance(completeness, dict):
+        reasons.append("simulation_missing_run_completeness")
+        return
+    rounds = [evidence.get("configured_rounds"), evidence.get("completed_rounds"),
+              evidence.get("recorded_round_rows"), evidence.get("selected_round"),
+              evidence.get("recorded_rounds"), completeness.get("configured_rounds"),
+              completeness.get("selected_round"), completeness.get("recorded_rounds")]
+    if not all(_nonnegative_int(value) and value > 0 for value in rounds) or \
+            len(set(rounds)) != 1 or completeness.get("run_status") != "complete" or \
+            completeness.get("abandoned_rounds") != 0 or \
+            completeness.get("state_basis") != "run_final_state" or \
+            completeness.get("state_is_at_selected_round") is not True or \
+            completeness.get("qualification") != "formal_candidate":
+        reasons.append("simulation_run_not_complete_at_selected_round")
+    agents = evidence.get("configured_agent_count")
+    if not _nonnegative_int(agents) or agents == 0 or \
+            evidence.get("not_dispatched_requests") != 0 or \
+            (_nonnegative_int(calls) and _nonnegative_int(evidence.get("configured_rounds"))
+             and calls > agents * evidence["configured_rounds"]):
+        reasons.append("simulation_scale_ledger_invalid")
 
 
 def _check_freeze(entry: dict[str, Any], root: Path, document_digest: str,
@@ -412,8 +533,10 @@ def import_formal_predictions(
         _check_execution_mode(entry, reasons)
         _check_label(entry, task_type, reasons)
         binding = _check_input_binding(entry, root, unit, reasons)
-        _check_production_evidence(entry, root, reasons)
+        production_evidence = _check_production_evidence(entry, root, reasons)
         freeze_record = _check_freeze(entry, root, document_digest, reasons)
+        _check_live_simulation(entry, document, unit, root, production_evidence,
+                               freeze_record, reasons)
         _check_isolation_declarations(entry, reasons)
 
         if reasons:
