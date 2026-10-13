@@ -14,6 +14,8 @@ Hacker News Algolia 能在指定时间窗返回带创建时间的故事与评论
 | [GDELT 原始数据](https://gdeltproject.org/data.html) | 官方提供免费开放的新闻事件及 GKG 元数据文件，2.0 更新约每 15 分钟。 | 官方资料称全年原始数据量巨大；本轮未下载。它提供的是新闻索引/元数据，不自动给出舆情评论或原站全文使用权，不能把文章数直接解释为用户情绪。 |
 | [Media Cloud 新闻档案](https://www.mediacloud.org/documentation/search-api-guide) | 官方称历史在线新闻档案可检索。 | [官方示例](https://github.com/mediacloud/api-tutorial-notebooks)要求注册账号和 API key；[使用条款 §2.1、§2.3](https://www.mediacloud.org/legal/media-cloud-terms-of-use)说明平台主要适合学术、非营利和新闻研究，不为商业品牌研究设计，且不授予第三方报道内容的使用权。本轮未注册、未调用，不把它列为已授权正式来源。 |
 
+补充一次**只读可达性探针**：2026-10-14 对 GDELT 2.0 的 `20230526150000.gkg.csv.zip` 发 `HEAD`，本机返回 HTTP 200、`Content-Length=9644013` 字节；没有下载该文件或新闻正文。这仅证明一个 15 分钟历史切片可达，不能证明 14 天完整性、事件归属、标题可用或许可。按同样大小粗算，单件前后各 7 天需 1344 个切片，约 13 GB 压缩数据；它不是已建立的 20 件评测入口。[GKG 2.1 官方字段说明](https://data.gdeltproject.org/documentation/GDELT-Global_Knowledge_Graph_Codebook-V2.1.pdf)还指出每日 GKG 1.0 兼容流会将计算元数据相同的文章聚类，不能用其较小的每日文件直接代替逐文章数量。该探针也不改变上表的 GDELT DOC API 429 结果。
+
 ## 正式来源进入事件池的最低证据
 
 一个新来源必须先确定使用范围及历史版本，再在**新事件**读取观察窗之前冻结：具名披露和事件身份、来源家族、检索式与别名、cutoff、等长窗口、分页或计数饱和证明、所有原始命中 ID/URL/时间及查询日志。两个相互独立且盲于预测的真人要对原始命中做事件归属；模型输入只取截止前已核条目并冻结哈希。后续观察用同一检索和归属口径，另由两名真人独立判断走势；`stable`、`cannot_judge` 和覆盖失败分别列排除。新闻报道量、论坛讨论量和投诉样本是不同总体，不合并成未定义的“全网投诉量”。
