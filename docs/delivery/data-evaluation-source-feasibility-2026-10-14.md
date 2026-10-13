@@ -24,9 +24,11 @@ Hacker News Algolia 能在指定时间窗返回带创建时间的故事与评论
 
 ## 未使用标题线索的首轮身份核查
 
-此前只按标题、未看观察结果选出的 27 条线索中，4 条与本轮五件开发事件同一身份，已从候选池剔除；其余 **23 条只是待核标题线索**。主工作区忽略证据 `artifacts/branch-work/data-evaluation/evidence/20261014/unused-title-lead-reserve-v1.json` 固定了原始标题、ID 和 4 条排除原因，`reserve-anchor-screen-v1.json`、`reserve-anchor-screen-v2.json` 对全部 23 条记录了初步来源与身份状态；**正式准入仍为 0**。该首轮核查只查公开来源和日期，没有获取观察窗或预测；其后的五件基线试探和一件辅助预测单列如下。
+此前只按标题、未看观察结果选出的 27 条线索中，4 条与本轮五件开发事件同一身份，已从候选池剔除；其余 **23 条只是待核标题线索**。主工作区忽略证据 `artifacts/branch-work/data-evaluation/evidence/20261014/unused-title-lead-reserve-v1.json` 固定了原始标题、ID 和 4 条排除原因，`reserve-anchor-screen-v1.json`、`reserve-anchor-screen-v2.json` 对全部 23 条记录了初步来源与身份状态；**正式准入仍为 0**。仅按原登记的事件身份复核，其中 4 条已被来源核查否定：Allstate 2023 新停办、法国两家健康险公司泄露、GEICO 全国停保 Cybertruck、Allstate 已恢复加州新业务。它们若按历史动作或较窄事件重写，必须重新登记身份与日期，不能静默挪用原标题。因此其余 19 条即使全部通过未来关口，也不足本任务的 20 件目标；实际能通过的只会更少或相等。该离线容量审计见 `reserve-identity-capacity-audit-v1.json`，不是 19 件合格事件。首轮来源核查只查公开来源和日期，没有获取观察窗或预测；其后的五件基线试探和一件辅助预测单列如下。
 
 几个会改变截止日或事件数的例子： [Farmers 官方公告](https://newsroom.farmers.com/news-releases?item=123225)把裁员公告定在 2023-08-28，晚于公告的论坛标题不能当首次披露；[加州保险厅](https://www.insurance.ca.gov/0400-news/0102-alerts/2026/Major-California-home-insurers-move-to-r.cfm)说明 Allstate 的加州新业务暂停始于 2022 年，不能把 2023 年 6 月的报道再算新停办事件；[密歇根蓝十字原站 PDF](https://providerinfo.bcbsm.com/documents/alerts/2024/202406/alert-20240606-changes-weight-loss-drugs-commercial.pdf)虽标初发 2024-06-06，也明示 2024-07-30 更新，当前版本不能直接当六月 cutoff 输入；[法国 CNIL](https://www.cnil.fr/fr/violation-de-donnees-de-deux-operateurs-de-tiers-payant-la-cnil-ouvre-une-enquete-et-rappelle-aux)所述受攻击主体是两家医疗费用第三方支付管理服务商，并非两家健康险公司。这些是身份和时点核查，不是按模型预测好坏筛事件。保留原标题、后续纠正、未知历史可见时间和不能入样原因，避免用模糊题材凑够 20 件。
+
+为补足上述身份储备的**数量上界**，只从既有 HN 标题发现结果事前选出两条未参与规则开发的不同主体行动，再查日期：Root 约 330 人裁员由 [2022-01-20 SEC 8-K](https://www.sec.gov/Archives/edgar/data/1788882/000178888222000006/root-20220120.htm)直接记载，晚一天的 HN 标题不是首次披露；Hannover Re 退出 NZIA 由 [2023-04-19 当日报道](https://www.insurancejournal.com/news/international/2023/04/19/717287.htm)转述当天公司声明，但原声明版本尚未找到，晚五天的 HN 标题同样不是日期锚。两条都只是**待核新线索**，未采基线、观察或预测；来源筛查、预登记哈希见主工作区 `reserve-expansion-plan-v1.json` 与 `reserve-expansion-anchor-screen-v1.json`。原 23 条按登记身份最多 19 条仍可继续核，加这两条只是乐观上界 21，并非 21 件独立合格事件；正式新增仍为 0。
 
 ## 五件预先固定查询的基线试探
 
