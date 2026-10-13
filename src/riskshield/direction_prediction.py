@@ -57,6 +57,13 @@ EVIDENCE_SCHEMA = "riskshield.simulation_scale.prediction-evidence.v1"
 # branch's policy decision, and this adapter does not pretend otherwise by renaming a mode.
 PREDICTION_IMPORT_SCHEMA = "riskshield.data_evaluation.prediction_import.v1"
 IMPORT_FREEZE_SCHEMA = "riskshield.data_evaluation.freeze_record.v1"
+LEDGER_EVIDENCE_SCHEMA = "riskshield.simulation_scale.ledger_evidence.v1"
+# Execution mode for a run of the real model over real historical material. The data branch
+# is expected to admit this name and to keep refusing the generic simulation mode; until that
+# policy is frozen, documents are produced with the mode the run actually used and are not
+# presented as admitted.
+LIVE_SIMULATION_MODE = "live_multi_agent_simulation_v1"
+SIMULATION_MODE = "multi_agent_simulation"
 PREDICTION_SOURCE = "simulation_derived"
 FORMAL_QUALIFICATION = "formal_candidate"
 TENTATIVE_QUALIFICATION = "tentative_partial_run"
@@ -328,6 +335,190 @@ def material_relative(path: Path, root: Path, *, what: str) -> str:
     return str(target.relative_to(root)).replace("\\", "/")
 
 
+class LedgerEvidenceError(DirectionPredictionError):
+    """The run's ledger cannot support a production-evidence claim.
+
+    Raised instead of emitting a placeholder. A ``null`` here would let a structurally
+    complete document carry an unverifiable claim, which is exactly what an admission check
+    must not be able to accept.
+    """
+
+
+def ledger_evidence(store: Store, run_id: str) -> dict:
+    """Derive the production-evidence facts from the run's own ledger.
+
+    Every value here is recomputed from persisted rows, so a reader can re-derive the same
+    numbers rather than trusting a restated figure. A value that cannot be derived raises
+    rather than being written as null.
+    """
+    with store.connect() as db:
+        run = db.execute("SELECT * FROM simulation_runs WHERE run_id=?", (run_id,)).fetchone()
+        if run is None:
+            raise KeyError(run_id)
+        run = dict(run)
+        config = json.loads(run["config"])
+        usage = json.loads(run["usage"]) if run["usage"] else {}
+        actions = db.execute(
+            "SELECT COUNT(*) AS rows, "
+            "SUM(CASE WHEN status IN ('valid','failed','deadline_exceeded') THEN 1 ELSE 0 END) "
+            "  AS dispatched, "
+            "SUM(CASE WHEN status='not_dispatched' THEN 1 ELSE 0 END) AS not_dispatched, "
+            "SUM(CASE WHEN usage IS NOT NULL THEN 1 ELSE 0 END) AS with_usage, "
+            "SUM(COALESCE(json_extract(usage,'$.prompt_tokens'),0)) AS prompt_tokens, "
+            "SUM(COALESCE(json_extract(usage,'$.completion_tokens'),0)) AS completion_tokens, "
+            "SUM(CASE WHEN status='valid' THEN 1 ELSE 0 END) AS valid_decisions "
+            "FROM simulation_actions WHERE run_id=?", (run_id,)).fetchone()
+        rounds = db.execute("SELECT COUNT(*) AS n FROM simulation_rounds WHERE run_id=?",
+                            (run_id,)).fetchone()["n"]
+        invocation = db.execute(
+            "SELECT dispatched_requests, valid_decisions, wall_seconds, stop_reason "
+            "FROM simulation_performance_calls WHERE run_id=? ORDER BY call_id LIMIT 1",
+            (run_id,)).fetchone()
+        # Whether any observation referenced a source outside the run's cutoff inputs. The
+        # engine refuses such a run, so this is a re-check of a persisted fact, not a promise.
+        out_of_scope = 0
+        for row in db.execute("SELECT observation_refs FROM simulation_actions "
+                              "WHERE run_id=? AND observation_refs IS NOT NULL", (run_id,)):
+            refs = json.loads(row["observation_refs"])
+            if not refs.get("evidence"):
+                out_of_scope += 1
+
+    dispatched = int(actions["dispatched"] or 0)
+    not_dispatched = int(actions["not_dispatched"] or 0)
+    prompt_tokens = int(actions["prompt_tokens"] or 0)
+    completion_tokens = int(actions["completion_tokens"] or 0)
+    # A partial run legitimately holds rows that were never sent: the opportunities of an
+    # abandoned or refused round. They are counted and reported separately, and only the
+    # dispatched rows can carry usage.
+    if dispatched + not_dispatched != int(actions["rows"] or 0):
+        raise LedgerEvidenceError(
+            "the ledger holds rows in an unrecognised status, so the request counts would "
+            "not add up")
+    if int(actions["with_usage"] or 0) > dispatched:
+        raise LedgerEvidenceError(
+            "more rows carry usage than were dispatched; the accounting is inconsistent")
+    if prompt_tokens != int(usage.get("prompt_tokens", -1)) or \
+            completion_tokens != int(usage.get("completion_tokens", -1)):
+        raise LedgerEvidenceError(
+            "the per-request token totals disagree with the run's usage record, so neither "
+            "can be reported as the run's accounting")
+    by_model = usage.get("by_model") or {}
+    model_calls_by_model = {model: int(entry.get("calls", 0))
+                            for model, entry in by_model.items()}
+    # Every dispatched call is attributed to a model; a run that dispatched nothing has no
+    # per-model counts, which is a fact rather than a gap.
+    if dispatched and sum(model_calls_by_model.values()) != dispatched:
+        raise LedgerEvidenceError(
+            "the per-model call counts do not add up to the dispatched request count, so the "
+            "by-model accounting cannot be reported")
+    configured = (config.get("agent_count"), config.get("rounds"))
+    return {
+        "schema": LEDGER_EVIDENCE_SCHEMA,
+        "run_id": run_id,
+        "case_id": run["case_id"],
+        "graph_id": run["graph_id"],
+        "run_status": run["status"],
+        "model_calls": dispatched,
+        "not_dispatched_requests": not_dispatched,
+        "model_calls_by_model": model_calls_by_model,
+        "requests_with_usage": int(actions["with_usage"] or 0),
+        "unknown_usage_calls": int(usage.get("unknown_usage_calls", 0)),
+        "prompt_tokens": prompt_tokens,
+        "completion_tokens": completion_tokens,
+        "cached_input_tokens": int(usage.get("cached_input_tokens", 0)),
+        "valid_decisions": int(actions["valid_decisions"] or 0),
+        "configured_agent_count": configured[0],
+        "configured_rounds": configured[1],
+        "completed_rounds": int(run["completed_rounds"]),
+        "recorded_round_rows": int(rounds),
+        "scale": (f"{configured[0]}x{configured[1]}"
+                  if configured[0] is not None and configured[1] is not None else None),
+        "cost_cny": run["cost_cny"],
+        "price_version": next(iter(by_model.values()), {}).get("price_version"),
+        "wall_seconds": invocation["wall_seconds"] if invocation else None,
+        "stop_reason": invocation["stop_reason"] if invocation else None,
+        "rows_without_eligible_evidence": out_of_scope,
+        "config_cutoff": config.get("cutoff"),
+        "config_source_version": config.get("source_version"),
+        "data_mode": config.get("data_mode"),
+        "provenance": ("every value above is recomputed from this run's ledger rows "
+                       "(simulation_actions, simulation_runs, simulation_rounds, "
+                       "simulation_performance_calls); none is restated from another "
+                       "document, and a value that could not be derived raises instead of "
+                       "being written as null"),
+    }
+
+
+def verify_import_evidence(document: dict, material_root: Path) -> dict:
+    """Check that a ``prediction_import.v1`` row carries no unverifiable claim.
+
+    The point is to make a placeholder structurally unable to pass: a null count, a missing
+    production-evidence field, or a token total that disagrees with the ledger is a failure
+    here, before another branch's admission point ever sees the document.
+    """
+    root = resolve_material_root(material_root)
+    problems: list[dict] = []
+    predictions = document.get("predictions") or {}
+    entries = list(predictions.values()) if isinstance(predictions, dict) else list(predictions)
+    required_counts = ("model_calls", "prompt_tokens", "completion_tokens", "valid_decisions")
+    for entry in entries:
+        if not isinstance(entry, dict):
+            problems.append({"unit_id": None, "reason": "prediction_row_not_an_object"})
+            continue
+        unit_id = entry.get("unit_id")
+        ref = (entry.get("production_evidence_ref") or {})
+        path = ref.get("path") if isinstance(ref, dict) else None
+        pointer = ref.get("pointer", "") if isinstance(ref, dict) else ""
+        if not isinstance(path, str) or not path.strip():
+            problems.append({"unit_id": unit_id,
+                             "reason": "missing_production_evidence_ref"})
+            continue
+        target = (root / path)
+        try:
+            resolved = target.resolve()
+            resolved.relative_to(root)
+        except (OSError, ValueError):
+            problems.append({"unit_id": unit_id,
+                             "reason": "reference_escapes_material_root", "path": path})
+            continue
+        if not resolved.is_file():
+            problems.append({"unit_id": unit_id, "reason": "reference_file_missing",
+                             "path": path})
+            continue
+        document_body = json.loads(resolved.read_text(encoding="utf-8"))
+        try:
+            value = document_body
+            for part in [p for p in pointer.split("/") if p]:
+                value = value[part.replace("~1", "/").replace("~0", "~")]
+        except (KeyError, IndexError, TypeError):
+            problems.append({"unit_id": unit_id, "reason": "reference_pointer_missing",
+                             "path": path, "pointer": pointer})
+            continue
+        if not isinstance(value, dict):
+            problems.append({"unit_id": unit_id, "reason": "production_evidence_not_an_object"})
+            continue
+        for field in required_counts:
+            if field not in value:
+                problems.append({"unit_id": unit_id, "field": field,
+                                 "reason": "production_evidence_field_missing"})
+            elif not isinstance(value[field], int) or isinstance(value[field], bool):
+                problems.append({"unit_id": unit_id, "field": field,
+                                 "value": value[field],
+                                 "reason": "production_evidence_count_not_an_integer"})
+        if value.get("run_id") != entry.get("run_id"):
+            problems.append({"unit_id": unit_id,
+                             "reason": "production_evidence_run_id_mismatch"})
+        if value.get("run_status") != "complete":
+            problems.append({"unit_id": unit_id, "value": value.get("run_status"),
+                             "reason": "production_run_not_complete"})
+        # Tokens must be present even for a run that legitimately made no call: the point is
+        # that the accounting exists and is checkable, not that it is non-zero.
+        if value.get("model_calls") == 0 and value.get("prompt_tokens") != 0:
+            problems.append({"unit_id": unit_id,
+                             "reason": "zero_calls_with_nonzero_tokens"})
+    return {"ok": not problems, "material_root": str(root), "problems": problems}
+
+
 def _evidence_relative(outdir: Path, material_root: Path) -> str:
     return material_relative(outdir / "simulation-prediction-evidence-v1.json",
                              material_root, what="the evidence document")
@@ -340,7 +531,8 @@ def build_documents(store: Store, run_id: str, *, outdir: Path | None = None,
                     predictions_ref_path: str | None = None,
                     unit_kind: str = "original_title",
                     text_source: str = "summary",
-                    evidence_relative: str | None = None) -> dict:
+                    evidence_relative: str | None = None,
+                    execution_mode: str | None = None) -> dict:
     """Build inputs, freeze record, evidence and summary for one run.
 
     ``material_root`` is required and is the single directory every reference is resolved
@@ -478,20 +670,44 @@ def build_documents(store: Store, run_id: str, *, outdir: Path | None = None,
     }
     input_package_sha256 = canonical_digest(input_package)
     evidence["input_package"] = input_package
-    evidence["production_evidence"] = {
-        "run_id": run_id,
-        "execution_mode": "multi_agent_simulation",
-        # The import contract requires a complete run; the truthful value is reported, and a
-        # partial run is refused by the preflight rather than described as complete.
-        "run_status": run["status"],
-        "model_calls": None,
-        "network_requests": None,
-        "selected_round": selected_round,
-        "configured_rounds": configured_rounds,
-        "recorded_rounds": len(rounds),
-        "note": ("counts are reported by the run's own ledger, not restated here; this "
-                 "record identifies the production run the prediction came from"),
-    }
+    # Production evidence is derived from this run's ledger, never restated: a value that
+    # cannot be derived raises rather than being written as a placeholder.
+    derived = ledger_evidence(store, run_id)
+    if derived["config_cutoff"] != snapshot["cutoff"] or \
+            derived["config_source_version"] != snapshot["version"]:
+        raise LedgerEvidenceError(
+            "the run's ledger configuration does not match the case snapshot it claims")
+    evidence["production_evidence"] = derived
+    # The mode names what actually produced the prediction. A real historical run that did
+    # not use the real model is an engineering run, and saying otherwise would misstate it.
+    run_config = json.loads(run["config"])
+    # ``advance`` persists the backend mode it actually ran with; before that there is none to
+    # read, so the caller may state the mode it knows from the run it just drove.
+    config_backend = run_config.get("backend_mode")
+    if execution_mode is None:
+        if snapshot["data_mode"] == "real_historical" and config_backend == "real_model":
+            execution_mode = LIVE_SIMULATION_MODE
+        else:
+            execution_mode = SIMULATION_MODE
+    elif execution_mode not in {LIVE_SIMULATION_MODE, SIMULATION_MODE}:
+        raise DirectionPredictionError(
+            f"unsupported execution mode {execution_mode!r}; a mode must name how the run was "
+            f"actually produced")
+    elif execution_mode == LIVE_SIMULATION_MODE:
+        # A live mode is a claim about how the prediction was produced, so it is checked
+        # rather than trusted: real historical material, and a run the engine recorded as
+        # having used the real model.
+        if snapshot["data_mode"] != "real_historical":
+            raise DirectionPredictionError(
+                "the live simulation mode requires real historical material")
+        if config_backend != "real_model":
+            raise DirectionPredictionError(
+                f"the live simulation mode requires a run that used the real model, but this "
+                f"run recorded backend_mode={config_backend!r}")
+    evidence["production_evidence"]["execution_mode"] = execution_mode
+    evidence["production_evidence"]["selected_round"] = selected_round
+    evidence["production_evidence"]["configured_rounds"] = configured_rounds
+    evidence["production_evidence"]["recorded_rounds"] = len(rounds)
 
     case = {
         "evaluation_id": f"{event_id}__{unit_id}",
@@ -508,7 +724,7 @@ def build_documents(store: Store, run_id: str, *, outdir: Path | None = None,
         "sources": sources,
         "predictions": {
             "direction": {
-                "execution_mode": "multi_agent_simulation",
+                "execution_mode": execution_mode,
                 "label": label,
                 "method_version": method["method_version"],
                 "prediction_source": PREDICTION_SOURCE,
@@ -604,6 +820,15 @@ def build_documents(store: Store, run_id: str, *, outdir: Path | None = None,
             "run_completeness": case["run_completeness"],
             "qualification": case["run_completeness"]["qualification"],
             "material_root": str(material_root),
+            "execution_mode": execution_mode,
+            "ledger_evidence": {
+                "model_calls": evidence["production_evidence"]["model_calls"],
+                "prompt_tokens": evidence["production_evidence"]["prompt_tokens"],
+                "completion_tokens": evidence["production_evidence"]["completion_tokens"],
+                "valid_decisions": evidence["production_evidence"]["valid_decisions"],
+                "scale": evidence["production_evidence"]["scale"],
+                "run_status": evidence["production_evidence"]["run_status"],
+            },
             "evidence_ref": evidence_relative,
             "input_package_ref": input_package_relative,
             "input_package_sha256": input_package_sha256,
@@ -657,7 +882,7 @@ def build_prediction_import_document(built: dict, *, source_label: str,
                 "event_id": unit["event_id"],
                 "task_type": "event_direction",
                 "label": summary["label"],
-                "execution_mode": "multi_agent_simulation",
+                "execution_mode": summary["execution_mode"],
                 "method_version": summary["method_version"],
                 "run_id": summary["run_id"],
                 "cutoff": unit["cutoff"],
@@ -710,7 +935,8 @@ def write_documents(store: Store, run_id: str, outdir: Path, *,
                     dataset_version: str | None = None,
                     unit_kind: str = "original_title",
                     text_source: str = "summary",
-                    source_label: str = PREDICTION_SOURCE) -> dict:
+                    source_label: str = PREDICTION_SOURCE,
+                    execution_mode: str | None = None) -> dict:
     """Write the prediction artifacts under ``outdir``.
 
     ``material_root`` is required: every reference written into the documents is expressed
@@ -734,7 +960,8 @@ def write_documents(store: Store, run_id: str, outdir: Path, *,
                            method_path=method_path,
                            dataset_version=dataset_version,
                            predictions_ref_path=str(inputs_target),
-                           unit_kind=unit_kind, text_source=text_source)
+                           unit_kind=unit_kind, text_source=text_source,
+                           execution_mode=execution_mode)
     inputs_target.write_text(json.dumps(built["inputs"], ensure_ascii=False, indent=1),
                              encoding="utf-8")
     evidence_target.write_text(json.dumps(built["evidence"], ensure_ascii=False, indent=1),
