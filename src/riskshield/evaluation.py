@@ -410,7 +410,43 @@ def _ai_reference_agreement(cases: list[dict[str, Any]], ai_reference: Any,
     }
 
 
-def _direction_three_class_diagnostic(rows: list[dict[str, Any]], *,
+def _resolve_diagnostic_events(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Apply the binary path's event-uniqueness rule to the diagnostic's rows.
+
+    One event, one score. Several source rows or runs for an event cannot each
+    contribute, exactly as in the binary metric; a row that failed any validity
+    check takes its reason with it rather than being dropped silently.
+    """
+    valid: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    invalid: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        (invalid if row["validity_reasons"] else valid)[row["event_id"]].append(row)
+
+    events: list[dict[str, Any]] = []
+    exclusions: list[dict[str, Any]] = []
+    for event_id in sorted(set(valid) | set(invalid), key=lambda value: value or ""):
+        candidates = valid.get(event_id, [])
+        if len(candidates) > 1:
+            exclusions.append({
+                "event_id": event_id,
+                "evaluation_ids": [row["evaluation_id"] for row in candidates],
+                "reasons": ["multiple_direction_predictions_for_one_event"],
+            })
+            continue
+        if not candidates:
+            exclusions.append({
+                "event_id": event_id,
+                "evaluation_ids": [row["evaluation_id"] for row in invalid.get(event_id, [])],
+                "reasons": sorted({reason for row in invalid.get(event_id, [])
+                                   for reason in row["validity_reasons"]}),
+            })
+            continue
+        events.append(candidates[0])
+    return {"rows": events, "candidates_seen": len(set(valid) | set(invalid)),
+            "exclusions": exclusions}
+
+
+def _direction_three_class_diagnostic(resolved: dict[str, Any] | list[dict[str, Any]], *,
                                       enabled: bool = True) -> dict[str, Any]:
     """A three-class reading of the direction track, kept apart from the binary one.
 
@@ -449,7 +485,11 @@ def _direction_three_class_diagnostic(rows: list[dict[str, Any]], *,
         block["undefined_reason"] = "the three-class direction diagnostic is switched off"
         return block
 
-    rows = [dict(row) for row in rows]
+    if isinstance(resolved, list):  # a bare row list is still accepted
+        resolved = _resolve_diagnostic_events(resolved)
+    rows = [dict(row) for row in resolved["rows"]]
+    candidates_seen = resolved["candidates_seen"]
+    gate_exclusions = resolved["exclusions"]
     eligible = [row for row in rows if row["truth_is_a_class"]]
     covered = [row for row in eligible if row["prediction_resolved"]]
     unscorable = [row for row in rows if row["truth_is_declared_unscorable"]]
@@ -486,9 +526,20 @@ def _direction_three_class_diagnostic(rows: list[dict[str, Any]], *,
                              "no direction event has both a three-class truth and a recorded "
                              "prediction"),
         "coverage": {
+            "candidates_seen": candidates_seen,
+            "valid_after_the_shared_checks": len(rows),
             "eligible_events": len(eligible),
             "scored_events": len(covered),
-            "share": (len(covered) / len(eligible)) if eligible else None,
+            "share": (len(covered) / candidates_seen) if candidates_seen else None,
+            "share_of_valid": (len(covered) / len(rows)) if rows else None,
+        },
+        "gate_exclusions": {
+            "count": len(gate_exclusions),
+            "reasons": _reason_counts(gate_exclusions),
+            "events_or_rows": gate_exclusions,
+            "why": ("these failed the same source-validity, cutoff, outcome-evidence or "
+                    "event-uniqueness checks the binary metric applies. The diagnostic relaxes "
+                    "the label space and nothing else."),
         },
         "class_support": support,
         "confusion_matrix_actual_by_predicted": matrix,
@@ -696,16 +747,28 @@ def evaluate_documents(
             case.get("predictions"), "direction", root)
         outcome = outcome_map.get(event_id, {})
         observed = outcome.get("observed_direction") if isinstance(outcome, dict) else None
-        if observed not in DIRECTIONS:
+        if observed is None:
             direction_reasons.append("missing_or_unresolved_observed_direction_label")
-        else:
+        elif observed not in DIRECTIONS:
+            # The binary metric cannot express this label. The diagnostic can, and
+            # that is the *only* relaxation it gets.
+            direction_reasons.append("missing_or_unresolved_observed_direction_label")
+        # The outcome-evidence check runs for every label the diagnostic can
+        # express, not only the two the binary metric can. Leaving it inside the
+        # else-branch meant a stable label skipped evidence validation entirely,
+        # which is how a class gets asserted with nothing behind it.
+        if observed is not None:
             refs = outcome.get("evidence_refs", [])
             if not isinstance(refs, list) or not any(_ref_matches(ref, observed, root) for ref in refs):
                 direction_reasons.append("missing_future_outcome_evidence")
         d_reasons = sorted(set(base_reasons + direction_reasons))
-        # Recorded for the diagnostic whether or not the binary metric can use it.
-        # ``stable`` and a declared "cannot judge" both land here, and they are
-        # kept apart: the first is a class, the second is a refusal to classify.
+        # The diagnostic reuses every check the binary metric applies -- source
+        # validity, cutoff, event identity, event uniqueness -- and relaxes one:
+        # the space of labels it can express. Everything else is carried here so
+        # a row that fails anything is excluded here too, rather than only from
+        # the binary number.
+        validity_reasons = sorted({reason for reason in d_reasons
+                                   if reason != "missing_or_unresolved_observed_direction_label"})
         if observed is not None or predicted_direction is not None:
             direction_diagnostic_rows.append({
                 "evaluation_id": case["evaluation_id"], "event_id": event_id,
@@ -714,6 +777,7 @@ def evaluate_documents(
                 "truth_is_a_class": observed in DIRECTION_DIAGNOSTIC_CLASSES,
                 "truth_is_declared_unscorable": observed in DIRECTION_UNSCORABLE_LABELS,
                 "prediction_resolved": predicted_direction is not None,
+                "validity_reasons": validity_reasons,
                 "binary_reasons": d_reasons,
             })
         if not d_reasons:
@@ -779,7 +843,8 @@ def evaluate_documents(
     n_direction = len(direction_rows)
 
     direction_three_class = _direction_three_class_diagnostic(
-        direction_diagnostic_rows, enabled=direction_three_class_diagnostic)
+        _resolve_diagnostic_events(direction_diagnostic_rows),
+        enabled=direction_three_class_diagnostic)
 
     return {
         "schema": REPORT_SCHEMA,

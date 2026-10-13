@@ -1628,12 +1628,21 @@ def test_the_diagnostic_invariant_catches_a_dropped_event(tmp_path):
     unit = bench.trajectory_units(root, cohort)[0]
     bench.attach_direction_labels([unit], cohort["annotation_sources"], root)
 
-    with pytest.raises(bench.BenchmarkInvariantError, match="different event set"):
-        bench.assert_diagnostic_denominator_matches([unit], {
-            "direction_three_class": {
-                "enabled": True, "scored_events": [], "coverage": {"share": None},
-                "not_scored": {"declared_cannot_judge": {"count": 0},
-                               "label_but_no_recorded_prediction": {"count": 0}}}})
+    silent_drop = {
+        "direction_three_class": {
+            "enabled": True, "scored_events": [], "coverage": {"share": None},
+            "gate_exclusions": {"events_or_rows": []},
+            "not_scored": {"declared_cannot_judge": {"count": 0, "event_ids": []},
+                            "label_but_no_recorded_prediction": {"count": 0, "event_ids": []}}}}
+    with pytest.raises(bench.BenchmarkInvariantError, match="without saying why"):
+        bench.assert_diagnostic_denominator_matches([unit], silent_drop)
+
+    # Naming the reason makes the same drop acceptable: the event is out, and why.
+    explained = json.loads(json.dumps(silent_drop))
+    explained["direction_three_class"]["gate_exclusions"]["events_or_rows"] = [
+        {"event_id": "evt-1", "reasons": ["missing_future_outcome_evidence"]}]
+    checked = bench.assert_diagnostic_denominator_matches([unit], explained)
+    assert checked["checked"] is True and checked["unaccounted_events"] == []
 
 
 # --------------------------------------------------------------------------

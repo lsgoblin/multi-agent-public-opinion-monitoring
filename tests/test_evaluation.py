@@ -399,14 +399,17 @@ def test_label_basis_accounting_reports_an_unresolved_disagreement(tmp_path):
 # the three-class direction diagnostic
 # --------------------------------------------------------------------------
 
-def _diag_row(event_id, truth, prediction, *, split='holdout', resolved=True):
+def _diag_row(event_id, truth, prediction, *, split='holdout', resolved=True,
+              validity_reasons=None):
     return {
         "evaluation_id": f"{event_id}__direction", "event_id": event_id,
         "unit_id": event_id, "truth": truth, "prediction": prediction, "split": split,
         "truth_is_a_class": truth in DIRECTION_DIAGNOSTIC_CLASSES,
         "truth_is_declared_unscorable": truth is not None
         and truth not in DIRECTION_DIAGNOSTIC_CLASSES,
-        "prediction_resolved": resolved, "binary_reasons": [],
+        "prediction_resolved": resolved,
+        "validity_reasons": list(validity_reasons or []),
+        "binary_reasons": [],
     }
 
 
@@ -478,7 +481,12 @@ def test_a_label_without_a_prediction_is_recorded_rather_than_filled_in():
     ])
 
     assert block["denominator"] == 1
-    assert block["coverage"] == {"eligible_events": 2, "scored_events": 1, "share": 0.5}
+    coverage = block["coverage"]
+    assert coverage["candidates_seen"] == 2
+    assert coverage["valid_after_the_shared_checks"] == 2
+    assert coverage["eligible_events"] == 2
+    assert coverage["scored_events"] == 1
+    assert coverage["share"] == 0.5
     assert block["not_scored"]["label_but_no_recorded_prediction"]["event_ids"] == ["a"]
 
 
@@ -509,3 +517,79 @@ def test_the_binary_direction_space_is_untouched_by_the_diagnostic():
     """The diagnostic must not widen the brief's own metric."""
     assert DIRECTIONS == ("escalation", "calming")
     assert "stable" not in DIRECTIONS
+
+@pytest.mark.parametrize("reason", [
+    "synthetic_or_nonhistorical_data_excluded",
+    "source_visible_after_cutoff",
+    "unknown_or_invalid_visible_time",
+    "missing_future_outcome_evidence",
+    "missing_or_invalid_cutoff",
+    "missing_or_mismatched_source_record_evidence",
+    "holdout_candidate_not_admitted",
+    "not_an_original_title_or_post_unit",
+    "original_text_hash_missing_or_mismatched",
+])
+def test_the_diagnostic_drops_events_that_fail_any_shared_check(reason):
+    """The diagnostic relaxes the label space and nothing else.
+
+    Each of these is a check the binary metric already applies. An event failing
+    one must leave the diagnostic too, with its reason attached -- otherwise the
+    wider label space would quietly become a wider set of admissible material.
+    """
+    block = _direction_three_class_diagnostic([
+        _diag_row("kept", "stable", "escalation"),
+        _diag_row("dropped", "stable", "stable", validity_reasons=[reason]),
+    ])
+
+    assert block["denominator"] == 1
+    assert [row["event_id"] for row in block["scored_events"]] == ["kept"]
+    assert block["coverage"]["candidates_seen"] == 2
+    assert block["coverage"]["valid_after_the_shared_checks"] == 1
+    assert block["gate_exclusions"]["reasons"] == {reason: 1}
+    assert block["gate_exclusions"]["events_or_rows"][0]["event_id"] == "dropped"
+
+
+def test_a_stable_label_needs_outcome_evidence_like_any_other():
+    """stable is a class, so asserting it requires evidence just as the others do."""
+    block = _direction_three_class_diagnostic([
+        _diag_row("a", "stable", "stable"),
+        _diag_row("b", "stable", "stable",
+                  validity_reasons=["missing_future_outcome_evidence"]),
+    ])
+
+    assert block["denominator"] == 1
+    assert block["numerator"] == 1
+    assert block["gate_exclusions"]["reasons"]["missing_future_outcome_evidence"] == 1
+
+
+def test_the_diagnostic_scores_one_event_once():
+    """Two rows for one event are ambiguous, not two data points."""
+    block = _direction_three_class_diagnostic([
+        _diag_row("a", "stable", "stable"),
+        _diag_row("a", "stable", "escalation"),
+    ])
+
+    assert block["denominator"] == 0
+    assert block["coverage"]["candidates_seen"] == 1
+    assert block["gate_exclusions"]["reasons"] == {
+        "multiple_direction_predictions_for_one_event": 1}
+
+
+def test_coverage_reports_every_stage_of_the_funnel():
+    block = _direction_three_class_diagnostic([
+        _diag_row("scored", "stable", "stable"),
+        _diag_row("no_prediction", "stable", None, resolved=False),
+        _diag_row("cannot_judge", "insufficient_evidence", "calming"),
+        _diag_row("failed_a_check", "stable", "stable",
+                  validity_reasons=["source_visible_after_cutoff"]),
+    ])
+
+    coverage = block["coverage"]
+    assert coverage["candidates_seen"] == 4
+    assert coverage["valid_after_the_shared_checks"] == 3
+    assert coverage["eligible_events"] == 2
+    assert coverage["scored_events"] == 1
+    assert coverage["share"] == 0.25
+    assert block["gate_exclusions"]["count"] == 1
+    assert block["not_scored"]["declared_cannot_judge"]["count"] == 1
+    assert block["not_scored"]["label_but_no_recorded_prediction"]["count"] == 1

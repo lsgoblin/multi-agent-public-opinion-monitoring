@@ -840,21 +840,27 @@ def assert_diagnostic_denominator_matches(diagnostic_units: list[dict[str, Any]]
     class_truth = sorted(unit["event_id"] for unit in diagnostic_units
                          if resolved_direction_label(unit) in DIRECTION_DIAGNOSTIC_CLASSES)
     scored = sorted(row["event_id"] for row in block["scored_events"] if row["event_id"])
-    if scored != class_truth:
+    # A stable label now goes through the same evidence check as the other two, so
+    # an event can be admitted by the gate and still not scored. That is the point
+    # of the shared checks. What must not happen is a silent drop: every admitted
+    # event with a class label is either scored or named with a reason.
+    if not set(scored) <= set(class_truth):
         raise BenchmarkInvariantError(
-            "the diagnostic scored a different event set than the labels allow: "
+            "the diagnostic scored an event its labels do not support: "
             f"labelled={class_truth} scored={scored}")
-    accounted = (len(block["scored_events"])
-                 + block["not_scored"]["declared_cannot_judge"]["count"]
-                 + block["not_scored"]["label_but_no_recorded_prediction"]["count"])
-    if accounted > len(admitted):
+    named = set(scored)
+    named.update(row["event_id"] for row in block["gate_exclusions"]["events_or_rows"])
+    named.update(block["not_scored"]["declared_cannot_judge"]["event_ids"])
+    named.update(block["not_scored"]["label_but_no_recorded_prediction"]["event_ids"])
+    unaccounted = sorted(set(class_truth) - named)
+    if unaccounted:
         raise BenchmarkInvariantError(
-            "the diagnostic accounts for more events than its gate admitted: "
-            f"admitted={len(admitted)} accounted={accounted}")
+            "the diagnostic dropped events without saying why: "
+            f"{unaccounted}")
     return {"checked": True, "admitted_event_ids": admitted,
             "events_with_a_three_class_label": class_truth,
             "events_scored": scored,
-            "scored_equals_labelled": True,
+            "unaccounted_events": [],
             "coverage_share": block["coverage"]["share"]}
 
 
