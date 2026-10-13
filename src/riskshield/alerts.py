@@ -68,6 +68,8 @@ class Day4Alerts:
         run = self.simulation._run_row(run_id)
         if run["completed_rounds"] < 1:
             raise AlertError("run has no completed round to assess")
+        if run["status"] not in {"complete", "partial"}:
+            raise AlertError("run must be complete or explicitly partial to assess")
         config = json.loads(run["config"])
         snapshot = self.store.snapshot(run["case_id"])
         graph = self.evidence.graph(run["graph_id"])
@@ -92,15 +94,29 @@ class Day4Alerts:
             rows = [dict(row) for row in db.execute(
                 "SELECT agent_id, status, decision, observation_refs FROM simulation_actions "
                 "WHERE run_id=? AND round_number=? ORDER BY agent_id", (run_id, round_number))]
-            total_failures = db.execute(
-                "SELECT COUNT(*) AS n FROM simulation_actions WHERE run_id=? AND status!='valid'",
-                (run_id,)).fetchone()["n"]
+            action_counts = {row["status"]: row["n"] for row in db.execute(
+                "SELECT status, COUNT(*) AS n FROM simulation_actions WHERE run_id=? GROUP BY status",
+                (run_id,))}
+            valid_decision_count = db.execute(
+                "SELECT COUNT(*) AS n FROM simulation_actions WHERE run_id=? "
+                "AND status='valid' AND decision IS NOT NULL", (run_id,)).fetchone()["n"]
             message_count = db.execute(
                 "SELECT COUNT(*) AS n FROM simulation_messages WHERE run_id=? AND round_number=?",
                 (run_id, round_number)).fetchone()["n"]
         valid = [row for row in rows if row["status"] == "valid" and row["decision"]]
         if not valid:
             raise AlertError("latest round has no valid decisions")
+        total_failures = action_counts.get("failed", 0)
+        undecided_statuses = {"deadline_exceeded", "not_dispatched"}
+        run_undecided = sum(action_counts.get(status, 0) for status in undecided_statuses)
+        run_complete = run["status"] == "complete" and round_number == config["rounds"]
+        decisions_all_valid = (valid_decision_count == sum(action_counts.values()) ==
+                               config["agent_count"] * round_number)
+        integrity = {
+            "run_complete": run_complete, "decisions_all_valid": decisions_all_valid,
+            "alert_is_success_result": run_complete and decisions_all_valid,
+            "run_action_counts": action_counts,
+        }
         complaint = [row for row in valid if json.loads(row["decision"])["action"] ==
                      "express_complaint_intent"]
         share = len(complaint) / len(valid)
@@ -132,8 +148,10 @@ class Day4Alerts:
         ]
         if snapshot["data_mode"] == "synthetic":
             limitations.append("Synthetic run must never trigger an external notification.")
-        if run["status"] != "complete" or total_failures:
+        if not integrity["alert_is_success_result"]:
             limitations.append("Run is incomplete or contains failed decisions; classify valid latest-round actions only.")
+        if run_undecided:
+            limitations.append("Some requests were never decided (dispatched but not waited for, or never sent); they are undecided, not failed.")
         execution_mode = (config.get("backend") or {}).get(
             "type", config.get("backend_mode"))
         if snapshot["data_mode"] == "real_historical" and execution_mode == "offline_dynamic_substitute":
@@ -142,6 +160,7 @@ class Day4Alerts:
             "run_id": run_id, "rule_version": RULE_VERSION,
             "run_status": run["status"], "round": round_number,
             "rows": rows, "total_failures": total_failures,
+            "integrity": integrity, "configured_rounds": config["rounds"],
             "message_count": message_count,
             "graph_claims": graph["claims"],
             "source_version": snapshot["version"], "cutoff": snapshot["cutoff"],
@@ -154,6 +173,7 @@ class Day4Alerts:
             "assessment_fingerprint_sha256": fingerprint,
             "data_mode": snapshot["data_mode"], "execution_mode": execution_mode,
             "status": "provisional_offline_assessment",
+            **integrity,
             "assessed_at": assessed_at,
             # Local rule detection time; it is not the historical event's first-public time.
             "discovered_at": assessed_at,
@@ -162,8 +182,11 @@ class Day4Alerts:
             "metrics": {
                 "round": round_number, "run_status": run["status"],
                 "latest_round_valid_decisions": len(valid),
-                "latest_round_failed_decisions": len(rows) - len(valid),
+                "latest_round_failed_decisions": sum(row["status"] == "failed" for row in rows),
+                "latest_round_undecided_requests": sum(
+                    row["status"] in undecided_statuses for row in rows),
                 "run_failed_decisions": total_failures,
+                "run_undecided_requests": run_undecided,
                 "simulated_complaint_intent_decisions": len(complaint),
                 "simulated_complaint_intent_share": round(share, 6),
                 "latest_round_simulated_messages": message_count,
@@ -197,12 +220,16 @@ class Day4Alerts:
         if channel not in CHANNELS:
             raise AlertError("channel must be wecom or email")
         alert = self.get(alert_id)
-        message = (f"OFFLINE PREVIEW ONLY: {alert['level'].upper()} provisional simulated "
+        run_status = (alert.get("metrics") or {}).get("run_status", "unknown")
+        success_result = alert.get("alert_is_success_result") is True
+        qualifier = "" if success_result else "[INCOMPLETE OR UNVERIFIED RUN] "
+        message = (f"OFFLINE PREVIEW ONLY: {qualifier}{alert['level'].upper()} provisional simulated "
                    f"alert for case {alert['case_id']} (alert {alert_id}). "
+                   f"Run status: {run_status}; complete valid result: {success_result}. "
                    "No notification was sent. Review source and action references in the alert.")
         payload = ({"msgtype": "text", "text": {"content": message}}
                    if channel == "wecom" else
-                   {"subject": f"[OFFLINE PREVIEW] {alert['level'].upper()} simulated alert",
+                   {"subject": f"[OFFLINE PREVIEW] {alert['level'].upper()} simulated alert {qualifier}".rstrip(),
                     "body_text": message, "to_alias": None})
         previewed_at = _now()
         preview = {
@@ -213,6 +240,10 @@ class Day4Alerts:
             "discovery_to_preview_ms": _elapsed_ms(alert.get("discovered_at"), previewed_at),
             "latency_basis": "local_rule_assessment_to_preview_generation",
             "sent_at": None, "network_requests": 0,
+            "receipt_status": "not_requested", "receipt_at": None, "delivered_at": None,
+            "run_status": run_status, "run_complete": alert.get("run_complete"),
+            "decisions_all_valid": alert.get("decisions_all_valid"),
+            "alert_is_success_result": success_result,
             "recipient": None,
             "payload": payload,
             "limitation": "No notification was sent; delivery and 30-minute timing are unverified.",

@@ -61,6 +61,9 @@ def test_provisional_four_levels_and_traceability(tmp_path, complaints, expected
     assert {ref["run_id"] for ref in alert["evidence_refs"]["action_refs"]} == {run_id}
     assert alert["discovered_at"] == alert["assessed_at"]
     assert alert["sent_at"] is None
+    assert alert["run_complete"] is True
+    assert alert["decisions_all_valid"] is True
+    assert alert["alert_is_success_result"] is True
     assert alerts.get(alert["alert_id"]) == alert
     assert alerts.assess(run_id) == alert
 
@@ -69,6 +72,9 @@ def test_provisional_four_levels_and_traceability(tmp_path, complaints, expected
         assert preview["delivery_status"] == "dry_run"
         assert preview["network_requests"] == 0
         assert preview["sent_at"] is None and preview["recipient"] is None
+        assert preview["alert_is_success_result"] is True
+        assert preview["receipt_status"] == "not_requested"
+        assert preview["receipt_at"] is None and preview["delivered_at"] is None
         assert preview["discovered_at"] == alert["discovered_at"]
         assert preview["discovery_to_preview_ms"] >= 0
         assert preview["latency_basis"] == "local_rule_assessment_to_preview_generation"
@@ -167,3 +173,99 @@ def test_assessment_rejects_cross_case_graph_and_empty_run(tmp_path):
         db.execute("UPDATE simulation_runs SET graph_id=? WHERE run_id=?", (GRAPH_ID, run_id))
     with pytest.raises(AlertError, match="do not match"):
         alerts.assess(run_id)
+
+
+@pytest.mark.parametrize("run_status,action_status,failed,undecided", [
+    ("partial", "valid", 0, 0),
+    ("complete", "failed", 1, 0),
+    ("partial", "deadline_exceeded", 0, 1),
+    ("partial", "not_dispatched", 0, 1),
+    ("complete", "deadline_exceeded", 0, 1),
+    ("complete", "unknown_contract_state", 0, 0),
+])
+def test_incomplete_alert_and_preview_never_claim_full_success(
+        tmp_path, run_status, action_status, failed, undecided):
+    store = _prepared_store(tmp_path / "alerts.db")
+    run_id = _run(store, complaint_count=8)
+    with store.connect() as db:
+        db.execute("UPDATE simulation_runs SET status=? WHERE run_id=?", (run_status, run_id))
+        if action_status != "valid":
+            # Persist the additive simulation-scale action contract without a live call.
+            db.execute("UPDATE simulation_actions SET status=?, decision=NULL WHERE run_id=? "
+                       "AND agent_id='agent_0019'", (action_status, run_id))
+    alerts = Day4Alerts(store)
+    alert = alerts.assess(run_id)
+    assert alert["status"] == "provisional_offline_assessment"
+    assert alert["level"] == "red"
+    assert alert["alert_is_success_result"] is False
+    assert alert["metrics"]["run_status"] == run_status
+    assert alert["metrics"]["run_failed_decisions"] == failed
+    assert alert["metrics"]["latest_round_failed_decisions"] == failed
+    assert alert["metrics"]["run_undecided_requests"] == undecided
+    assert alert["metrics"]["latest_round_undecided_requests"] == undecided
+    assert alert["run_action_counts"][action_status] >= 1
+    for channel in ("wecom", "email"):
+        preview = alerts.preview_delivery(alert["alert_id"], channel)
+        assert preview["delivery_status"] == "dry_run"
+        assert preview["alert_is_success_result"] is False
+        assert preview["run_status"] == run_status
+        assert preview["receipt_status"] == "not_requested"
+        assert preview["receipt_at"] is None and preview["delivered_at"] is None
+        message = (preview["payload"]["text"]["content"] if channel == "wecom"
+                   else preview["payload"]["body_text"])
+        assert "INCOMPLETE OR UNVERIFIED RUN" in message
+        assert run_status in message
+
+
+@pytest.mark.parametrize("incomplete_ledger", ["missing_action", "missing_round"])
+def test_complete_status_requires_configured_rounds_and_full_action_count(tmp_path, incomplete_ledger):
+    store = _prepared_store(tmp_path / "alerts.db")
+    run_id = _run(store)
+    with store.connect() as db:
+        if incomplete_ledger == "missing_action":
+            db.execute("DELETE FROM simulation_actions WHERE run_id=? AND agent_id='agent_0019'",
+                       (run_id,))
+        else:
+            row = db.execute("SELECT config FROM simulation_runs WHERE run_id=?", (run_id,)).fetchone()
+            config = json.loads(row["config"])
+            config["rounds"] = 2
+            db.execute("UPDATE simulation_runs SET config=? WHERE run_id=?",
+                       (json.dumps(config), run_id))
+    alert = Day4Alerts(store).assess(run_id)
+    assert alert["alert_is_success_result"] is False
+
+
+@pytest.mark.parametrize("run_status", ["running", "failed"])
+def test_active_or_failed_run_cannot_be_assessed_as_a_finished_result(tmp_path, run_status):
+    store = _prepared_store(tmp_path / "alerts.db")
+    run_id = _run(store)
+    with store.connect() as db:
+        db.execute("UPDATE simulation_runs SET status=? WHERE run_id=?", (run_status, run_id))
+    with pytest.raises(AlertError, match="complete or explicitly partial"):
+        Day4Alerts(store).assess(run_id)
+
+
+def test_legacy_assessment_without_integrity_flags_is_unverified_in_preview(tmp_path):
+    store = _prepared_store(tmp_path / "alerts.db")
+    alerts = Day4Alerts(store)
+    alert = alerts.assess(_run(store))
+    for key in ("run_complete", "decisions_all_valid", "alert_is_success_result"):
+        alert.pop(key, None)
+    with store.connect() as db:
+        db.execute("UPDATE day4_alerts SET body=? WHERE alert_id=?",
+                   (json.dumps(alert), alert["alert_id"]))
+    preview = alerts.preview_delivery(alert["alert_id"], "wecom")
+    assert preview["alert_is_success_result"] is False
+    assert preview["run_complete"] is None and preview["decisions_all_valid"] is None
+    assert "INCOMPLETE OR UNVERIFIED RUN" in preview["payload"]["text"]["content"]
+
+
+def test_round_without_any_valid_decision_cannot_produce_a_blue_alert(tmp_path):
+    store = _prepared_store(tmp_path / "alerts.db")
+    run_id = _run(store)
+    with store.connect() as db:
+        db.execute("UPDATE simulation_runs SET status='partial' WHERE run_id=?", (run_id,))
+        db.execute("UPDATE simulation_actions SET status='deadline_exceeded', decision=NULL "
+                   "WHERE run_id=?", (run_id,))
+    with pytest.raises(AlertError, match="no valid decisions"):
+        Day4Alerts(store).assess(run_id)
