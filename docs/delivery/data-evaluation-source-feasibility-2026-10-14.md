@@ -11,10 +11,14 @@ Hacker News Algolia 能在指定时间窗返回带创建时间的故事与评论
 | 来源 | 官方资料支持的能力 | 本轮可用性与限制 |
 | --- | --- | --- |
 | [GDELT DOC 2.0](https://blog.gdeltproject.org/doc-2-0-updates-1-5-year-searching-and-updated-mobile-interface/) | 官方说明其历史搜索自 2017 年起，ArticleList 在指定窗口内可取文章列表；[API 说明](https://blog.gdeltproject.org/gdelt-doc-2-0-api-debuts/)给出时间边界、最多 250 条列表及 TimelineVolRaw 计数。 | 2026-10-14 对已登记 Medibank 日期的一次窄窗、单词、仅标题/URL 元数据试探返回 HTTP 429；此前同接口亦曾 429。本轮未取得任何可核的 GDELT 事件结果，停止请求，不能把服务能力当作本项目覆盖证据。若将来可用，仍须按短窗核列表截断、历史可见时间、转载去重、事件归属和来源权利。 |
-| [GDELT 原始数据](https://gdeltproject.org/data.html) | 官方提供免费开放的新闻事件及 GKG 元数据文件，2.0 更新约每 15 分钟。 | 官方资料称全年原始数据量巨大；本轮未下载。它提供的是新闻索引/元数据，不自动给出舆情评论或原站全文使用权，不能把文章数直接解释为用户情绪。 |
+| [GDELT 原始数据](https://gdeltproject.org/data.html) | 官方提供免费开放的新闻事件及 GKG 元数据文件，2.0 更新约每 15 分钟；[GKG 2.0 标题说明](https://blog.gdeltproject.org/unescaping-article-titles-in-the-gkg-2-0/)指出 `Extras` 可含 `<PAGE_TITLE>`。 | State Farm 2023 开发事件的一天 GKG 2.0 原始档案已核 96/96 个切片，能取记录 ID、URL、标题和档案批次，详情见下文。它是新闻索引/元数据，不自动给出论坛评论、原站全文使用权或历史首次可见时间；文章量不能直接解释为用户情绪。 |
 | [Media Cloud 新闻档案](https://www.mediacloud.org/documentation/search-api-guide) | 官方称历史在线新闻档案可检索。 | [官方示例](https://github.com/mediacloud/api-tutorial-notebooks)要求注册账号和 API key；[使用条款 §2.1、§2.3](https://www.mediacloud.org/legal/media-cloud-terms-of-use)说明平台主要适合学术、非营利和新闻研究，不为商业品牌研究设计，且不授予第三方报道内容的使用权。本轮未注册、未调用，不把它列为已授权正式来源。 |
 
-补充一次**只读可达性探针**：2026-10-14 对 GDELT 2.0 的 `20230526150000.gkg.csv.zip` 发 `HEAD`，本机返回 HTTP 200、`Content-Length=9644013` 字节；没有下载该文件或新闻正文。这仅证明一个 15 分钟历史切片可达，不能证明 14 天完整性、事件归属、标题可用或许可。按同样大小粗算，单件前后各 7 天需 1344 个切片，约 13 GB 压缩数据；它不是已建立的 20 件评测入口。[GKG 2.1 官方字段说明](https://data.gdeltproject.org/documentation/GDELT-Global_Knowledge_Graph_Codebook-V2.1.pdf)还指出每日 GKG 1.0 兼容流会将计算元数据相同的文章聚类，不能用其较小的每日文件直接代替逐文章数量。该探针也不改变上表的 GDELT DOC API 429 结果。
+先前一次 `HEAD` 探针只证明历史切片可达。本轮进一步在已用于规则开发的 State Farm 2023 事件上，按事先写下的开发计划，顺序读取 **2023-05-26 19:30 至 2023-05-27 19:30 UTC** 的 GKG 2.0 档案：96/96 个 15 分钟切片 HTTP 200，全部为可解析的 27 列记录，合计 **122,882 条记录、503,797,500 压缩字节**。逐切片保留档案哈希；仅对宽词命中或缺标题的记录留存 URL、记录 ID、标题和批次，正文未保留。全日 **210 条缺 `<PAGE_TITLE>`**，其 URL/ID 单独留存，不能默认为无关。[GKG 2.1 官方字段说明](https://data.gdeltproject.org/documentation/GDELT-Global_Knowledge_Graph_Codebook-V2.1.pdf)解释批次 ID 和文档 URL，但批次与当前档案的 `Last-Modified` 都不足以单独证明报道首次公开可见的时点。
+
+宽词在整行、标题或 URL 中检出 193 条原始元数据记录，按大小写无关的精确标题去重为 39 组。两名只看每组代表标题/URL、互不见答案和预测的 AI 对 39 组判断一致；应用回原始候选为 **纳入 34、无法判断 3、排除 156**。单是一个 Taylor Swift 相关标题就贡献 132 条被排除的宽词误命中。**34–37 仅是已匹配候选中的 AI 辅助归属区间**，不是整个来源的事件召回界；210 条缺标题、未知漏检、转载/URL 去重和文章与评论总体差异仍须处理。此日没有读取对应的七天观察窗，也没有形成新的正式留出事件。原始进度、盲标包和两份判断的合并账本在主工作区 `artifacts/branch-work/data-evaluation/evidence/20261014/`，其版本和 SHA-256 见交接 v24。
+
+另试读 GKG 1.0 的 2023-05-27 每日档案，得到 69,952 条 11 列记录、无 `<PAGE_TITLE>`；[官方 1.0 字段说明](https://data.gdeltproject.org/documentation/GDELT-Global_Knowledge_Graph_Codebook.pdf)与 [2.1 字段说明](https://data.gdeltproject.org/documentation/GDELT-Global_Knowledge_Graph_Codebook-V2.1.pdf)表明每日兼容流会聚类相同计算元数据，不能用它直接代替 2.0 的逐文档标题与数量。一件事件前后各七天需核 1344 个 15 分钟切片；以本日实测压缩量粗算约 7 GB/件，还未计去重与归属工作。GDELT DOC API 的 HTTP 429 仍是另一接口的独立限制。
 
 ## 未使用标题线索的首轮身份核查
 
