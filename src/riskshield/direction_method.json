@@ -1,0 +1,59 @@
+{
+ "schema": "riskshield.simulation_scale.direction-method.v1",
+ "method_version": "simulation-escalation-share-v1",
+ "frozen_at": "2026-10-13T00:00:00+08:00",
+ "status": "frozen_before_any_outcome_access",
+ "purpose": "Turn one simulation run's action ledger into a single event-level escalation/calming prediction that the existing evaluation schema can consume.",
+ "freeze_declaration": {
+  "uses_only": [
+   "cutoff-eligible case snapshot (cutoff, source version, source records)",
+   "the run's persisted action ledger and its per-agent runtime message references",
+   "the run's persisted final local state, whose limitation is stated under known_data_limits",
+   "the run's own configuration (agent_count, rounds, seed, cutoff, source_version)"
+  ],
+  "never_uses": [
+   "post-cutoff observation material",
+   "human direction or sentiment labels",
+   "evaluation-only inputs or any future outcome series"
+  ],
+  "order": "This rule set is fixed before any outcome or label is read. The adapter records the hash of this document in its freeze record so the rule that produced a prediction cannot be changed afterwards without breaking the hash.",
+  "note": "A prediction produced by this method is simulation-derived. It is not a baseline, and a baseline result must never be reported as this method's result."
+ },
+ "parameters": {
+  "escalation_share_threshold": 0.5,
+  "threshold_comparison": ">=",
+  "negative_emotion_threshold": -0.35,
+  "round_selection": "latest_completed_round",
+  "tie_break": "none_required_because_the_share_is_compared_against_a_fixed_threshold"
+ },
+ "per_agent_classification": {
+  "escalating": [
+   "action is share, comment or express_complaint_intent, AND (the action cites at least one runtime message OR it cites no cutoff-eligible source evidence)",
+   "the agent's persisted final local emotion state is at or below negative_emotion_threshold"
+  ],
+  "calming": [
+   "action is observe or seek_clarification, AND it cites cutoff-eligible source evidence, AND it does not cite a runtime message"
+  ],
+  "undecided": [
+   "the agent's row for the selected round is not valid, so it carries no decision to classify",
+   "the row is valid but matches neither condition above; the method does not claim it either way"
+  ],
+  "precedence": "escalating conditions are evaluated first; an agent matching any escalating condition is classified escalating even if it also matches a calming condition"
+ },
+ "known_data_limits": {
+  "per_round_state_is_not_persisted": "The engine writes a memory row carrying the action and its reason, then updates the local emotion state afterwards, so a per-round emotion snapshot cannot be recovered from the ledger. The emotion condition therefore reads the run's persisted FINAL state. It is a final-state condition applied to the agents of the selected round, not a reconstruction of that round's state, and the prediction must never be described as resting on a per-round state snapshot.",
+  "consequence": "In a run whose emotion drifts across rounds, that condition can fire on agents of an earlier round because of a later round. The action conditions are round-local and unaffected. Recorded here so a reviewer weighs it instead of discovering it."
+ },
+ "aggregation": {
+  "universe": "every agent that produced a valid decision in the selected round",
+  "escalation_share": "count(escalating) / count(universe), rounded to 6 decimal places",
+  "label_rule": "escalation when escalation_share >= escalation_share_threshold, otherwise calming",
+  "undecided_handling": "rows that are not valid are excluded from the universe and counted separately; they never contribute to the share"
+ },
+ "method_limits": [
+  "The rule reads the simulation's own action vocabulary and local state. It is not calibrated against any observed event trajectory.",
+  "It is deterministic for a given ledger, so an identical ledger always yields the same label; it carries no confidence or probability.",
+  "It produces a direction label only. It makes no sentiment claim, and sentiment must be predicted separately if it is predicted at all.",
+  "A simulation run of a synthetic or fictional case yields a synthetic-data prediction; such a case is excluded from formal denominators by the evaluator itself."
+ ]
+}

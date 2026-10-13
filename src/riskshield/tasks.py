@@ -8,12 +8,16 @@ notification delivery, or deployment.
 import hashlib
 import json
 import threading
+import time
 import uuid
 from datetime import datetime, timezone
 from decimal import Decimal
 
+from riskshield.capacity import (configured_call_timeout_seconds,
+                                 configured_task_timeout_seconds)
 from riskshield.evidence import CollectionError, EvidencePipeline
-from riskshield.simulation import Day3Simulation, DecisionResult, SimulationError
+from riskshield.simulation import (CapacityExhaustedError, Day3Simulation, DecisionResult,
+                                   SimulationError)
 from riskshield.alerts import AlertError, Day4Alerts
 from riskshield.reporting import Day4Reports, ReportError
 from riskshield.schemas import AgentDecision, CaseImport
@@ -33,6 +37,13 @@ _FAILURE_CATEGORIES = frozenset({
     "unexpected_error",
     "interrupted_on_restart",
     "thread_start_error",
+    # A run that stopped early but still produced a report. Kept separate from
+    # "simulation_error" so an incomplete-but-reported task is distinguishable from one
+    # that produced no evidence at all.
+    "incomplete_run_reported",
+    # The process-wide in-flight ceiling was reached, so the task stopped without
+    # dispatching everything it was asked to. Never retried automatically.
+    "capacity_exhausted",
 })
 
 
@@ -56,9 +67,28 @@ def _seconds_between(start: str, end: str) -> float:
     return round((end_at - start_at).total_seconds(), 6)
 
 
+def _deadline_monotonic(input_received_at: str, budget_seconds: float) -> float:
+    """Turn a wall-clock budget into an absolute monotonic deadline.
+
+    The budget is counted from ``input_received_at`` -- when the input was received, not when
+    execution happened to begin -- so time spent queued is charged against it and a resumed
+    task never receives a fresh full budget. Only the remaining seconds are carried over to
+    the monotonic clock the engine compares against.
+    """
+    started = datetime.fromisoformat(input_received_at)
+    if started.tzinfo is None or started.utcoffset() is None:
+        raise TaskError("task timestamps must include a timezone")
+    elapsed = (datetime.now(timezone.utc) - started).total_seconds()
+    return time.monotonic() + (budget_seconds - elapsed)
+
+
 def _failure_category(exc: Exception) -> str:
     if isinstance(exc, TaskError):
         return "data_integrity_error"
+    if isinstance(exc, CapacityExhaustedError):
+        # Checked before SimulationError because it is a subclass; "the process ran out of
+        # in-flight capacity" must not be reported as a simulation input error.
+        return "capacity_exhausted"
     if isinstance(exc, SimulationError):
         return "simulation_error"
     if isinstance(exc, AlertError):
@@ -135,12 +165,23 @@ class OfflineDynamicSubstitute:
 class Day4Tasks:
     """Queue and execute persisted synthetic Day 4 jobs on the local machine."""
 
-    def __init__(self, store: Store):
+    def __init__(self, store: Store, *,
+                 simulation_call_timeout_seconds: float | None = None):
+        """``simulation_call_timeout_seconds`` bounds how long one round waits for a call.
+
+        The default ``None`` keeps the historical behaviour exactly: no wait budget, so a
+        backend that never returns leaves the task in ``running`` forever. Passing a
+        positive number makes the task return ``partial`` once the budget is spent instead
+        of hanging. The value is validated by ``Day3Simulation.advance`` itself; an illegal
+        value (0, negative, inf, nan, bool) is rejected there and the task fails as
+        ``simulation_error`` rather than being silently accepted here.
+        """
         self.store = store
         self.simulation = Day3Simulation(store)
         self.alerts = Day4Alerts(store)
         self.reports = Day4Reports(store)
         self.evidence = EvidencePipeline(store)
+        self.simulation_call_timeout_seconds = simulation_call_timeout_seconds
         self._threads: dict[str, threading.Thread] = {}
         self._threads_lock = threading.Lock()
         with store.connect() as db:
@@ -195,6 +236,11 @@ class Day4Tasks:
         simulation_status = summary["status"] if summary else "missing"
         if row["status"] == "complete":
             result_state = "success"
+        elif row["status"] == "failed" and row.get("report_id"):
+            # Stopped early but a report was still produced. It must never read as a
+            # success, and it must not read as "no evidence" either, because the report
+            # exists and is labelled incomplete.
+            result_state = "partial"
         elif row["status"] == "failed" and simulation_status == "partial":
             result_state = "stopped"
         elif (row["status"] == "failed" and simulation_status == "complete"
@@ -349,6 +395,31 @@ class Day4Tasks:
         row, created = self._queue(run_id, input_received_at=input_received_at)
         return self._launch(row, created)
 
+    def _ledger_is_reportable(self, run_id: str) -> bool:
+        """Whether a stopped run's ledger is coherent enough for a report.
+
+        ``reports.build`` requires one row per *started* round, completed rounds forming a
+        contiguous prefix from round 1, and any abandoned round after them. This mirrors
+        that check so a partial run can be reported without turning a genuine ledger
+        inconsistency into a report. A run with no completed round cannot be reported at
+        all, and the alert layer needs at least one.
+        """
+        with self.store.connect() as db:
+            run = db.execute("SELECT completed_rounds FROM simulation_runs WHERE run_id=?",
+                             (run_id,)).fetchone()
+            if run is None or int(run["completed_rounds"]) < 1:
+                return False
+            completed = int(run["completed_rounds"])
+            rows = [json.loads(row["stats"]) | {"round": row["round_number"]}
+                    for row in db.execute(
+                        "SELECT round_number, stats FROM simulation_rounds WHERE run_id=? "
+                        "ORDER BY round_number", (run_id,))]
+        flags = [bool(row.get("round_abandoned")) for row in rows]
+        return (len(rows) >= completed
+                and flags == [False] * completed + [True] * (len(rows) - completed)
+                and [row["round"] for row in rows if not row.get("round_abandoned")]
+                == list(range(1, completed + 1)))
+
     def _build_archived_projection(self, case_id: str) -> dict:
         """Build a labeled local evidence projection when no archived observation rows exist."""
         snapshot = self.store.snapshot(case_id)
@@ -468,22 +539,60 @@ class Day4Tasks:
             if run is None or case_row is None:
                 raise TaskError("case or simulation run disappeared before execution")
             self._validate_run_evidence(dict(run), json.loads(case_row["metadata"]))
-            result = self.simulation.advance(run_id, OfflineDynamicSubstitute())
-            if result["status"] != "complete" or not result["all_decisions_valid"]:
-                raise SimulationError("offline task has stopped or invalid decisions")
-            alert = self.alerts.assess(run_id)
-            report = self.reports.build(run_id, alert)
+            # Both budgets come from configuration and are validated before anything runs.
+            # The round budget bounds one round's wait; the task deadline bounds the whole
+            # task from the moment its input was received. The engine obeys whichever is
+            # earlier, and a resumed task keeps the remaining time rather than a fresh
+            # budget.
+            deadline = _deadline_monotonic(row["input_received_at"],
+                                          configured_task_timeout_seconds())
+            if time.monotonic() >= deadline:
+                raise TaskError("task deadline expired before the simulation could start")
+            # An explicitly configured per-instance budget wins; otherwise the environment
+            # setting applies. Both are bounds, so an explicitly tighter one still holds.
+            round_budget = (self.simulation_call_timeout_seconds
+                            if self.simulation_call_timeout_seconds is not None
+                            else configured_call_timeout_seconds())
+            result = self.simulation.advance(
+                run_id, OfflineDynamicSubstitute(),
+                call_timeout_seconds=round_budget,
+                deadline_monotonic=deadline)
+            # A run that stopped early still produces its five-module report as long as it
+            # completed at least one round and its ledger is coherent. The task is NOT
+            # presented as a success: it stays ``failed`` with a reason, and the report
+            # itself carries the incomplete label. Refusing to produce any report at all
+            # for a partial run hid the very evidence a reviewer needs.
+            #
+            # An incomplete run is not always reportable: the alert layer assesses the
+            # latest completed round, so a run whose final round decided nothing at all has
+            # no assessable round. That case keeps the original "stopped" outcome instead
+            # of being turned into a reportability error.
+            clean = result["status"] == "complete" and result["all_decisions_valid"]
+            alert = report = None
+            if self._ledger_is_reportable(run_id):
+                try:
+                    alert = self.alerts.assess(run_id)
+                    report = self.reports.build(run_id, alert)
+                except (AlertError, ReportError):
+                    alert = report = None
+            if report is None:
+                if not clean:
+                    raise SimulationError(
+                        "offline task has stopped or invalid decisions")
+                alert = self.alerts.assess(run_id)
+                report = self.reports.build(run_id, alert)
             report_generated_at = _now()
             timestamp = _now()
+            failure_category = None if clean else "incomplete_run_reported"
             with self.store.connect() as db:
                 db.execute(
-                    "UPDATE day4_tasks SET status='complete', completed_at=?, updated_at=?, "
+                    "UPDATE day4_tasks SET status=?, completed_at=?, updated_at=?, "
                     "alert_id=?, report_id=?, report_generated_at=?, elapsed_seconds=?, "
-                    "failure_category=NULL "
-                    "WHERE job_id=? AND status='running'",
-                    (timestamp, timestamp, alert["alert_id"], report["report_id"],
-                     report_generated_at,
-                     _seconds_between(row["input_received_at"], report_generated_at), job_id),
+                    "failure_category=? WHERE job_id=? AND status='running'",
+                    ("complete" if clean else "failed", timestamp, timestamp,
+                     alert["alert_id"], report["report_id"], report_generated_at,
+                     _seconds_between(row["input_received_at"], report_generated_at),
+                     failure_category, job_id),
                 )
         except Exception as exc:
             category = _failure_category(exc)

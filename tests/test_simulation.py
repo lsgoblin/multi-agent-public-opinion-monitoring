@@ -341,8 +341,13 @@ def test_api_creates_and_reads_a_validated_run(tmp_path):
 @pytest.mark.parametrize(("agent_count", "rounds", "concurrency"), [
     (1, 1, 1), (10, 3, 4), (50, 5, 8), (100, 10, 16), (500, 30, 64),
 ], ids=["1x1", "10x3", "50x5", "100x10", "500x30"])
-def test_graded_scale_with_test_substitute(tmp_path, agent_count, rounds, concurrency):
+def test_graded_scale_with_test_substitute(tmp_path, agent_count, rounds, concurrency,
+                                           monkeypatch):
     _, engine, case_id, graph_id, _ = prepared(tmp_path)
+    # This case drives concurrency 64, which is above the process in-flight default of 16.
+    # The ceiling is never raised automatically to fit a run, so the test raises it
+    # explicitly, exactly as an operator would have to.
+    monkeypatch.setenv("RISKSHIELD_MAX_INFLIGHT_CALLS", "64")
     run_id = engine.create_run(case_id, graph_id, agent_count=agent_count, rounds=rounds,
                                concurrency=concurrency, seed=20261005)
     result = engine.advance(run_id, ReactiveScaleBackend())

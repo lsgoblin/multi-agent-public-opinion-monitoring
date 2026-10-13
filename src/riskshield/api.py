@@ -7,9 +7,12 @@ from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Literal
 
+from riskshield.capacity import (PROCESS_CAPACITY, CapacityError,
+                                 validate_startup_configuration)
 from riskshield.evidence import (CollectRequest, CollectionError, EvidencePipeline,
                              GraphQuery, LabelRequest)
-from riskshield.simulation import Day3Simulation, SimulationCreate, SimulationError
+from riskshield.simulation import (CapacityExhaustedError, Day3Simulation, SimulationCreate,
+                                   SimulationError)
 from riskshield.alerts import Day4Alerts
 from riskshield.reporting import Day4Reports
 from riskshield.tasks import Day4Tasks, TaskError
@@ -46,6 +49,13 @@ class HistoricalTaskRequest(BaseModel):
 
 
 def create_app(db_path: str | Path | None = None) -> FastAPI:
+    # Validate every resource setting before the application exists. A mistyped environment
+    # variable must stop the application starting, not surface halfway through a task that
+    # has already dispatched calls and spent money.
+    try:
+        validated_config = validate_startup_configuration()
+    except CapacityError as exc:
+        raise RuntimeError(f"invalid resource configuration: {exc}") from None
     app = FastAPI(title="风控盾 · 舆情监测与预警", version="0.5.0",
                   description="公开事件、截止证据图、仿真和离线报告预警工程工作台。")
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "testserver", "api"])
@@ -221,6 +231,12 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
             return day3.summary(run_id)
         except KeyError:
             raise HTTPException(status_code=404, detail="案例或证据图不存在") from None
+        except CapacityExhaustedError as exc:
+            # Valid input that this process cannot hold right now; not a bad request.
+            raise HTTPException(status_code=503, detail={
+                "reason": "capacity_exhausted", "message": str(exc),
+                "capacity": PROCESS_CAPACITY.snapshot(),
+            }) from None
         except SimulationError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from None
 
@@ -252,16 +268,36 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
                 agent_count=request.agent_count, rounds=request.rounds,
                 concurrency=request.concurrency,
             )
+        except (CapacityError, CapacityExhaustedError) as exc:
+            # A concurrency the process ceiling cannot hold is a capacity refusal, not a
+            # malformed request: the same input would be accepted under a larger ceiling.
+            # Caught before SimulationError, of which CapacityExhaustedError is a subclass.
+            raise HTTPException(status_code=503, detail={
+                "reason": "capacity_exhausted", "message": str(exc),
+                "capacity": PROCESS_CAPACITY.snapshot(),
+            }) from None
         except (TaskError, SimulationError) as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from None
 
     @app.post("/day4/historical/jobs", status_code=202)
     def start_historical_job(request: HistoricalTaskRequest):
+        if not PROCESS_CAPACITY.try_admit():
+            raise HTTPException(status_code=503, detail={
+                "reason": "capacity_exhausted",
+                "message": ("the process in-flight ceiling is reached; the task was not "
+                            "accepted and nothing was queued"),
+                "capacity": PROCESS_CAPACITY.snapshot(),
+            })
         try:
             return tasks.start_historical_case(
                 request.case_id, agent_count=request.agent_count,
                 rounds=request.rounds, concurrency=request.concurrency,
             )
+        except CapacityError as exc:
+            raise HTTPException(status_code=503, detail={
+                "reason": "capacity_exhausted", "message": str(exc),
+                "capacity": PROCESS_CAPACITY.snapshot(),
+            }) from None
         except KeyError:
             raise HTTPException(status_code=404, detail="历史案例不存在") from None
         except (TaskError, SimulationError, CollectionError) as exc:
@@ -269,6 +305,15 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
 
     @app.post("/jobs", status_code=202)
     def start_job(request: RunReference):
+        # Admission is refused, never queued. The check and its bookkeeping happen together
+        # so two concurrent requests cannot both be admitted on one free slot.
+        if not PROCESS_CAPACITY.try_admit():
+            raise HTTPException(status_code=503, detail={
+                "reason": "capacity_exhausted",
+                "message": ("the process in-flight ceiling is reached; the task was not "
+                            "accepted and nothing was queued"),
+                "capacity": PROCESS_CAPACITY.snapshot(),
+            })
         try:
             return tasks.start(request.run_id)
         except KeyError:
