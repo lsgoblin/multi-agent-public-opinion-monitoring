@@ -20,6 +20,8 @@
 
 `simulation-scale` 的现有方向导出尚不能直接形成 `prediction_import.v1` 所需的完整历史运行包。请总 Agent 协调增加真实 `backend_mode`、运行配置摘要、可解析 ledger 引用及 `event_id`↔`record_id` 对应；`data-evaluation` 只在本分支实现导入和评分，不改共享 API、schema、网关或仿真分支文件。正式规则与人工盲标排期须由总 Agent 统一确认。
 
+评测侧现在要求 `production_evidence_ref` 另含 `run_ledger_ref`、该对象的 canonical JSON SHA-256 和运行配置 SHA-256。`run_ledger_ref` 应解析到 `riskshield.simulation_scale.run_ledger.v1`，其中 `summary` 是同一 `run_id` 的 `Day3Simulation.summary()` 导出，`trajectory` 是 `Day3Simulation.trajectory()` 的完整动作行；评测器逐轮核对真实模型模式、事件/cutoff/来源版本、Agent 数、完整轮次、有效决策、模型调用、Token 和费用。它不能由评测器根据旧方向预测自行拼造。现有 `direction_prediction.py` 只导出旧 `evaluation-inputs.v1`、`multi_agent_simulation` 及简要摘要，缺上述原始账本和 `prediction_import.v1` 冻结文档；即使把模式字符串改成白名单值也仍应被拒绝。原始账本可能包含请求审计信息，只留在授权的本机证据目录，不纳入源码提交。
+
 ## 本提案的适用边界
 
 本次 State Farm 诊断和已用于开发的旧 10 件不能再为此修订协议充当未参与规则制定的留出证据。Hacker News 当前历史索引可提供条目创建时间，但不是历史时点的完整索引快照；正式结论还须核其来源使用范围、历史可见性和跨来源代表性。[新版命题](../sources/2026-09-30-新版命题-多智能体仿真舆情监测.md)的五平台覆盖另行验收，不能由单一 HN 事件序列代替。

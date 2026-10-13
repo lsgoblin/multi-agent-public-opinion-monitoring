@@ -75,11 +75,56 @@ def _fixture():
     return unit, package, document, evidence, freeze
 
 
-def _score(tmp_path, unit, package, document, evidence, freeze):
+def _ledger():
+    actions = []
+    for round_number in (1, 2):
+        for agent_number in (1, 2, 3):
+            index = len(actions)
+            actions.append({
+                "run_id": "run-1", "round_number": round_number,
+                "agent_id": f"agent-{agent_number}", "status": "valid",
+                "decision": {"action": "observe", "evidence_ids": ["record-1"]},
+                "observation_refs": {"evidence": ["record-1"], "messages": []},
+                "requested_model": "qwen-flash", "price_version": "test-price-v1",
+                "usage": {"prompt_tokens": 20,
+                          "completion_tokens": 7 if index < 4 else 6,
+                          "cached_input_tokens": 0},
+                "cost_cny": "0.002" if index < 4 else "0.001",
+            })
+    return {
+        "schema": "riskshield.simulation_scale.run_ledger.v1",
+        "summary": {
+            "run_id": "run-1", "case_id": "event-1", "status": "complete",
+            "config": {"backend_mode": "real_model", "data_mode": "real_historical",
+                       "cutoff": "2025-01-02T00:00:00Z", "source_version": "snapshot-1",
+                       "agent_count": 3, "rounds": 2},
+            "completed_rounds": 2, "rounds": [{"round": 1}, {"round": 2}],
+            "all_decisions_valid": True, "action_counts": {"valid": 6},
+            "cost_cny": "0.010",
+            "usage": {"prompt_tokens": 120, "completion_tokens": 40,
+                      "cached_input_tokens": 0, "unknown_usage_calls": 0,
+                      "by_model": {"qwen-flash": {"calls": 6}}},
+            "billing": {"cost_reconciles": True, "recorded_requests": 6,
+                        "states": {"settled": 6, "not_sent": 0, "released": 0,
+                                   "unsettled_reserved": 0},
+                        "charged_cost_cny": "0.010"},
+        },
+        "trajectory": actions,
+    }
+
+
+def _score(tmp_path, unit, package, document, evidence, freeze, *, ledger_change=None):
     freeze["prediction_document_sha256"] = imp.canonical_digest(document)
+    ledger = _ledger()
+    if ledger_change is not None:
+        ledger_change(ledger)
+    evidence["run_ledger_ref"] = {"path": "ledger.json", "pointer": ""}
+    evidence["run_ledger_sha256"] = imp.canonical_digest(ledger)
+    evidence["run_config_sha256"] = imp.canonical_digest(ledger["summary"]["config"])
     _write(tmp_path, "inputs.json", package)
     _write(tmp_path, "evidence.json", {"production_evidence": evidence})
     _write(tmp_path, "freeze.json", freeze)
+    _write(tmp_path, "ledger.json", ledger)
     return imp.import_formal_predictions(document, task_type=imp.TASK_DIRECTION,
                                          units=[unit], material_root=tmp_path)
 
@@ -130,3 +175,42 @@ def test_generic_simulation_mode_still_rejected(tmp_path):
     evidence["execution_mode"] = "multi_agent_simulation"
     report = _score(tmp_path, unit, package, document, evidence, freeze)
     assert "unknown_execution_mode_not_admitted" in report["rejected"][0]["reasons"]
+
+
+@pytest.mark.parametrize("change,reason", [
+    (lambda l: l["summary"]["config"].update(backend_mode="test_substitute"),
+     "simulation_run_ledger_identity_or_backend_mismatch"),
+    (lambda l: l["trajectory"].pop(),
+     "simulation_run_ledger_action_count_mismatch"),
+    (lambda l: l["trajectory"][0].update(agent_id="agent-4"),
+     "simulation_run_ledger_agent_rounds_mismatch"),
+    (lambda l: l["trajectory"][0].update(cost_cny="0.004"),
+     "simulation_run_ledger_totals_mismatch"),
+    (lambda l: l["trajectory"][0].update(usage=None),
+     "simulation_run_ledger_invalid_action"),
+    (lambda l: l["summary"].update(all_decisions_valid=False),
+     "simulation_run_ledger_totals_mismatch"),
+])
+def test_live_run_ledger_discrepancy_rejected(tmp_path, change, reason):
+    unit, package, document, evidence, freeze = _fixture()
+    report = _score(tmp_path, unit, package, document, evidence, freeze,
+                    ledger_change=change)
+    assert report["counts"]["admitted"] == 0
+    assert reason in report["rejected"][0]["reasons"]
+
+
+def test_live_run_requires_resolvable_ledger_and_digest(tmp_path):
+    unit, package, document, evidence, freeze = _fixture()
+    _score(tmp_path, unit, package, document, evidence, freeze)
+    (tmp_path / "ledger.json").unlink()
+    report = imp.import_formal_predictions(document, task_type=imp.TASK_DIRECTION,
+                                           units=[unit], material_root=tmp_path)
+    assert "simulation_run_ledger_reference_file_missing" in report["rejected"][0]["reasons"]
+
+    ledger = _ledger()
+    _write(tmp_path, "ledger.json", ledger)
+    ledger["trajectory"][0]["cost_cny"] = "0.003"
+    _write(tmp_path, "ledger.json", ledger)
+    report = imp.import_formal_predictions(document, task_type=imp.TASK_DIRECTION,
+                                           units=[unit], material_root=tmp_path)
+    assert "simulation_run_ledger_hash_mismatch" in report["rejected"][0]["reasons"]
