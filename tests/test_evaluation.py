@@ -4,8 +4,11 @@ import json
 import pytest
 
 from riskshield.evaluation import (
+    DIRECTIONS,
+    DIRECTION_DIAGNOSTIC_CLASSES,
     INPUT_SCHEMA,
     LABEL_SCHEMA,
+    _direction_three_class_diagnostic,
     evaluate_documents,
 )
 
@@ -391,3 +394,118 @@ def test_label_basis_accounting_reports_an_unresolved_disagreement(tmp_path):
     assert accounting["excluded_label_disagreement_unresolved"]["units"] == 1
     assert accounting["raw_agreement_share_of_covered"]["value"] is None
     assert accounting["raw_agreement_share_of_covered"]["undefined_reason"]
+
+# --------------------------------------------------------------------------
+# the three-class direction diagnostic
+# --------------------------------------------------------------------------
+
+def _diag_row(event_id, truth, prediction, *, split='holdout', resolved=True):
+    return {
+        "evaluation_id": f"{event_id}__direction", "event_id": event_id,
+        "unit_id": event_id, "truth": truth, "prediction": prediction, "split": split,
+        "truth_is_a_class": truth in DIRECTION_DIAGNOSTIC_CLASSES,
+        "truth_is_declared_unscorable": truth is not None
+        and truth not in DIRECTION_DIAGNOSTIC_CLASSES,
+        "prediction_resolved": resolved, "binary_reasons": [],
+    }
+
+
+def test_stable_is_scored_as_its_own_class_and_never_mapped():
+    """A prediction of calming for a stable event is wrong, not a near miss."""
+    block = _direction_three_class_diagnostic([
+        _diag_row("a", "stable", "calming"),
+        _diag_row("b", "stable", "stable"),
+    ])
+
+    matrix = block["confusion_matrix_actual_by_predicted"]
+    assert block["classes"] == list(DIRECTION_DIAGNOSTIC_CLASSES)
+    assert matrix["stable"]["calming"] == 1
+    assert matrix["stable"]["stable"] == 1
+    assert matrix["calming"]["stable"] == 0, "calming must not absorb a stable event"
+    assert block["denominator"] == 2 and block["numerator"] == 1
+    assert block["replaces_the_binary_direction_metric"] is False
+
+
+def test_a_wrong_prediction_stays_in_the_diagnostic_denominator():
+    block = _direction_three_class_diagnostic([
+        _diag_row("a", "calming", "escalation"),
+        _diag_row("b", "escalation", "calming"),
+    ])
+
+    assert block["denominator"] == 2
+    assert block["numerator"] == 0
+    assert block["value"] == 0.0
+    assert len(block["scored_events"]) == 2
+
+
+def test_a_prediction_outside_the_three_classes_counts_as_wrong():
+    block = _direction_three_class_diagnostic([_diag_row("a", "calming", "sideways")])
+
+    assert block["denominator"] == 1
+    assert block["numerator"] == 0
+    assert block["predictions_outside_the_three_class_space"] == 1
+
+
+def test_a_declared_cannot_judge_is_not_scored_and_is_not_stable():
+    """A refusal to classify is not an observation of stability."""
+    block = _direction_three_class_diagnostic([
+        _diag_row("a", "insufficient_evidence", "calming"),
+        _diag_row("b", "cannot_judge", "escalation"),
+        _diag_row("c", "calming", "calming"),
+    ])
+
+    assert block["class_support"]["stable"] == 0
+    assert block["denominator"] == 1
+    assert block["not_scored"]["declared_cannot_judge"]["count"] == 2
+    assert block["not_scored"]["declared_cannot_judge"]["event_ids"] == ["a", "b"]
+
+
+def test_an_unlabelled_event_is_not_counted_as_stable_either():
+    block = _direction_three_class_diagnostic([
+        _diag_row("a", None, "calming"),
+        _diag_row("b", "stable", "stable"),
+    ])
+
+    assert block["denominator"] == 1
+    assert block["class_support"]["stable"] == 1
+    assert block["not_scored"]["no_label_at_all"]["count"] == 1
+
+
+def test_a_label_without_a_prediction_is_recorded_rather_than_filled_in():
+    block = _direction_three_class_diagnostic([
+        _diag_row("a", "stable", None, resolved=False),
+        _diag_row("b", "stable", "stable"),
+    ])
+
+    assert block["denominator"] == 1
+    assert block["coverage"] == {"eligible_events": 2, "scored_events": 1, "share": 0.5}
+    assert block["not_scored"]["label_but_no_recorded_prediction"]["event_ids"] == ["a"]
+
+
+def test_the_diagnostic_keeps_development_and_holdout_apart():
+    block = _direction_three_class_diagnostic([
+        _diag_row("a", "stable", "calming", split="development"),
+        _diag_row("b", "stable", "stable", split="holdout"),
+        _diag_row("c", "stable", "stable", split="holdout"),
+    ])
+
+    assert block["by_split"]["development"]["scored_events"] == 1
+    assert block["by_split"]["development"]["numerator"] == 0
+    assert block["by_split"]["holdout"]["scored_events"] == 2
+    assert block["by_split"]["holdout"]["numerator"] == 2
+    assert block["numerator"] == 2 and block["denominator"] == 3
+
+
+def test_the_diagnostic_can_be_switched_off_without_changing_anything_else():
+    block = _direction_three_class_diagnostic([_diag_row("a", "stable", "stable")],
+                                              enabled=False)
+
+    assert block["enabled"] is False
+    assert block["value"] is None
+    assert block["undefined_reason"]
+
+
+def test_the_binary_direction_space_is_untouched_by_the_diagnostic():
+    """The diagnostic must not widen the brief's own metric."""
+    assert DIRECTIONS == ("escalation", "calming")
+    assert "stable" not in DIRECTIONS

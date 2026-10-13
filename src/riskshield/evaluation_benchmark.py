@@ -42,7 +42,10 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
-from riskshield.evaluation import _adjudication_for_case, _resolve_ref, evaluate_documents
+from riskshield.evaluation import (
+    DIRECTION_DIAGNOSTIC_CLASSES, DIRECTION_UNSCORABLE_LABELS, _adjudication_for_case,
+    _resolve_ref, evaluate_documents,
+)
 from riskshield.evaluation_alignment import (
     INPUT_SCHEMA,
     LABEL_SCHEMA,
@@ -821,6 +824,40 @@ def assert_direction_denominator_matches(scored_units: list[dict[str, Any]],
             "denominator_equals_admitted_count": True}
 
 
+def assert_diagnostic_denominator_matches(diagnostic_units: list[dict[str, Any]],
+                                          metrics: dict[str, Any]) -> dict[str, Any]:
+    """The three-class diagnostic must account for exactly the events it admitted.
+
+    The diagnostic is allowed a wider set than the binary metric, so it needs its
+    own invariant: a reading that could quietly drop the events it finds hard
+    would improve as it dropped more of them, which is the failure mode a
+    coverage number is there to expose.
+    """
+    block = metrics.get("direction_three_class")
+    if not isinstance(block, dict) or not block.get("enabled"):
+        return {"checked": False, "reason": "the three-class diagnostic is switched off"}
+    admitted = sorted(unit["event_id"] for unit in diagnostic_units)
+    class_truth = sorted(unit["event_id"] for unit in diagnostic_units
+                         if resolved_direction_label(unit) in DIRECTION_DIAGNOSTIC_CLASSES)
+    scored = sorted(row["event_id"] for row in block["scored_events"] if row["event_id"])
+    if scored != class_truth:
+        raise BenchmarkInvariantError(
+            "the diagnostic scored a different event set than the labels allow: "
+            f"labelled={class_truth} scored={scored}")
+    accounted = (len(block["scored_events"])
+                 + block["not_scored"]["declared_cannot_judge"]["count"]
+                 + block["not_scored"]["label_but_no_recorded_prediction"]["count"])
+    if accounted > len(admitted):
+        raise BenchmarkInvariantError(
+            "the diagnostic accounts for more events than its gate admitted: "
+            f"admitted={len(admitted)} accounted={accounted}")
+    return {"checked": True, "admitted_event_ids": admitted,
+            "events_with_a_three_class_label": class_truth,
+            "events_scored": scored,
+            "scored_equals_labelled": True,
+            "coverage_share": block["coverage"]["share"]}
+
+
 def _now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
 
@@ -845,7 +882,11 @@ def _write_json(path: Path, payload: Any) -> None:
 # and each reports its own denominator. Nothing here merges them.
 
 TRAJECTORY_UNIT_KIND = "event_direction_series"
-DIRECTION_LABELS = ("escalation", "calming", "stable")
+DIRECTION_LABELS = DIRECTION_DIAGNOSTIC_CLASSES
+# What an annotator may answer. ``stable`` is a reading; the unscorable labels are
+# a refusal to read, and they are accepted here so the refusal can be recorded
+# rather than silently dropped as a typo.
+DIRECTION_ANNOTATION_LABELS = DIRECTION_DIAGNOSTIC_CLASSES + DIRECTION_UNSCORABLE_LABELS
 ENGINE_DIRECTION_LABELS = ("escalation", "calming")
 TRAJECTORY_PACKAGE_SCHEMA = "riskshield.data_evaluation.trajectory_evidence_package.v1"
 
@@ -988,7 +1029,7 @@ def _direction_adjudication_valid(block: dict[str, Any], root: Path) -> tuple[st
     label = block.get("final_label")
     if not isinstance(block.get("adjudicator_id"), str) or not block["adjudicator_id"].strip():
         reasons.append("missing_adjudicator_id")
-    if label not in DIRECTION_LABELS:
+    if label not in DIRECTION_ANNOTATION_LABELS:
         reasons.append("final_label_outside_the_declared_direction_space")
     if block.get("original_answers_preserved") is not True:
         reasons.append("original_answers_not_preserved")
@@ -1148,7 +1189,7 @@ def attach_direction_labels(units: list[dict[str, Any]], sources: list[dict[str,
             if annotator in seen:
                 exclusions.append(f"annotator_ids_not_distinct_in_{stem}")
                 continue
-            if label not in DIRECTION_LABELS:
+            if label not in DIRECTION_ANNOTATION_LABELS:
                 exclusions.append(f"direction_label_outside_the_declared_space_in_{stem}")
                 continue
             seen.add(annotator)
@@ -1504,6 +1545,43 @@ def _evaluate_sentiment_cohort(cohort: dict[str, Any], units: list[dict[str, Any
     }
 
 
+def trajectory_direction_diagnostic_gate(unit: dict[str, Any]) -> dict[str, Any]:
+    """Whether an event enters the three-class diagnostic.
+
+    A strictly wider gate than the binary one: it does not require the label to
+    be expressible as escalation or calming, because the diagnostic can express
+    ``stable`` and records a declared "cannot judge" as its own reason instead of
+    silently treating it as stability.
+
+    The two gates stay separate on purpose. Widening the binary gate would change
+    the brief's direction denominator, and the point of the diagnostic is to add
+    a reading without moving the number that was already agreed.
+    """
+    reasons: list[str] = []
+    labels = [row["label"] for row in unit.get("direction_annotations", [])]
+    distinct = sorted(set(labels))
+    adjudication = unit.get("direction_adjudication") or {}
+    adjudicated = adjudication.get("valid") is True
+
+    if len(labels) < 2 and not adjudicated:
+        reasons.append("fewer_than_two_independent_direction_labels")
+    elif len(distinct) != 1 and not adjudicated:
+        reasons.append("direction_labels_disagree_no_adjudication")
+
+    label = resolved_direction_label(unit)
+    if label is None:
+        reasons.append("no_independent_human_direction_label")
+    elif label not in DIRECTION_ANNOTATION_LABELS:
+        reasons.append("label_outside_the_declared_space")
+
+    prediction = unit.get("prediction") or {}
+    if prediction.get("admitted") is not True:
+        reasons.append("no_admitted_formal_direction_prediction")
+    return {"passed": not reasons, "reasons": sorted(set(reasons)), "label": label,
+            "label_is_a_class": label in DIRECTION_DIAGNOSTIC_CLASSES,
+            "label_is_declared_unscorable": label in DIRECTION_UNSCORABLE_LABELS}
+
+
 def _direction_eligibility_rows(units: list[dict[str, Any]]) -> list[dict[str, Any]]:
     """One row per candidate event, listing every gate and every gap.
 
@@ -1553,13 +1631,25 @@ def _evaluate_direction_cohort(cohort: dict[str, Any], units: list[dict[str, Any
     gated_ids = sorted(unit["unit_id"] for unit in gated_units)
     excluded_ids = {unit["unit_id"] for unit in units} - set(gated_ids)
 
+    # The diagnostic is scored over a wider set than the binary metric, and both
+    # numbers come out of one engine run: the engine keeps the brief's direction
+    # denominator at the events it can express, and the diagnostic picks up the
+    # rest. Scoring the wider set is what lets a stable label reach the engine at
+    # all; scoring only the gated set would leave the diagnostic permanently
+    # empty, which is how it looked before this was wired.
+    diagnostic_units = [unit for unit in units
+                        if trajectory_direction_diagnostic_gate(unit)["passed"]]
+    diagnostic_ids = sorted(unit["unit_id"] for unit in diagnostic_units)
+
     cases, labels, metrics = score_trajectory_set(
-        gated_units,
+        diagnostic_units,
         dataset_version=cohort["dataset_version"],
         label_version=cohort["label_version"],
         evidence_root=root,
         package_relative=prediction_report["package_relative"])
     consistency = assert_direction_denominator_matches(gated_units, metrics)
+    diagnostic_consistency = assert_diagnostic_denominator_matches(
+        diagnostic_units, metrics)
 
     expected = sorted(cohort["expected_gated_unit_ids"])
     splits: dict[str, int] = {}
@@ -1589,6 +1679,9 @@ def _evaluate_direction_cohort(cohort: dict[str, Any], units: list[dict[str, Any
         "expectation_matches": expected == gated_ids,
         "candidate_count": len(units),
         "gated_count": len(gated_units),
+        "diagnostic_event_ids": diagnostic_ids,
+        "diagnostic_count": len(diagnostic_units),
+        "diagnostic_consistency_check": diagnostic_consistency,
         "split_counts": dict(sorted(splits.items())),
         "consistency_check": consistency,
     }
@@ -1597,10 +1690,20 @@ def _evaluate_direction_cohort(cohort: dict[str, Any], units: list[dict[str, Any
 def evaluate_combined_direction(cohorts: list[dict[str, Any]], *, root: Path,
                                 dataset_version: str,
                                 label_version: str) -> dict[str, Any]:
-    """Score the union of the direction cohorts' gated events."""
+    """Score the union of the direction cohorts' gated events.
+
+    The union is taken over the diagnostic gate, which is the wider of the two,
+    so that ``stable`` labels reach the engine. The brief's direction denominator
+    is unaffected: the engine keeps it at the events it can express, and the
+    invariant below still checks that binary number against the binary gate.
+    """
     units: list[dict[str, Any]] = []
+    binary_units: list[dict[str, Any]] = []
     for cohort in cohorts:
-        units.extend(unit for unit in cohort["units"] if unit["unit_id"] in cohort["gated_unit_ids"])
+        diagnostic_ids = set(cohort.get("diagnostic_event_ids") or cohort["gated_unit_ids"])
+        units.extend(unit for unit in cohort["units"] if unit["unit_id"] in diagnostic_ids)
+        binary_units.extend(unit for unit in cohort["units"]
+                            if unit["unit_id"] in cohort["gated_unit_ids"])
     seen: set[str] = set()
     duplicates: list[str] = []
     for unit in units:
@@ -1615,7 +1718,8 @@ def evaluate_combined_direction(cohorts: list[dict[str, Any]], *, root: Path,
     _, _, metrics = score_trajectory_set(
         units, dataset_version=dataset_version, label_version=label_version,
         evidence_root=root, package_relative=package_relative)
-    consistency = assert_direction_denominator_matches(units, metrics)
+    consistency = assert_direction_denominator_matches(binary_units, metrics)
+    diagnostic_consistency = assert_diagnostic_denominator_matches(units, metrics)
     by_split: dict[str, Any] = {}
     for split in sorted({unit.get("split") or "holdout" for unit in units}):
         members = [unit for unit in units if (unit.get("split") or "holdout") == split]
@@ -1636,6 +1740,12 @@ def evaluate_combined_direction(cohorts: list[dict[str, Any]], *, root: Path,
             "its own. The combined number above spans both and is not a substitute for the split "
             "that was reserved"),
         "consistency_check": consistency,
+        "diagnostic_consistency_check": diagnostic_consistency,
+        "binary_direction_event_ids": sorted(unit["unit_id"] for unit in binary_units),
+        "three_class_direction_note": (
+            "the metric block carries both readings: direction_agreement is the brief's binary "
+            "number over the events it can express, and direction_three_class is a separate "
+            "diagnostic that can also express stable"),
     }
 
 

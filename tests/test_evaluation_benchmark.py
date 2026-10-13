@@ -1575,6 +1575,67 @@ def test_a_zero_denominator_is_never_rendered_as_zero_anywhere_in_the_report(tmp
             assert block.get("value") is not None, block
 
 
+def test_stable_enters_the_diagnostic_but_not_the_binary_denominator(tmp_path):
+    """The diagnostic widens what is readable without moving the agreed number."""
+    root = _fixture_root(tmp_path, [])
+    _trajectory_root(tmp_path, ["evt-1", "evt-2"])
+    _direction_submissions(root, ["evt-1", "evt-2"],
+                           {"evt-1": "calming", "evt-2": "stable"})
+    cohort = _trajectory_cohort(["evt-1"], expected_excluded_unit_ids=["evt-2"])
+
+    result = bench.evaluate_cohort(cohort, bench.trajectory_units(root, cohort),
+                                   root=root, cutoffs_document=None,
+                                   out_dir_relative="out/run")
+
+    assert result["gated_unit_ids"] == ["evt-1"]
+    assert result["gated_count"] == 1
+    assert result["diagnostic_event_ids"] == ["evt-1", "evt-2"]
+    assert result["diagnostic_count"] == 2
+
+    binary = result["metrics"]["direction_agreement"]
+    diagnostic = result["metrics"]["direction_three_class"]
+    assert binary["denominator"] == 1, "the brief's denominator must not absorb stable"
+    assert diagnostic["denominator"] == 2
+    assert diagnostic["class_support"]["stable"] == 1
+    # evt-2 is stable and both sealed events predict escalation, so it counts wrong.
+    assert diagnostic["confusion_matrix_actual_by_predicted"]["stable"]["escalation"] == 1
+    assert result["diagnostic_consistency_check"]["checked"] is True
+
+
+def test_a_declared_cannot_judge_label_is_recorded_and_not_treated_as_stable(tmp_path):
+    root = _fixture_root(tmp_path, [])
+    _trajectory_root(tmp_path, ["evt-1"])
+    _direction_submissions(root, ["evt-1"], {"evt-1": "cannot_judge"})
+    cohort = _trajectory_cohort([], expected_excluded_unit_ids=["evt-1"])
+
+    result = bench.evaluate_cohort(cohort, bench.trajectory_units(root, cohort),
+                                   root=root, cutoffs_document=None,
+                                   out_dir_relative="out/run")
+
+    assert result["gated_unit_ids"] == []
+    assert result["diagnostic_event_ids"] == ["evt-1"], "admitted so the refusal gets recorded"
+    diagnostic = result["metrics"]["direction_three_class"]
+    assert diagnostic["denominator"] == 0
+    assert diagnostic["class_support"]["stable"] == 0
+    assert diagnostic["not_scored"]["declared_cannot_judge"]["count"] == 1
+
+
+def test_the_diagnostic_invariant_catches_a_dropped_event(tmp_path):
+    root = _fixture_root(tmp_path, [])
+    _trajectory_root(tmp_path, ["evt-1"])
+    _direction_submissions(root, ["evt-1"], {"evt-1": "stable"})
+    cohort = _trajectory_cohort(["evt-1"])
+    unit = bench.trajectory_units(root, cohort)[0]
+    bench.attach_direction_labels([unit], cohort["annotation_sources"], root)
+
+    with pytest.raises(bench.BenchmarkInvariantError, match="different event set"):
+        bench.assert_diagnostic_denominator_matches([unit], {
+            "direction_three_class": {
+                "enabled": True, "scored_events": [], "coverage": {"share": None},
+                "not_scored": {"declared_cannot_judge": {"count": 0},
+                               "label_but_no_recorded_prediction": {"count": 0}}}})
+
+
 # --------------------------------------------------------------------------
 # group 7: the command line contract
 # --------------------------------------------------------------------------

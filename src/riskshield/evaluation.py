@@ -22,6 +22,21 @@ LABEL_SCHEMA = "riskshield.day5.future-labels.v1"
 REPORT_SCHEMA = "riskshield.day5.evaluation-report.v1"
 SENTIMENTS = ("positive", "neutral", "negative")
 DIRECTIONS = ("escalation", "calming")
+# The direction track is scored two ways that must not be confused. The binary
+# metric above is the one the brief asks for and it keeps its own denominator.
+# The diagnostic below is an additional, separately versioned reading that can
+# express ``stable``; it never feeds the binary number and never replaces it.
+DIRECTION_DIAGNOSTIC_CLASSES = ("escalation", "calming", "stable")
+DIRECTION_DIAGNOSTIC_VERSION = "direction-three-class-diagnostic-v1"
+# Labels that mean "the evidence does not settle it". They are NOT ``stable``:
+# ``stable`` is a reading of the series, this is the absence of one, and folding
+# the second into the first would invent an observation nobody made.
+DIRECTION_UNSCORABLE_LABELS = ("insufficient_evidence", "unknown", "cannot_judge",
+                               "not_judgeable", "insufficient")
+# A prediction outside the three classes still occupies a cell rather than
+# vanishing, so the matrix always accounts for every scored event.
+DIAGNOSTIC_PREDICTION_BUCKETS = DIRECTION_DIAGNOSTIC_CLASSES + (
+    "outside_the_three_class_space",)
 _MISSING = object()
 
 
@@ -395,6 +410,120 @@ def _ai_reference_agreement(cases: list[dict[str, Any]], ai_reference: Any,
     }
 
 
+def _direction_three_class_diagnostic(rows: list[dict[str, Any]], *,
+                                      enabled: bool = True) -> dict[str, Any]:
+    """A three-class reading of the direction track, kept apart from the binary one.
+
+    The binary agreement metric can only express escalation and calming, so a
+    ``stable`` label is excluded from it. Excluding those events is honest but it
+    hides them, and it leaves no way to say what the model does on the events
+    where the honest answer is that nothing much changed.
+
+    This is a second reading, not a replacement:
+
+    * an event whose truth is ``stable`` counts, and a prediction of anything
+      other than ``stable`` counts as wrong -- the model's predictions are never
+      rewritten and no prediction is invented for an event that lacks one;
+    * an event labelled "cannot judge" is not ``stable`` and is not scored here;
+      it is recorded as its own reason, because a refusal to classify is not an
+      observation of stability;
+    * it reports its own version, so a later change to it cannot be mistaken for
+      a change in the binary number.
+
+    Coverage is reported next to the accuracy, because a three-class diagnostic
+    that quietly dropped the events it could not score would look better the
+    more it dropped.
+    """
+    block: dict[str, Any] = {
+        "diagnostic_version": DIRECTION_DIAGNOSTIC_VERSION,
+        "enabled": bool(enabled),
+        "replaces_the_binary_direction_metric": False,
+        "uses_only_recorded_predictions": True,
+        "classes": list(DIRECTION_DIAGNOSTIC_CLASSES),
+        "unscorable_labels": list(DIRECTION_UNSCORABLE_LABELS),
+        "note": ("an additional reading. The brief's direction agreement rate is reported "
+                 "separately and is unchanged by this block"),
+    }
+    if not enabled:
+        block["value"] = None
+        block["undefined_reason"] = "the three-class direction diagnostic is switched off"
+        return block
+
+    rows = [dict(row) for row in rows]
+    eligible = [row for row in rows if row["truth_is_a_class"]]
+    covered = [row for row in eligible if row["prediction_resolved"]]
+    unscorable = [row for row in rows if row["truth_is_declared_unscorable"]]
+    unlabelled = [row for row in rows
+                  if row["truth"] is None and not row["truth_is_declared_unscorable"]]
+
+    matrix = {truth: {prediction: 0 for prediction in DIAGNOSTIC_PREDICTION_BUCKETS}
+              for truth in DIRECTION_DIAGNOSTIC_CLASSES}
+    for row in covered:
+        prediction = row["prediction"] if row["prediction"] in DIRECTION_DIAGNOSTIC_CLASSES \
+            else "outside_the_three_class_space"
+        matrix[row["truth"]][prediction] += 1
+    correct = sum(matrix[klass][klass] for klass in DIRECTION_DIAGNOSTIC_CLASSES)
+    support = {klass: sum(matrix[klass].values()) for klass in DIRECTION_DIAGNOSTIC_CLASSES}
+
+    def split_view(selected: list[dict[str, Any]]) -> dict[str, Any]:
+        local = {truth: {prediction: 0 for prediction in DIAGNOSTIC_PREDICTION_BUCKETS}
+                 for truth in DIRECTION_DIAGNOSTIC_CLASSES}
+        for row in selected:
+            prediction = row["prediction"] if row["prediction"] in DIRECTION_DIAGNOSTIC_CLASSES \
+                else "outside_the_three_class_space"
+            local[row["truth"]][prediction] += 1
+        hits = sum(local[klass][klass] for klass in DIRECTION_DIAGNOSTIC_CLASSES)
+        return {"scored_events": len(selected), "numerator": hits,
+                "value": (hits / len(selected)) if selected else None,
+                "confusion_matrix_actual_by_predicted": local}
+
+    splits = sorted({row["split"] or "unassigned" for row in covered})
+    block.update({
+        "denominator": len(covered),
+        "numerator": correct,
+        "value": (correct / len(covered)) if covered else None,
+        "undefined_reason": (None if covered else
+                             "no direction event has both a three-class truth and a recorded "
+                             "prediction"),
+        "coverage": {
+            "eligible_events": len(eligible),
+            "scored_events": len(covered),
+            "share": (len(covered) / len(eligible)) if eligible else None,
+        },
+        "class_support": support,
+        "confusion_matrix_actual_by_predicted": matrix,
+        "predictions_outside_the_three_class_space": sum(
+            matrix[klass]["outside_the_three_class_space"]
+            for klass in DIRECTION_DIAGNOSTIC_CLASSES),
+        "not_scored": {
+            "declared_cannot_judge": {
+                "count": len(unscorable),
+                "event_ids": sorted(row["event_id"] for row in unscorable if row["event_id"]),
+                "why": ("a refusal to classify is not an observation of stability, so these are "
+                        "not counted as stable and not counted at all"),
+            },
+            "no_label_at_all": {
+                "count": len(unlabelled),
+                "event_ids": sorted(row["event_id"] for row in unlabelled if row["event_id"]),
+            },
+            "label_but_no_recorded_prediction": {
+                "count": len(eligible) - len(covered),
+                "event_ids": sorted(row["event_id"] for row in eligible
+                                    if not row["prediction_resolved"] and row["event_id"]),
+                "why": "no prediction is invented to fill the gap",
+            },
+        },
+        "by_split": {split: split_view([row for row in covered if (row["split"] or "unassigned")
+                                        == split]) for split in splits},
+        "scored_events": sorted(
+            ({"event_id": row["event_id"], "unit_id": row["unit_id"], "truth": row["truth"],
+              "prediction": row["prediction"],
+              "correct": row["truth"] == row["prediction"]} for row in covered),
+            key=lambda item: item["event_id"] or ""),
+    })
+    return block
+
+
 def _reason_counts(exclusions: list[dict[str, Any]]) -> dict[str, int]:
     counts: Counter[str] = Counter()
     for exclusion in exclusions:
@@ -458,6 +587,7 @@ def evaluate_documents(
     labels_sha256: str | None = None,
     evidence_root: Path | str = ".",
     ai_reference: dict[str, Any] | None = None,
+    direction_three_class_diagnostic: bool = True,
 ) -> dict[str, Any]:
     """Compute metrics from separated inputs and labels; never touches simulation state."""
     if inputs.get("schema") != INPUT_SCHEMA:
@@ -512,6 +642,7 @@ def evaluate_documents(
     direction_candidates: dict[str, list[dict[str, Any]]] = defaultdict(list)
     direction_invalid_rows: dict[str, list[dict[str, Any]]] = defaultdict(list)
     direction_exclusions: list[dict[str, Any]] = []
+    direction_diagnostic_rows: list[dict[str, Any]] = []
     input_exclusions: list[dict[str, Any]] = []
     real_event_ids: set[str] = set()
     cutoff_qualified_event_ids: set[str] = set()
@@ -572,6 +703,19 @@ def evaluate_documents(
             if not isinstance(refs, list) or not any(_ref_matches(ref, observed, root) for ref in refs):
                 direction_reasons.append("missing_future_outcome_evidence")
         d_reasons = sorted(set(base_reasons + direction_reasons))
+        # Recorded for the diagnostic whether or not the binary metric can use it.
+        # ``stable`` and a declared "cannot judge" both land here, and they are
+        # kept apart: the first is a class, the second is a refusal to classify.
+        if observed is not None or predicted_direction is not None:
+            direction_diagnostic_rows.append({
+                "evaluation_id": case["evaluation_id"], "event_id": event_id,
+                "unit_id": unit_id, "truth": observed, "prediction": predicted_direction,
+                "split": case.get("split"),
+                "truth_is_a_class": observed in DIRECTION_DIAGNOSTIC_CLASSES,
+                "truth_is_declared_unscorable": observed in DIRECTION_UNSCORABLE_LABELS,
+                "prediction_resolved": predicted_direction is not None,
+                "binary_reasons": d_reasons,
+            })
         if not d_reasons:
             direction_candidates[event_id].append({
                 "evaluation_id": case["evaluation_id"], "unit_id": unit_id,
@@ -633,6 +777,9 @@ def evaluate_documents(
         direction_matrix[row["truth"]][row["prediction"]] += 1
     direction_correct = sum(direction_matrix[label][label] for label in DIRECTIONS)
     n_direction = len(direction_rows)
+
+    direction_three_class = _direction_three_class_diagnostic(
+        direction_diagnostic_rows, enabled=direction_three_class_diagnostic)
 
     return {
         "schema": REPORT_SCHEMA,
@@ -717,6 +864,7 @@ def evaluate_documents(
             "exclusion_reasons": _reason_counts(direction_exclusions),
             "excluded_events_or_rows": direction_exclusions,
         },
+        "direction_three_class": direction_three_class,
         "ai_reference_agreement": _ai_reference_agreement(cases, ai_reference, root),
         "provenance": {
             "input_sha256": input_sha256,
