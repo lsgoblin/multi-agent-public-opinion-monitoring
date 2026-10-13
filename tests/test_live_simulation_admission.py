@@ -8,6 +8,7 @@ import json
 
 import pytest
 
+from riskshield import evaluation_benchmark as bench
 from riskshield import evaluation_prediction_import as imp
 
 
@@ -214,3 +215,50 @@ def test_live_run_requires_resolvable_ledger_and_digest(tmp_path):
     report = imp.import_formal_predictions(document, task_type=imp.TASK_DIRECTION,
                                            units=[unit], material_root=tmp_path)
     assert "simulation_run_ledger_hash_mismatch" in report["rejected"][0]["reasons"]
+
+
+def _live_cohort(tmp_path, package, document):
+    _write(tmp_path, "predictions.json", document)
+    _write(tmp_path, "frame.json", {
+        "schema": "riskshield.data_evaluation.live_simulation_event_frame.v1",
+        "events": [{"event_id": "event-1", "target_record_id": "record-1",
+                    "input_package": "inputs.json", "text_source": "title",
+                    "cutoff": package["cutoff"],
+                    "source_version": package["source_version"],
+                    "publisher": "fixture publisher", "split": "holdout"}],
+    })
+    return {
+        "schema": bench.CONFIG_SCHEMA, "config_version": "fixture-live-v1",
+        "outputs": {"dir": "out/live"},
+        "cohorts": [{"cohort_id": "live", "track": "direction",
+                     "unit_source": "live_simulation_event_frame",
+                     "dataset_version": "fixture-live-v1", "label_version": "fixture-label-v1",
+                     "event_frame": "frame.json", "prediction_document": "predictions.json",
+                     "annotation_sources": [], "expected_gated_unit_ids": []}],
+    }
+
+
+def test_live_cohort_imports_original_document_but_keeps_denominator_closed(tmp_path):
+    unit, package, document, evidence, freeze = _fixture()
+    _score(tmp_path, unit, package, document, evidence, freeze)
+    config = _live_cohort(tmp_path, package, document)
+
+    report = bench.run_benchmark(config, tmp_path)
+    cohort = report["cohorts"][0]
+    assert cohort["prediction_report"]["counts"]["admitted"] == 1
+    assert cohort["gated_count"] == 0
+    assert "no_verified_post_freeze_observation" in cohort["eligibility_table"][0]["all_gaps"]
+    assert report["formal_combined_direction"]["metrics"]["direction_agreement"]["denominator"] == 0
+    assert not (tmp_path / "out/live/trajectory-predictions.json").exists()
+    assert not (tmp_path / "out/live/trajectory-production-evidence.json").exists()
+
+
+def test_live_cohort_refuses_event_to_record_identity_drift(tmp_path):
+    unit, package, document, evidence, freeze = _fixture()
+    _score(tmp_path, unit, package, document, evidence, freeze)
+    config = _live_cohort(tmp_path, package, document)
+    frame = json.loads((tmp_path / "frame.json").read_text(encoding="utf-8"))
+    frame["events"][0]["target_record_id"] = "another-record"
+    _write(tmp_path, "frame.json", frame)
+    with pytest.raises(bench.BenchmarkConfigError, match="target record"):
+        bench.run_benchmark(config, tmp_path)

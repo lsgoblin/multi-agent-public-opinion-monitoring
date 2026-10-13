@@ -22,6 +22,8 @@
 
 评测侧现在要求 `production_evidence_ref` 另含 `run_ledger_ref`、该对象的 canonical JSON SHA-256 和运行配置 SHA-256。`run_ledger_ref` 应解析到 `riskshield.simulation_scale.run_ledger.v1`，其中 `summary` 是同一 `run_id` 的 `Day3Simulation.summary()` 导出，`trajectory` 是 `Day3Simulation.trajectory()` 的完整动作行；评测器逐轮核对真实模型模式、事件/cutoff/来源版本、Agent 数、完整轮次、有效决策、模型调用、Token 和费用。它不能由评测器根据旧方向预测自行拼造。现有 `direction_prediction.py` 只导出旧 `evaluation-inputs.v1`、`multi_agent_simulation` 及简要摘要，缺上述原始账本和 `prediction_import.v1` 冻结文档；即使把模式字符串改成白名单值也仍应被拒绝。原始账本可能包含请求审计信息，只留在授权的本机证据目录，不纳入源码提交。
 
+评测器另有显式的 `live_simulation_event_frame` 候选入口：配置给出候选事件帧、**原生产者写出的** `prediction_import.v1` 文档；帧逐件声明 `event_id`、主 `target_record_id`、`input_package`、`text_source`、cutoff、来源版本和 split。导入器从真实历史输入包核对该记录及文本哈希，再把原预测文档直接送严格准入，不在评分时生成生产账本或冻结证明。帧的事前登记时间和不可更改性尚未由此入口证实。该入口目前只完成**预测侧准入和排除表**；观察窗来源覆盖、归属和独立真人方向标签尚无经批准的正式验证记录，因此其正式计分门保持关闭。不能把工程夹具通过或预测行准入数写作正式事件分母。
+
 ## 本提案的适用边界
 
 本次 State Farm 诊断和已用于开发的旧 10 件不能再为此修订协议充当未参与规则制定的留出证据。Hacker News 当前历史索引可提供条目创建时间，但不是历史时点的完整索引快照；正式结论还须核其来源使用范围、历史可见性和跨来源代表性。[新版命题](../sources/2026-09-30-新版命题-多智能体仿真舆情监测.md)的五平台覆盖另行验收，不能由单一 HN 事件序列代替。
