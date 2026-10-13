@@ -18,12 +18,28 @@ Hacker News Algolia 能在指定时间窗返回带创建时间的故事与评论
 
 ## 未使用标题线索的首轮身份核查
 
-此前只按标题、未看观察结果选出的 27 条线索中，4 条与本轮五件开发事件同一身份，已从候选池剔除；其余 **23 条只是待核标题线索**。主工作区忽略证据 `artifacts/branch-work/data-evaluation/evidence/20261014/unused-title-lead-reserve-v1.json` 固定了原始标题、ID 和 4 条排除原因，`reserve-anchor-screen-v1.json`、`reserve-anchor-screen-v2.json` 对全部 23 条记录了初步来源与身份状态；**正式准入仍为 0**。首轮核查只查公开来源和日期，没有获取这 23 件的观察窗或预测。
+此前只按标题、未看观察结果选出的 27 条线索中，4 条与本轮五件开发事件同一身份，已从候选池剔除；其余 **23 条只是待核标题线索**。主工作区忽略证据 `artifacts/branch-work/data-evaluation/evidence/20261014/unused-title-lead-reserve-v1.json` 固定了原始标题、ID 和 4 条排除原因，`reserve-anchor-screen-v1.json`、`reserve-anchor-screen-v2.json` 对全部 23 条记录了初步来源与身份状态；**正式准入仍为 0**。该首轮核查只查公开来源和日期，没有获取观察窗或预测；其后的五件基线试探和一件辅助预测单列如下。
 
 几个会改变截止日或事件数的例子： [Farmers 官方公告](https://newsroom.farmers.com/news-releases?item=123225)把裁员公告定在 2023-08-28，晚于公告的论坛标题不能当首次披露；[加州保险厅](https://www.insurance.ca.gov/0400-news/0102-alerts/2026/Major-California-home-insurers-move-to-r.cfm)说明 Allstate 的加州新业务暂停始于 2022 年，不能把 2023 年 6 月的报道再算新停办事件；[密歇根蓝十字原站 PDF](https://providerinfo.bcbsm.com/documents/alerts/2024/202406/alert-20240606-changes-weight-loss-drugs-commercial.pdf)虽标初发 2024-06-06，也明示 2024-07-30 更新，当前版本不能直接当六月 cutoff 输入；[法国 CNIL](https://www.cnil.fr/fr/violation-de-donnees-de-deux-operateurs-de-tiers-payant-la-cnil-ouvre-une-enquete-et-rappelle-aux)所述受攻击主体是两家医疗费用第三方支付管理服务商，并非两家健康险公司。这些是身份和时点核查，不是按模型预测好坏筛事件。保留原标题、后续纠正、未知历史可见时间和不能入样原因，避免用模糊题材凑够 20 件。
+
+## 五件预先固定查询的基线试探
+
+在接触这五件的基线计数前，将事件身份、披露日、`披露日+7 天 00:00 UTC` 的 cutoff 和 HN 故事查询写入主工作区 `reserve-baseline-query-plan-v1.json` 并核 SHA-256。只取截止前七个完整 UTC 日的公开故事标题、URL、发布时间和 ID，再逐故事取同窗评论的 ID/时间；每个请求须通过 `exhaustiveNbHits`、页数和返回条数核对。结果如下，仍只是**各查询的原始命中**，不是事件归属后的正式基线：
+
+| 候选事件 | 原始故事 | 这些故事的同窗评论 | 查询内总量 |
+| --- | ---: | ---: | ---: |
+| Farmers 2023 裁员公告 | 1 | 230 | 231 |
+| Simple Health FTC 判决 | 0 | 0 | 0 |
+| BCBS 提供者反垄断和解公告 | 1 | 1 | 2 |
+| Allstate / National General 隐私诉讼 | 2 | 1 | 3 |
+| Universal Property 佛州和解 | 0 | 0 | 0 |
+
+Farmers 是这五件中唯一超过未批准的 `B≥20` 草案下限的查询。两名互不见答案和预测的 AI 只看基线标题/URL，均将对应裁员故事纳入；更宽的 `Farmers` 查询另返回两条农业话题，两人均排除。由此形成的**查询内 AI 辅助**基线为 1 帖+230 评论。冻结该输入哈希后，一次获授权的 qwen-flash 单模型辅助预测给出 `escalation`；随后才抓同口径观察窗，冻结查询返回 0 帖，旧帖新增 0 评论，更宽查询的三条农业/制造业标题也被两名盲审 AI 一致排除，辅助方向为 `calming`。这是一件 **0/1 的单模型辅助配对**，不进入正式仿真方向分母。模型理由还把 8 月 30 日的基线峰值误称为 9 月 4 日 cutoff 之后，原预测保留，不重试或事后排除。
+
+逐请求覆盖、ID、哈希、AI 归属、冻结预测和费用见主工作区 `reserve-baseline-stories-v1.json`、`reserve-baseline-comments-v1.json`、`farmers-baseline-recall-audit-v1.json`、`farmers-aux-input-freeze-v1.json`、`farmers-aux-prediction-v1.json`、`farmers-aux-observation-v1.json`、`farmers-aux-label-score-v1.json` 及 `model-cost-ledger-v2.json`。扩词检查只能发现已知漏召回，不能证明 HN 对全事件的召回，更不能把新闻讨论量写成全渠道投诉。当前索引不是历史时点快照，Farmers 官网当前页面也未证明历史版本；**正式新增仍为 0/20**。
 
 ## 正式来源进入事件池的最低证据
 
 一个新来源必须先确定使用范围及历史版本，再在**新事件**读取观察窗之前冻结：具名披露和事件身份、来源家族、检索式与别名、cutoff、等长窗口、分页或计数饱和证明、所有原始命中 ID/URL/时间及查询日志。两个相互独立且盲于预测的真人要对原始命中做事件归属；模型输入只取截止前已核条目并冻结哈希。后续观察用同一检索和归属口径，另由两名真人独立判断走势；`stable`、`cannot_judge` 和覆盖失败分别列排除。新闻报道量、论坛讨论量和投诉样本是不同总体，不合并成未定义的“全网投诉量”。
 
-目前可继续做的是 HN 规则缺陷诊断、正式预测导入工程和 AI 辅助审核；正式 20 件事件需要一个能在本机合法复核、可证明历史覆盖的公开讨论/新闻档案或已有授权数据集，以及独立真人标注。来源变更的权限与费用边界由总 Agent 按项目协作规则协调；本文件不把不可用的外部接口或未来人工工作写成已完成。
+目前可继续做的是 HN 规则缺陷诊断、正式预测导入工程和 AI 辅助审核；正式 20 件事件需要一个能在本机合法复核、可证明历史覆盖的公开讨论/新闻档案或已有授权数据集，以及项目契约规定的独立真值。来源变更的权限与费用边界由总 Agent 按项目协作规则协调；本文件不把不可用的外部接口或 AI 标签写成正式达标。
