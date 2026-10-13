@@ -7,12 +7,12 @@ engineering path, while a real model run needs a separately authorized backend.
 import json
 import hashlib
 import math
+import queue
 import random
 import re
 import threading
 import time
 import uuid
-from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from dataclasses import dataclass
 from datetime import datetime
 from decimal import Decimal
@@ -20,6 +20,7 @@ from typing import Protocol
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from riskshield.capacity import (PROCESS_CAPACITY, CapacityError, configured_limit)
 from riskshield.evidence import EvidencePipeline
 from riskshield.schemas import AgentDecision
 from riskshield.store import Store
@@ -35,12 +36,141 @@ ROLE_QUERIES = {
 }
 SIGNALS = {"observe": 0.0, "share": -0.06, "comment": -0.04,
            "seek_clarification": 0.03, "express_complaint_intent": -0.12}
+# Exhaustive and exclusive billing outcomes for one request opportunity. A request
+# that was dispatched without usable usage is deliberately NOT reported as free.
+BILLING_STATES = ("not_sent", "released", "settled", "unsettled_reserved")
 MAX_TASK_BUDGET_CNY = Decimal("30.00")
 DEFAULT_TASK_BUDGET_CNY = Decimal("5.00")
 
 
 class SimulationError(ValueError):
     pass
+
+
+class CapacityExhaustedError(SimulationError):
+    """The process in-flight ceiling was reached, so requests were refused.
+
+    Deliberately not a plain ``SimulationError``: "we ran out of process capacity" is a
+    different operational fact from "the simulation input was wrong", and a task must be
+    able to report ``capacity_exhausted`` without inventing a new task status.
+    """
+
+    reason = "capacity_exhausted"
+
+    def __init__(self, message: str, *, rejected_requests: int = 0):
+        super().__init__(message)
+        self.rejected_requests = rejected_requests
+
+
+class DaemonCallPool:
+    """A bounded worker pool whose threads can never hold the process open.
+
+    ``concurrent.futures.ThreadPoolExecutor`` is unsuitable for work that may never
+    return: its workers are non-daemon and an interpreter exit hook joins them, so a
+    single hung request keeps the whole process alive even after the engine has stopped
+    waiting for it. That is exactly the failure this pool exists to avoid.
+
+    The pool gives the engine a bounded wait (``collect`` with a timeout) and rejects new
+    work past that bound (``stop_submitting``), while a stuck worker is left behind
+    harmlessly: it is a daemon thread and its late result is queued but never read,
+    because the request it belonged to has already been recorded.
+
+    Leaving a worker behind is only harmless while they cannot pile up. A pool is built
+    per round, so a round that times out leaves up to ``max_workers`` workers stuck in a
+    call that may never return; the next round would build a fresh pool and leave a
+    second set behind. ``mark_damaged`` records that loss, and the engine reads
+    ``is_damaged`` to refuse to build another pool, which bounds the loss at one round's
+    concurrency instead of one round's concurrency per round.
+    """
+
+    def __init__(self, max_workers: int):
+        if type(max_workers) is not int or max_workers < 1:
+            raise SimulationError("pool size must be a positive integer")
+        self.max_workers = max_workers
+        # Two queues on purpose: work goes one way, results come back the other. A single
+        # shared queue would let the collecting thread steal a work item that no worker
+        # had picked up yet.
+        self._submitted: queue.Queue = queue.Queue()
+        self._results: queue.Queue = queue.Queue()
+        self._lock = threading.Lock()
+        self._submitting = True
+        self._damaged = False
+        self._lost_workers = 0
+        self._stop = object()  # unique sentinel: never confusable with a result
+        self._threads = [
+            threading.Thread(target=self._worker, daemon=True,
+                             name=f"riskshield-decision-{index}")
+            for index in range(max_workers)
+        ]
+        for thread in self._threads:
+            thread.start()
+
+    def mark_damaged(self, lost_workers: int):
+        """Record that ``lost_workers`` workers never returned from their call.
+
+        Call this instead of guessing from thread counts: the lost worker really is still
+        inside the backend call, so its thread cannot exit and a new pool would add a
+        second set on top of it.
+        """
+        self._damaged = True
+        self._lost_workers = max(self._lost_workers, int(lost_workers))
+
+    def is_damaged(self) -> bool:
+        return self._damaged
+
+    def capacity(self) -> dict:
+        """What this pool still has, in terms this run's ledger can record.
+
+        ``available`` is what can still be dispatched, not a thread count: once a worker
+        is stuck it will never take another item, and after ``stop_submitting`` nothing
+        may be queued at all.
+        """
+        return {"total": self.max_workers, "lost": self._lost_workers,
+                "available": 0 if self._damaged else self.max_workers}
+
+    def _worker(self):
+        while True:
+            item = self._submitted.get()
+            if item is self._stop:
+                return
+            identifier, function, arguments = item
+            try:
+                self._results.put((identifier, (function(*arguments),)))
+            except BaseException as exc:  # reported to the caller, never swallowed
+                self._results.put((identifier, exc))
+
+    def submit(self, identifier, function, *arguments):
+        """Queue one call. Returns False once the pool has stopped accepting work."""
+        with self._lock:
+            if not self._submitting:
+                return False
+            self._submitted.put((identifier, function, arguments))
+            return True
+
+    def collect(self, timeout):
+        """Return ``(identifier, result_or_exception)``, or None if nothing arrived.
+
+        The wait is bounded: this method never blocks longer than ``timeout``.
+        """
+        try:
+            item = (self._results.get(timeout=timeout) if timeout is not None
+                    else self._results.get())
+        except queue.Empty:
+            return None
+        identifier, payload = item
+        if isinstance(payload, BaseException):
+            return identifier, payload
+        return identifier, payload[0]
+
+    def stop_submitting(self):
+        with self._lock:
+            self._submitting = False
+
+    def shutdown(self):
+        """Signal idle workers to stop. Never joins, so a stuck worker cannot block."""
+        self.stop_submitting()
+        for _ in self._threads:
+            self._submitted.put(self._stop)
 
 
 class SafeDecisionError(RuntimeError):
@@ -274,6 +404,17 @@ class Day3Simulation:
                 1 <= concurrency <= 128 and 0 <= role_offset < len(ROLES)):
             raise SimulationError(
                 "agent_count, rounds, concurrency or role_offset outside Day 3 limits")
+        # Checked before anything is written or dispatched: a task whose own concurrency
+        # cannot fit inside the process ceiling would otherwise fail mid-round after some
+        # calls were already paid for. The ceiling is never raised to accommodate it.
+        process_limit = self._checked_process_limit()
+        if concurrency > process_limit:
+            # A capacity refusal, not a malformed run: the same input is valid under a larger
+            # ceiling, so the caller must be able to tell the two apart.
+            raise CapacityExhaustedError(
+                f"run concurrency {concurrency} exceeds the process in-flight limit "
+                f"{process_limit}; lower the concurrency or raise "
+                f"RISKSHIELD_MAX_INFLIGHT_CALLS")
         budget_cny = Decimal(str(budget_cny))
         if not Decimal("0") < budget_cny <= MAX_TASK_BUDGET_CNY:
             raise SimulationError("single-run budget must be within ¥30.00")
@@ -465,21 +606,290 @@ class Day3Simulation:
                 / Decimal(1_000_000))
         return max(cost, Decimal("0")), normalized
 
+    def _round_stats(self, outcomes, *, config, round_number, failure_policy,
+                     final_stop_reason, configured_agents, state_by_id,
+                     message_count, abandoned):
+        """One round's exclusive accounting, billing states and opportunity buckets.
+
+        ``abandoned`` marks a round that stopped before every agent produced an outcome.
+        Such a round still owns its accounting: requests that were submitted are valid or
+        failed, the remainder of *this* round is ``not_dispatched_current_round``, and
+        rounds strictly after it are ``not_started_future_rounds``. Those four buckets are
+        exclusive and sum to the configured task total, which the persisted action count
+        alone can never show.
+        """
+        considered = list(outcomes)
+        valid_count = sum(o["status"] == "valid" for o in considered)
+        failed_count = sum(o["status"] == "failed" for o in considered)
+        stranded = sum(o["status"] == "not_dispatched" for o in considered)
+        # A request we stopped waiting for. It was dispatched, so it is neither a failed
+        # decision nor an unsent one, and its usage is unknown, so it is not free.
+        timed_out = sum(o["status"] == "deadline_exceeded" for o in considered)
+        # An abandoned round can also hold opportunities that produced no outcome at all.
+        # They belong to this round, not to a round the run never reached.
+        unresolved_current_round = max(0, configured_agents - len(considered))
+        failure_categories = {}
+        for outcome in considered:
+            if outcome["status"] != "failed":
+                continue
+            category = outcome["failure_category"] or "unknown"
+            failure_categories[category] = failure_categories.get(category, 0) + 1
+        cost_by_model, reserved_by_model = {}, {}
+        for outcome in considered:
+            model = outcome["requested_model"]
+            cost_by_model[model] = str(
+                Decimal(cost_by_model.get(model, "0")) + outcome["cost"])
+            reserved_by_model[model] = str(
+                Decimal(reserved_by_model.get(model, "0")) + outcome["reserved"])
+        billing_states = {state: 0 for state in BILLING_STATES}
+        cost_by_billing_state = {state: "0" for state in BILLING_STATES}
+        reservation_by_status = {"reserved": "0", "released": "0"}
+        for outcome in considered:
+            state, settled = self._billing_status(outcome)
+            billing_states[state] += 1
+            cost_by_billing_state[state] = str(
+                Decimal(cost_by_billing_state[state]) + settled)
+            if state == "released":
+                reservation_by_status["released"] = str(
+                    Decimal(reservation_by_status["released"]) + outcome["reserved"])
+            elif state in {"settled", "unsettled_reserved"}:
+                reservation_by_status["reserved"] = str(
+                    Decimal(reservation_by_status["reserved"]) + outcome["reserved"])
+        total_opportunities = config["agent_count"] * config["rounds"]
+        not_started = max(0, config["agent_count"] * (config["rounds"] - round_number))
+        current_round_stranded = stranded + unresolved_current_round
+        return {
+            "configured_agents": configured_agents,
+            "decision_requests": configured_agents,
+            "model_decision_agents": configured_agents - current_round_stranded,
+            "dispatched_requests": configured_agents - current_round_stranded,
+            "not_dispatched_requests": stranded,
+            "deadline_exceeded_requests": timed_out,
+            "not_dispatched_current_round": current_round_stranded,
+            # Everything after this round that no agent will ever be offered. For a
+            # completed round that is exactly the later rounds; for an abandoned round it
+            # also covers the rounds the run will never record.
+            "not_started_future_rounds": not_started,
+            "not_started_rounds_count": max(0, config["rounds"] - round_number),
+            "task_opportunities_total": total_opportunities,
+            "task_opportunities_reconciled": (
+                valid_count + failed_count + timed_out +
+                current_round_stranded + not_started),
+            "round_abandoned": abandoned,
+            "billing": {
+                "states": billing_states,
+                "cost_by_state": cost_by_billing_state,
+                "reservation": reservation_by_status,
+                "note": ("unsettled_reserved covers both a dispatched request whose usage "
+                         "is unknown and a request we stopped waiting for; either way the "
+                         "reservation is kept as the cost rather than reported as free. "
+                         "not_sent/released cost nothing."),
+            },
+            "local_state_update_agents": len(state_by_id),
+            "valid_decisions": valid_count,
+            "active_decisions": sum(
+                o["decision"] is not None and
+                o["decision"]["action"] != "observe" for o in considered),
+            "failed_decisions": failed_count,
+            "messages": message_count,
+            "failure_policy": {
+                "mode": failure_policy,
+                "tolerated_failures": (failed_count if failure_policy == "continue" else 0),
+                "stopped_by_failure": final_stop_reason == "stop_on_failure",
+                "failure_categories": failure_categories,
+            },
+            "reserved_cny": str(sum((o["reserved"] for o in considered), Decimal("0"))),
+            "reserved_by_model": reserved_by_model,
+            "cost_cny": str(sum((o["cost"] for o in considered), Decimal("0"))),
+            "cost_by_model": cost_by_model,
+        }
+
+    @staticmethod
+    def _billing_status(outcome):
+        """Classify what a request actually cost, so a ledger never implies a false number.
+
+        - ``not_sent``: the backend rejected the request before dispatch, so nothing was
+          reserved and nothing can have been billed.
+        - ``released``: the opportunity was recorded without being dispatched (budget
+          preflight, stop signal, deadline, or the tail of an abandoned round).
+        - ``settled``: the response carried usable token usage, so the amount is billed
+          usage priced at the frozen rates.
+        - ``unsettled_reserved``: the request was dispatched but its usage is unknown --
+          a transport failure, a malformed usage block, or a request the engine stopped
+          waiting for. The reservation is kept as the cost on purpose: a possibly billed
+          request must not be reported as free.
+        """
+        cost = outcome["cost"]
+        if outcome["status"] == "not_dispatched":
+            return ("not_sent" if cost == 0 else "released"), cost
+        if outcome.get("usage") is not None:
+            return "settled", cost
+        return "unsettled_reserved", cost
+
+    def _billing_summary(self, run_id, run_cost):
+        """Aggregate billing states from the persisted action rows.
+
+        Derived from ``simulation_actions`` rather than per-round ``stats`` on purpose: a
+        round that aborted partway has decisions and cost persisted even though it may not
+        have written stats, so deriving from the action ledger covers every outcome and
+        can be reconciled against the charged run cost.
+        """
+        with self.store.connect() as db:
+            rows = [dict(row) for row in db.execute(
+                "SELECT status, usage, cost_cny, reserved_cny FROM simulation_actions "
+                "WHERE run_id=?", (run_id,))]
+        states = {state: 0 for state in BILLING_STATES}
+        cost_by_state = {state: Decimal("0") for state in BILLING_STATES}
+        reservation = {"reserved": Decimal("0"), "released": Decimal("0")}
+        for row in rows:
+            state, settled = self._billing_status({
+                "status": row["status"], "cost": Decimal(row["cost_cny"]),
+                "reserved": Decimal(row["reserved_cny"]),
+                "usage": json.loads(row["usage"]) if row["usage"] else None})
+            states[state] += 1
+            cost_by_state[state] += settled
+            if state == "released":
+                reservation["released"] += Decimal(row["reserved_cny"])
+            elif state in {"settled", "unsettled_reserved"}:
+                reservation["reserved"] += Decimal(row["reserved_cny"])
+        charged = cost_by_state["settled"] + cost_by_state["unsettled_reserved"]
+        return {
+            "recorded_requests": len(rows),
+            "states": states,
+            "cost_by_state": {state: str(value)
+                              for state, value in cost_by_state.items()},
+            "settled_cost_cny": str(cost_by_state["settled"]),
+            "unsettled_reserved_cost_cny": str(cost_by_state["unsettled_reserved"]),
+            "charged_cost_cny": str(charged),
+            "run_cost_cny": str(run_cost),
+            "cost_reconciles": charged == run_cost,
+            "reservation": {key: str(value) for key, value in reservation.items()},
+            "note": ("unsettled_reserved keeps the reservation as cost because the request "
+                     "was dispatched and its usage is unknown; a possibly billed request is "
+                     "never reported as free. not_sent and released cost nothing."),
+        }
+
+    def _opportunity_buckets(self, rounds, config):
+        """Whole-task opportunity reconciliation across four exclusive buckets.
+
+        ``valid``, ``failed`` and ``not_dispatched_current_round`` accumulate across
+        rounds because each round owns its own slice. ``not_started_future_rounds`` does
+        NOT accumulate: every round records it as a *point-in-time remainder* (how many
+        opportunities still lay ahead of that round), so summing would count the same
+        future opportunities once per round. It is taken from the final recorded round,
+        which is the only view that reflects the run's actual end state, plus a round of
+        opportunities for each round that never produced a row.
+        """
+        buckets = {"valid": 0, "failed": 0, "deadline_exceeded": 0,
+                   "not_dispatched_current_round": 0, "not_started_future_rounds": 0}
+        for row in rounds:
+            buckets["valid"] += int(row.get("valid_decisions", 0))
+            buckets["failed"] += int(row.get("failed_decisions", 0))
+            buckets["deadline_exceeded"] += int(
+                row.get("deadline_exceeded_requests", 0))
+            buckets["not_dispatched_current_round"] += int(
+                row.get("not_dispatched_current_round", 0))
+        if rounds:
+            # The final recorded round already owns every round after it, whether or not
+            # those rounds ever produce a row. So take its remainder as the whole unseen
+            # tail and add nothing else.
+            buckets["not_started_future_rounds"] = int(
+                rounds[-1].get("not_started_future_rounds", 0))
+            last_round = int(rounds[-1].get("round", len(rounds)))
+            unreached_rounds = max(0, config["rounds"] - last_round)
+        else:
+            # No round was started, so every opportunity is unstarted.
+            unreached_rounds = config["rounds"]
+            buckets["not_started_future_rounds"] = config["agent_count"] * config["rounds"]
+        total = config["agent_count"] * config["rounds"]
+        reconciled = sum(buckets.values())
+        return {
+            "total_opportunities": total,
+            "buckets": buckets,
+            "reconciled": reconciled,
+            "fully_reconciled": reconciled == total,
+            "completed_rounds": sum(1 for row in rounds
+                                    if not row.get("round_abandoned")),
+            "recorded_round_rows": len(rounds),
+            "abandoned_rounds": sum(1 for row in rounds if row.get("round_abandoned")),
+            "unreached_rounds": unreached_rounds,
+            "accounting_note": ("buckets are exclusive: requests already submitted are "
+                                "valid or failed; not_dispatched_current_round is the "
+                                "abandoned remainder of a started round; "
+                                "not_started_future_rounds were never offered to any "
+                                "agent. The persisted action count alone cannot show the "
+                                "last bucket."),
+        }
+
+    def _checked_process_limit(self) -> int:
+        """Validate the process ceiling before a call can be made.
+
+        The setting is read here rather than trusting a value cached earlier, so a run that
+        is about to dispatch under a broken configuration fails instead of proceeding with
+        a stale ceiling. An unreadable setting must fail at an entry point, not halfway
+        through a run that has already paid for some requests.
+        """
+        try:
+            return configured_limit()
+        except CapacityError as exc:
+            raise SimulationError(str(exc)) from None
+
     def advance(self, run_id: str, backend: DecisionBackend, *, max_rounds: int | None = None,
                 collect_performance: bool = False,
                 stop_event: threading.Event | None = None,
                 deadline_monotonic: float | None = None,
-                stop_on_failure: bool = False):
+                stop_on_failure: bool = False,
+                failure_policy: str | None = None,
+                call_timeout_seconds: float | None = None):
         """Advance whole rounds with bounded dispatch and optional timing/stop controls.
 
-        deadline_monotonic is an absolute value from time.monotonic() in this process.
-        Already submitted backend calls are drained and recorded; stop only prevents
-        additional submissions. The engine never retries a failed call.
+        ``deadline_monotonic`` is an absolute value from ``time.monotonic()`` in this
+        process. Already submitted backend calls are drained and recorded; a stop only
+        prevents additional submissions. The engine never retries a failed call.
+
+        ``failure_policy`` decides what one failed decision means for the whole run:
+
+        - ``"continue"`` (the default, and the same behaviour as the historical
+          ``stop_on_failure=False``): a failed decision is recorded as a failed
+          decision, the agent that failed keeps its current local state, and the
+          remaining rounds are still attempted. The run can then reach
+          ``status="complete"`` with ``all_decisions_valid=False``, which keeps "all
+          rounds ran" and "every decision was valid" as two separate facts instead of
+          collapsing them into ``partial``.
+        - ``"stop"`` (selected by ``stop_on_failure=True``): the first failed decision
+          aborts the run. The round is then incomplete, so the run is marked ``partial``
+          and the remaining opportunities are recorded as ``not_dispatched``.
+
+        The historical 500x30 attempt that stopped after 3,477/15,000 valid decisions
+        reported ``stop_reason="stop_on_failure"``, so that run was driven by a caller
+        passing ``stop_on_failure=True``; it was not the engine default. ``"stop"``
+        remains available and is recorded in ``rounds[].failure_policy.mode``, so a
+        ledger always states which policy produced it.
+
+        Only the first failed decision of a round is reported in
+        ``rounds[].failure_policy.stopped_by_failure``; the count is
+        ``rounds[].failed_decisions``.
         """
+        if failure_policy is not None and stop_on_failure:
+            raise SimulationError(
+                "pass either failure_policy or stop_on_failure, not both")
+        if failure_policy is None:
+            failure_policy = "stop" if stop_on_failure else "continue"
+        if failure_policy not in {"stop", "continue"}:
+            raise SimulationError("failure_policy must be 'stop' or 'continue'")
         if backend.mode not in {"test_substitute", "real_model"}:
             raise SimulationError("backend mode must declare test_substitute or real_model")
+        # Before any observation, reservation or dispatch: an unreadable ceiling must not
+        # be discovered after some of the run has already been paid for.
+        self._checked_process_limit()
         if max_rounds is not None and (type(max_rounds) is not int or max_rounds < 1):
             raise SimulationError("max_rounds must be positive")
+        if call_timeout_seconds is not None:
+            if (isinstance(call_timeout_seconds, bool) or
+                    not isinstance(call_timeout_seconds, (int, float)) or
+                    not math.isfinite(call_timeout_seconds) or call_timeout_seconds <= 0):
+                raise SimulationError(
+                    "call_timeout_seconds must be a finite positive number of seconds")
         if stop_event is not None and not callable(getattr(stop_event, "is_set", None)):
             raise SimulationError("stop_event must provide is_set()")
         if deadline_monotonic is not None:
@@ -491,9 +901,80 @@ class Day3Simulation:
 
         call_started = time.perf_counter()
         call_started_at = datetime.now().astimezone().isoformat()
-        call_dispatched = 0
-        call_valid = 0
+        # A mutable container: finish() below must observe the final counts, and a plain
+        # local would be rebound in this scope without being visible to the closure.
+        call_totals = {"dispatched": 0, "valid": 0, "deadline_exceeded": 0}
         final_stop_reason = None
+
+        def effective_round_budget():
+            """Seconds a round may wait for its in-flight requests before giving up.
+
+            This is the real termination boundary. Waiting on a launched request with no
+            bound is what lets one hung backend call block the whole task forever, so the
+            engine must be able to stop waiting by itself and not depend on the backend
+            (or the model gateway) honouring a socket timeout.
+
+            When both limits are configured the round obeys the EARLIER one. A task
+            deadline must never be extended by a larger per-round budget, or the combined
+            configuration would return later than the deadline promises.
+            """
+            if call_timeout_seconds is None and deadline_monotonic is None:
+                return None
+            remaining = (None if deadline_monotonic is None
+                         else max(0.0, deadline_monotonic - time.monotonic()))
+            if call_timeout_seconds is None:
+                return remaining
+            if remaining is None:
+                return call_timeout_seconds
+            return min(call_timeout_seconds, remaining)
+
+        def record_call_timeout(aid):
+            """Record a request we stopped waiting for.
+
+            It was genuinely dispatched, so it is NOT ``not_dispatched``, and its usage is
+            unknown, so it is NOT free. It is ``deadline_exceeded`` and its reservation is
+            kept as an unsettled cost, because the provider may have processed it.
+            """
+            obs, quote = observation_by_id[aid], quote_by_id[aid]
+            return {
+                "status": "deadline_exceeded", "decision": None, "usage": None,
+                "cost": quote.reservation_cny, "reserved": quote.reservation_cny,
+                "requested_model": quote.requested_model,
+                "price_version": quote.price_version, "model": None,
+                "error": "CallTimeout", "request_audit": None,
+                "schema_diagnostics": None, "failure_category": "CallTimeout",
+                # No response arrived, so there are no response timings to report. The
+                # dispatch evidence records that the request was sent and then abandoned.
+                "timing": {
+                    "queued_at": None, "started_at": None, "ended_at": None,
+                    "queue_seconds": None, "backend_seconds": None,
+                    "validation_seconds": None, "elapsed_seconds": None,
+                    "dispatch_evidence": "dispatched_then_not_waited_for",
+                },
+            }
+
+        def finish():
+            """Close the invocation and return the summary.
+
+            Every exit path goes through here, including a round that stopped early
+            (stop signal, deadline, budget or an aborting failure) and the path for a
+            run that was already complete. Otherwise a partial run would lose its whole
+            performance record: ``_performance_summary`` returns ``None`` when no call
+            row exists, so the timing, throughput and observed concurrency of a stopped
+            run would be silently unavailable exactly when they matter most.
+            """
+            if collect_performance:
+                call_ended = time.perf_counter()
+                call_ended_at = datetime.now().astimezone().isoformat()
+                with self.store.connect() as db:
+                    db.execute(
+                        "INSERT INTO simulation_performance_calls "
+                        "(run_id, started_at, ended_at, wall_seconds, dispatched_requests, "
+                        "valid_decisions, stop_reason) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                        (run_id, call_started_at, call_ended_at,
+                         max(0.0, call_ended - call_started), call_totals["dispatched"],
+                         call_totals["valid"], final_stop_reason))
+            return self.summary(run_id)
 
         def requested_stop():
             if stop_event is not None and stop_event.is_set():
@@ -519,9 +1000,17 @@ class Day3Simulation:
                            (_json(config), run_id))
             run = self._run_row(run_id)
         if run["status"] == "complete":
-            return self.summary(run_id)
+            return finish()
         target = (min(config["rounds"], run["completed_rounds"] + max_rounds)
                   if max_rounds is not None else config["rounds"])
+
+        # Carried across rounds: a round that abandoned workers inside a hung call has
+        # spent its pool, and building another one would leave a second set of stuck
+        # threads. The condition is recorded, not inferred from thread counts.
+        pool_damaged = False
+        pool_damaged_at_round = None
+        capacity_refusal = None
+        capacity_rejected_total = 0
 
         while int(run["completed_rounds"]) < target:
             round_started = time.perf_counter()
@@ -559,7 +1048,7 @@ class Day3Simulation:
                     raise SimulationError("frozen observation changed; refusing to replay this round")
                 if row["status"] == "not_dispatched":
                     continue
-                if row["status"] not in {"valid", "failed"}:
+                if row["status"] not in {"valid", "failed", "deadline_exceeded"}:
                     raise SimulationError("unknown persisted action status")
                 outcomes_by_id[aid] = {
                     "status": row["status"],
@@ -597,184 +1086,228 @@ class Day3Simulation:
 
             request_ledger_persist_total = 0.0
 
-            def insert_not_dispatched(aid, reason):
-                nonlocal request_ledger_persist_total
+            def insert_not_dispatched(db, aid, reason):
                 obs, quote = observation_by_id[aid], quote_by_id[aid]
                 values = (run_id, round_number, aid, "not_dispatched",
                           _json(observation_refs(obs)), None, None,
                           quote.requested_model, None, quote.price_version,
                           "0", "0", reason, None, None, observation_hashes[aid])
+                old = db.execute(
+                    "SELECT status, error FROM simulation_actions WHERE run_id=? "
+                    "AND round_number=? AND agent_id=?", (run_id, round_number, aid)
+                ).fetchone()
+                if old is None:
+                    db.execute(
+                        "INSERT INTO simulation_actions "
+                        "(run_id, round_number, agent_id, status, observation_refs, decision, "
+                        "usage, requested_model, model, price_version, reserved_cny, cost_cny, "
+                        "error, request_audit, schema_diagnostics, observation_sha256) "
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", values)
+                elif old["status"] == "not_dispatched":
+                    if old["error"] and old["error"] not in {
+                            "BudgetPreflight", "StopSignal", "DeadlineExceeded",
+                            "BackendCallLimit", "StoppedAfterFailure", "BudgetExceeded",
+                            "PoolExhausted", "CapacityExhausted", "NotDispatched",
+                            "FailedDecisionsTolerated"}:
+                        return False
+                    db.execute(
+                        "UPDATE simulation_actions SET observation_refs=?, decision=NULL, "
+                        "usage=NULL, requested_model=?, model=NULL, price_version=?, "
+                        "reserved_cny='0', cost_cny='0', error=?, request_audit=NULL, "
+                        "schema_diagnostics=NULL, observation_sha256=? WHERE run_id=? "
+                        "AND round_number=? AND agent_id=? AND status='not_dispatched'",
+                        (_json(observation_refs(obs)), quote.requested_model,
+                         quote.price_version, reason, observation_hashes[aid],
+                         run_id, round_number, aid))
+                else:
+                    return False
+                if collect_performance:
+                    db.execute(
+                        "INSERT INTO simulation_request_metrics "
+                        "(run_id, round_number, agent_id, requested_model, queued_at, "
+                        "started_at, ended_at, queue_seconds, backend_seconds, "
+                        "validation_seconds, request_elapsed_seconds, status, "
+                        "failure_category, dispatch_evidence, "
+                        "usage_json, cost_cny, usage_unknown) "
+                        "VALUES (?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "
+                        "'not_dispatched', ?, 'not_submitted', NULL, '0', 0) "
+                        "ON CONFLICT(run_id, round_number, agent_id) DO UPDATE SET "
+                        "requested_model=excluded.requested_model, queued_at=NULL, "
+                        "started_at=NULL, ended_at=NULL, queue_seconds=NULL, "
+                        "backend_seconds=NULL, validation_seconds=NULL, "
+                        "request_elapsed_seconds=NULL, "
+                        "status='not_dispatched', failure_category=excluded.failure_category, "
+                        "dispatch_evidence='not_submitted', usage_json=NULL, cost_cny='0', "
+                        "usage_unknown=0",
+                        (run_id, round_number, aid, quote.requested_model, reason))
+                return True
+
+            def insert_not_dispatched_batch(aids, reason):
+                """Record every undispatched opportunity in one connection and transaction.
+
+                Before this, each opportunity opened its own SQLite connection, so a
+                round that stopped before dispatch (budget preflight, stop signal,
+                deadline or an aborting failure) paid one connection per agent.
+                """
+                nonlocal request_ledger_persist_total
+                if not aids:
+                    return
                 persist_started = time.perf_counter()
                 with self.store.connect() as db:
-                    old = db.execute(
-                        "SELECT status, error FROM simulation_actions WHERE run_id=? "
-                        "AND round_number=? AND agent_id=?", (run_id, round_number, aid)
-                    ).fetchone()
-                    if old is None:
-                        db.execute(
-                            "INSERT INTO simulation_actions "
-                            "(run_id, round_number, agent_id, status, observation_refs, decision, "
-                            "usage, requested_model, model, price_version, reserved_cny, cost_cny, "
-                            "error, request_audit, schema_diagnostics, observation_sha256) "
-                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", values)
-                    elif old["status"] == "not_dispatched":
-                        if old["error"] and old["error"] not in {
-                                "BudgetPreflight", "StopSignal", "DeadlineExceeded",
-                                "BackendCallLimit", "StoppedAfterFailure", "BudgetExceeded",
-                                "NotDispatched"}:
-                            return
-                        db.execute(
-                            "UPDATE simulation_actions SET observation_refs=?, decision=NULL, "
-                            "usage=NULL, requested_model=?, model=NULL, price_version=?, "
-                            "reserved_cny='0', cost_cny='0', error=?, request_audit=NULL, "
-                            "schema_diagnostics=NULL, observation_sha256=? WHERE run_id=? "
-                            "AND round_number=? AND agent_id=? AND status='not_dispatched'",
-                            (_json(observation_refs(obs)), quote.requested_model,
-                             quote.price_version, reason, observation_hashes[aid],
-                             run_id, round_number, aid))
-                    else:
-                        return
-                    if collect_performance:
-                        db.execute(
-                            "INSERT INTO simulation_request_metrics "
-                            "(run_id, round_number, agent_id, requested_model, queued_at, "
-                            "started_at, ended_at, queue_seconds, backend_seconds, "
-                            "validation_seconds, request_elapsed_seconds, status, "
-                            "failure_category, dispatch_evidence, "
-                            "usage_json, cost_cny, usage_unknown) "
-                            "VALUES (?, ?, ?, ?, NULL, NULL, NULL, NULL, NULL, NULL, NULL, "
-                            "'not_dispatched', ?, 'not_submitted', NULL, '0', 0) "
-                            "ON CONFLICT(run_id, round_number, agent_id) DO UPDATE SET "
-                            "requested_model=excluded.requested_model, queued_at=NULL, "
-                            "started_at=NULL, ended_at=NULL, queue_seconds=NULL, "
-                            "backend_seconds=NULL, validation_seconds=NULL, "
-                            "request_elapsed_seconds=NULL, "
-                            "status='not_dispatched', failure_category=excluded.failure_category, "
-                            "dispatch_evidence='not_submitted', usage_json=NULL, cost_cny='0', "
-                            "usage_unknown=0",
-                            (run_id, round_number, aid, quote.requested_model, reason))
+                    for aid in aids:
+                        insert_not_dispatched(db, aid, reason)
                 request_ledger_persist_total += time.perf_counter() - persist_started
 
             actual_in_flight = 0
             actual_peak_in_flight = 0
             in_flight_lock = threading.Lock()
+            pool_capacity = None
+            pooled_workers_abandoned = 0
+            pool_refused_this_round = False
+            capacity_error_text = None
+            capacity_rejected = []
             if final_stop_reason == "budget_preflight":
-                for aid in pending_ids:
-                    insert_not_dispatched(aid, "BudgetPreflight")
+                insert_not_dispatched_batch(pending_ids, "BudgetPreflight")
+            elif pool_damaged:
+                # A previous round left workers inside a backend call that never returned.
+                # Those threads cannot be reclaimed, so this round must not dispatch: it
+                # records every remaining opportunity as not dispatched and stops the run.
+                # Skipping the round is the honest outcome; silently building a new pool
+                # would turn one stuck round into a permanently growing thread leak.
+                if final_stop_reason is None:
+                    final_stop_reason = "pool_exhausted"
+                pool_refused_this_round = True
+                insert_not_dispatched_batch(pending_ids, "PoolExhausted")
             elif pending_ids and requested_stop() is not None:
                 final_stop_reason = requested_stop()
                 reason = "StopSignal" if final_stop_reason == "stop_signal" else "DeadlineExceeded"
-                for aid in pending_ids:
-                    insert_not_dispatched(aid, reason)
+                insert_not_dispatched_batch(pending_ids, reason)
             else:
-                def call(obs, quote, queued_at, queued_wall):
+                def call(obs, quote, queued_at, queued_wall, capacity_token):
                     nonlocal actual_in_flight, actual_peak_in_flight
                     request_audit = None
-                    started_mono = time.perf_counter()
-                    started_wall = datetime.now().astimezone().isoformat()
-
-                    def record_audit(value):
-                        nonlocal request_audit
-                        safe = _safe_request_audit(value)
-                        if safe is None:
-                            raise SimulationError("invalid request audit")
-                        request_audit = safe
-
-                    with in_flight_lock:
-                        actual_in_flight += 1
-                        actual_peak_in_flight = max(actual_peak_in_flight, actual_in_flight)
-                    backend_start = time.perf_counter()
                     try:
-                        decide_with_audit = getattr(backend, "decide_with_audit", None)
-                        if callable(decide_with_audit):
-                            request_audit = {"stage": "before_dispatch"}
-                            result = decide_with_audit(obs, record_audit)
-                            if request_audit["stage"] != "prepared_for_dispatch":
-                                raise SimulationError("decision lacks prepared request audit")
-                        else:
-                            result = backend.decide(obs)
-                    except Exception as exc:
+                        started_mono = time.perf_counter()
+                        started_wall = datetime.now().astimezone().isoformat()
+
+                        def record_audit(value):
+                            nonlocal request_audit
+                            safe = _safe_request_audit(value)
+                            if safe is None:
+                                raise SimulationError("invalid request audit")
+                            request_audit = safe
+
+                        with in_flight_lock:
+                            actual_in_flight += 1
+                            actual_peak_in_flight = max(actual_peak_in_flight,
+                                                        actual_in_flight)
+                        backend_start = time.perf_counter()
+                        try:
+                            decide_with_audit = getattr(backend, "decide_with_audit", None)
+                            if callable(decide_with_audit):
+                                request_audit = {"stage": "before_dispatch"}
+                                result = decide_with_audit(obs, record_audit)
+                                if request_audit["stage"] != "prepared_for_dispatch":
+                                    raise SimulationError(
+                                        "decision lacks prepared request audit")
+                            else:
+                                result = backend.decide(obs)
+                        except Exception as exc:
+                            backend_seconds = time.perf_counter() - backend_start
+                            with in_flight_lock:
+                                actual_in_flight -= 1
+                            ended_mono = time.perf_counter()
+                            ended_wall = datetime.now().astimezone().isoformat()
+                            error = _persisted_error(exc)
+                            rejected_before_send = (
+                                isinstance(exc, SafeDecisionError) and
+                                type(exc.safe_category) is str and
+                                exc.safe_category in {"synthetic_only", "prompt_bound",
+                                                      "live_disabled", "call_limit"})
+                            return {
+                                "status": "not_dispatched" if rejected_before_send
+                                else "failed",
+                                "decision": None, "usage": None,
+                                "cost": Decimal("0") if rejected_before_send
+                                else quote.reservation_cny,
+                                "reserved": Decimal("0") if rejected_before_send
+                                else quote.reservation_cny,
+                                "requested_model": quote.requested_model,
+                                "price_version": quote.price_version, "model": None,
+                                "error": error, "request_audit": request_audit,
+                                "schema_diagnostics": _safe_schema_diagnostics(exc),
+                                "failure_category": error,
+                                "timing": {
+                                    "queued_at": queued_wall, "started_at": started_wall,
+                                    "ended_at": ended_wall,
+                                    "queue_seconds": max(0.0, started_mono - queued_at),
+                                    "backend_seconds": backend_seconds,
+                                    "validation_seconds": 0.0,
+                                    "elapsed_seconds": max(0.0, ended_mono - started_mono),
+                                    "dispatch_evidence": "backend_rejected_before_send"
+                                    if rejected_before_send else (request_audit or {}).get(
+                                        "stage", "backend_invoked"),
+                                },
+                            }
+
                         backend_seconds = time.perf_counter() - backend_start
                         with in_flight_lock:
                             actual_in_flight -= 1
+                        validation_start = time.perf_counter()
+                        try:
+                            decision = AgentDecision.model_validate(result.decision)
+                            allowed = {e["evidence_id"] for e in obs["evidence"]}
+                            allowed.update(m["message_id"] for m in obs["messages"])
+                            allowed.update(m["memory_id"] for m in obs["memories"])
+                            if (decision.agent_id != obs["agent_id"] or
+                                    not set(decision.evidence_ids) <= allowed):
+                                raise SimulationError("invalid agent or inaccessible citation")
+                            cost, usage = self._cost(quote, result.usage)
+                            actual_model = (str(result.model).strip()[:100]
+                                            if result.model else None)
+                            if cost > quote.reservation_cny:
+                                status, decision_data, error = (
+                                    "failed", None, "ReservationExceeded")
+                            else:
+                                status, decision_data, error = (
+                                    "valid", decision.model_dump(), None)
+                            schema_diagnostics = None
+                        except Exception as exc:
+                            status, decision_data = "failed", None
+                            error = _persisted_error(exc)
+                            schema_diagnostics = _safe_schema_diagnostics(exc)
+                            cost, usage = self._cost(quote, getattr(result, "usage", None))
+                            actual_model = (str(getattr(result, "model", "")).strip()[:100]
+                                            or None)
+                        validation_seconds = time.perf_counter() - validation_start
                         ended_mono = time.perf_counter()
                         ended_wall = datetime.now().astimezone().isoformat()
-                        error = _persisted_error(exc)
-                        rejected_before_send = (
-                            isinstance(exc, SafeDecisionError) and
-                            type(exc.safe_category) is str and
-                            exc.safe_category in {"synthetic_only", "prompt_bound",
-                                                  "live_disabled", "call_limit"})
                         return {
-                            "status": "not_dispatched" if rejected_before_send else "failed",
-                            "decision": None, "usage": None,
-                            "cost": Decimal("0") if rejected_before_send
-                            else quote.reservation_cny,
-                            "reserved": Decimal("0") if rejected_before_send
-                            else quote.reservation_cny,
+                            "status": status, "decision": decision_data, "usage": usage,
+                            "cost": cost, "reserved": quote.reservation_cny,
                             "requested_model": quote.requested_model,
-                            "price_version": quote.price_version, "model": None,
+                            "price_version": quote.price_version, "model": actual_model,
                             "error": error, "request_audit": request_audit,
-                            "schema_diagnostics": _safe_schema_diagnostics(exc),
+                            "schema_diagnostics": schema_diagnostics,
+                            "failure_category": error,
                             "timing": {
                                 "queued_at": queued_wall, "started_at": started_wall,
                                 "ended_at": ended_wall,
                                 "queue_seconds": max(0.0, started_mono - queued_at),
                                 "backend_seconds": backend_seconds,
-                                "validation_seconds": 0.0,
+                                "validation_seconds": validation_seconds,
                                 "elapsed_seconds": max(0.0, ended_mono - started_mono),
-                                "dispatch_evidence": "backend_rejected_before_send"
-                                if rejected_before_send else (request_audit or {}).get(
+                                "dispatch_evidence": (request_audit or {}).get(
                                     "stage", "backend_invoked"),
                             },
                         }
-
-                    backend_seconds = time.perf_counter() - backend_start
-                    with in_flight_lock:
-                        actual_in_flight -= 1
-                    validation_start = time.perf_counter()
-                    try:
-                        decision = AgentDecision.model_validate(result.decision)
-                        allowed = {e["evidence_id"] for e in obs["evidence"]}
-                        allowed.update(m["message_id"] for m in obs["messages"])
-                        allowed.update(m["memory_id"] for m in obs["memories"])
-                        if (decision.agent_id != obs["agent_id"] or
-                                not set(decision.evidence_ids) <= allowed):
-                            raise SimulationError("invalid agent or inaccessible citation")
-                        cost, usage = self._cost(quote, result.usage)
-                        actual_model = str(result.model).strip()[:100] if result.model else None
-                        if cost > quote.reservation_cny:
-                            status, decision_data, error = "failed", None, "ReservationExceeded"
-                        else:
-                            status, decision_data, error = "valid", decision.model_dump(), None
-                        schema_diagnostics = None
-                    except Exception as exc:
-                        status, decision_data = "failed", None
-                        error = _persisted_error(exc)
-                        schema_diagnostics = _safe_schema_diagnostics(exc)
-                        cost, usage = self._cost(quote, getattr(result, "usage", None))
-                        actual_model = str(getattr(result, "model", "")).strip()[:100] or None
-                    validation_seconds = time.perf_counter() - validation_start
-                    ended_mono = time.perf_counter()
-                    ended_wall = datetime.now().astimezone().isoformat()
-                    return {
-                        "status": status, "decision": decision_data, "usage": usage,
-                        "cost": cost, "reserved": quote.reservation_cny,
-                        "requested_model": quote.requested_model,
-                        "price_version": quote.price_version, "model": actual_model,
-                        "error": error, "request_audit": request_audit,
-                        "schema_diagnostics": schema_diagnostics,
-                        "timing": {
-                            "queued_at": queued_wall, "started_at": started_wall,
-                            "ended_at": ended_wall,
-                            "queue_seconds": max(0.0, started_mono - queued_at),
-                            "backend_seconds": backend_seconds,
-                            "validation_seconds": validation_seconds,
-                            "elapsed_seconds": max(0.0, ended_mono - started_mono),
-                            "dispatch_evidence": (request_audit or {}).get(
-                                "stage", "backend_invoked"),
-                        },
-                    }
+                    finally:
+                        # The slot is handed back here and only here: this is the moment the
+                        # backend call actually finished. A wait timeout deliberately does
+                        # not release it, and a late response still does, exactly once, so a
+                        # slot can neither be reported free while its thread is stuck nor
+                        # leak for the life of the process.
+                        PROCESS_CAPACITY.release(capacity_token)
 
                 def persist_outcomes(batch):
                     nonlocal request_ledger_persist_total, current_cost
@@ -883,7 +1416,7 @@ class Day3Simulation:
                                      timing["queued_at"], timing["started_at"], timing["ended_at"],
                                      timing["queue_seconds"], timing["backend_seconds"],
                                      timing["validation_seconds"], timing["elapsed_seconds"],
-                                     outcome["status"], outcome["error"],
+                                     outcome["status"], outcome["failure_category"],
                                      timing["dispatch_evidence"],
                                      _json(outcome["usage"]) if outcome["usage"] else None,
                                      str(outcome["cost"]), int(
@@ -905,11 +1438,17 @@ class Day3Simulation:
                 request_validation_total = 0.0
                 projected_cost = current_cost
                 completed_buffer = []
+                abandoned_in_flight = []
                 if final_stop_reason is None and pending:
                     active = {}
                     cursor = 0
                     concurrency = config["concurrency"]
-                    with ThreadPoolExecutor(max_workers=concurrency) as pool:
+                    round_budget = effective_round_budget()
+                    round_deadline = (time.monotonic() + round_budget
+                                      if round_budget is not None else None)
+                    pool = DaemonCallPool(concurrency)
+                    capacity_rejected = []
+                    try:
                         while cursor < len(pending) or active:
                             while (cursor < len(pending) and len(active) < concurrency
                                    and final_stop_reason is None):
@@ -918,47 +1457,118 @@ class Day3Simulation:
                                     final_stop_reason = stop_reason
                                     break
                                 aid = pending[cursor]
+                                # Admitted immediately before the call is dispatched, so a
+                                # refusal costs nothing: no request is sent, no worker is
+                                # created and the opportunity is recorded as not dispatched.
+                                # Nothing here waits for capacity; queuing would hide the
+                                # shortage instead of bounding it.
+                                try:
+                                    token = PROCESS_CAPACITY.acquire(
+                                        reason="round_dispatch", run_id=run_id,
+                                        round_number=round_number, agent_id=aid)
+                                except CapacityError as exc:
+                                    final_stop_reason = "capacity_exhausted"
+                                    capacity_rejected.append(aid)
+                                    capacity_error_text = str(exc)
+                                    capacity_refusal = str(exc)
+                                    capacity_rejected_total += 1
+                                    break
                                 cursor += 1
                                 queued_at = time.perf_counter()
                                 queued_wall = datetime.now().astimezone().isoformat()
-                                future = pool.submit(call, observation_by_id[aid],
-                                                     quote_by_id[aid], queued_at, queued_wall)
-                                active[future] = aid
+                                pool.submit(aid, call, observation_by_id[aid],
+                                            quote_by_id[aid], queued_at, queued_wall, token)
+                                active[aid] = True
                                 peak_in_flight = max(peak_in_flight, len(active))
                             if not active:
                                 break
-                            done, _ = wait(active, return_when=FIRST_COMPLETED)
-                            for future in sorted(done, key=lambda f: active[f]):
-                                aid = active.pop(future)
-                                outcome = future.result()
-                                outcomes_by_id[aid] = outcome
-                                completed_buffer.append((aid, outcome))
-                                projected_cost += outcome["cost"]
-                                call_dispatched += outcome["status"] != "not_dispatched"
-                                call_valid += outcome["status"] == "valid"
-                                request_backend_total += outcome["timing"]["backend_seconds"]
-                                request_validation_total += outcome["timing"]["validation_seconds"]
-                                if (outcome["error"] or "").endswith(":call_limit"):
-                                    final_stop_reason = "backend_call_limit"
-                                elif stop_on_failure and outcome["status"] == "failed":
-                                    final_stop_reason = "stop_on_failure"
-                                if projected_cost > Decimal(config["budget_cny"]):
-                                    final_stop_reason = "budget_exceeded"
-                                if len(completed_buffer) >= concurrency:
-                                    persist_outcomes(completed_buffer)
-                                    completed_buffer.clear()
+                            timeout = None
+                            if round_deadline is not None:
+                                timeout = max(0.0, round_deadline - time.monotonic())
+                            arrived = pool.collect(timeout)
+                            if arrived is None:
+                                # The budget is spent and nothing came back. Stop waiting;
+                                # the requests already dispatched are recorded below. The
+                                # reason distinguishes "the run deadline passed" from "this
+                                # round's call budget was exhausted".
+                                final_stop_reason = (
+                                    "deadline" if requested_stop() == "deadline"
+                                    else "call_timeout")
+                                abandoned_in_flight = sorted(active)
+                                active.clear()
+                                break
+                            aid, outcome = arrived
+                            if aid not in active:
+                                continue  # late result from an already-recorded request
+                            del active[aid]
+                            if isinstance(outcome, BaseException):
+                                raise SimulationError(
+                                    "worker returned an unexpected exception"
+                                ) from outcome
+                            outcomes_by_id[aid] = outcome
+                            completed_buffer.append((aid, outcome))
+                            projected_cost += outcome["cost"]
+                            call_totals["dispatched"] += outcome["status"] != "not_dispatched"
+                            call_totals["valid"] += outcome["status"] == "valid"
+                            request_backend_total += outcome["timing"]["backend_seconds"] or 0.0
+                            request_validation_total += (
+                                outcome["timing"]["validation_seconds"] or 0.0)
+                            if (outcome["error"] or "").endswith(":call_limit"):
+                                final_stop_reason = "backend_call_limit"
+                            elif failure_policy == "stop" and outcome["status"] == "failed":
+                                final_stop_reason = "stop_on_failure"
+                            if projected_cost > Decimal(config["budget_cny"]):
+                                final_stop_reason = "budget_exceeded"
+                            if len(completed_buffer) >= concurrency:
+                                persist_outcomes(completed_buffer)
+                                completed_buffer.clear()
+                        if final_stop_reason is None and active:
+                            # A stop landed while requests were in flight. They were
+                            # dispatched, so they are not "not dispatched"; their outcome
+                            # is simply unknown, so they are recorded as timed out rather
+                            # than released as free.
+                            abandoned_in_flight = sorted(active)
+                            active.clear()
+                            final_stop_reason = "call_timeout"
                         persist_outcomes(completed_buffer)
+                    finally:
+                        pooled_workers_abandoned = (
+                            len(abandoned_in_flight)
+                            if final_stop_reason in {"call_timeout", "deadline"} else 0)
+                        if pooled_workers_abandoned:
+                            # These workers are still inside their backend call. They cannot
+                            # be reclaimed, so the pool is spent: a later round must not
+                            # build another one and add a second set of stuck threads.
+                            pool.mark_damaged(pooled_workers_abandoned)
+                            pool_damaged = True
+                            pool_damaged_at_round = round_number
+                        pool_capacity = pool.capacity()
+                        pool.shutdown()
+                if final_stop_reason in {"call_timeout", "deadline"} and abandoned_in_flight:
+                    # Reconcile the requests we stopped waiting for, then let the normal
+                    # ledger path record the rest of the round as stranded.
+                    timeouts = [(aid, record_call_timeout(aid))
+                                for aid in abandoned_in_flight]
+                    call_totals["deadline_exceeded"] += len(timeouts)
+                    persist_outcomes(timeouts)
                 if pending and final_stop_reason is not None:
                     reason = {
                         "stop_signal": "StopSignal", "deadline": "DeadlineExceeded",
+                        "call_timeout": "CallTimeout",
                         "budget_preflight": "BudgetPreflight",
                         "backend_call_limit": "BackendCallLimit",
                         "stop_on_failure": "StoppedAfterFailure",
                         "budget_exceeded": "BudgetExceeded",
+                        "pool_exhausted": "PoolExhausted",
+                        "capacity_exhausted": "CapacityExhausted",
                     }.get(final_stop_reason, "NotDispatched")
-                    for aid in pending:
-                        if aid not in outcomes_by_id:
-                            insert_not_dispatched(aid, reason)
+                    # One connection for the whole tail of the round instead of one per
+                    # agent. Agents that already produced a persisted outcome (valid,
+                    # failed or deadline_exceeded) are skipped, so a recorded outcome keeps
+                    # its own status.
+                    stranded_now = [aid for aid in pending if aid not in outcomes_by_id]
+                    if stranded_now:
+                        insert_not_dispatched_batch(stranded_now, reason)
                 scheduler_wall = time.perf_counter() - scheduler_started
                 if phases is not None:
                     phases["scheduler_and_drain_wall_seconds"] = scheduler_wall
@@ -975,7 +1585,45 @@ class Day3Simulation:
             if (len(outcomes_by_id) < len(agents) or any(
                     outcome["status"] == "not_dispatched"
                     for outcome in outcomes_by_id.values())):
+                # The round did not finish, but it still owns accounting: submitted
+                # requests are recorded and the remainder of this round is explicitly
+                # stranded. Without a ledger row that remainder would be invisible and
+                # the whole-task total could not be reconciled.
+                abandoned_stats = self._round_stats(
+                    [outcomes_by_id[obs["agent_id"]] for obs in observations
+                     if obs["agent_id"] in outcomes_by_id],
+                    config=config, round_number=round_number,
+                    failure_policy=failure_policy, final_stop_reason=final_stop_reason,
+                    configured_agents=len(agents), state_by_id={},
+                    message_count=0, abandoned=True)
+                abandoned_stats["elapsed_seconds"] = round(
+                    time.perf_counter() - round_started, 3)
+                abandoned_stats["stop_reason"] = final_stop_reason
+                if pool_damaged_at_round is not None:
+                    abandoned_stats["pool_damaged_at_round"] = pool_damaged_at_round
+                if pool_refused_this_round:
+                    # No pool was built for this round, so there is no capacity to report.
+                    # Reporting the configured concurrency as "lost" would overstate the
+                    # damage: the workers that really are stuck are already counted by the
+                    # round that abandoned them.
+                    abandoned_stats["pool_refused"] = True
+                if pool_capacity is not None:
+                    abandoned_stats["pool_capacity"] = dict(pool_capacity)
+                if capacity_rejected:
+                    abandoned_stats["capacity"] = {
+                        "rejected_this_round": len(capacity_rejected),
+                        "refusal_reason": capacity_error_text,
+                        "process": PROCESS_CAPACITY.snapshot(),
+                    }
+                if phases is not None:
+                    phases["round_started_at"] = round_started_at
+                    phases["round_abandoned"] = True
+                    abandoned_stats["performance"] = phases
                 with self.store.connect() as db:
+                    db.execute("DELETE FROM simulation_rounds WHERE run_id=? "
+                               "AND round_number=?", (run_id, round_number))
+                    db.execute("INSERT INTO simulation_rounds VALUES (?, ?, ?)",
+                               (run_id, round_number, _json(abandoned_stats)))
                     db.execute("UPDATE simulation_runs SET status='partial' WHERE run_id=?",
                                (run_id,))
                 break
@@ -1032,28 +1680,27 @@ class Day3Simulation:
             failed = sum(outcome["status"] == "failed" for outcome in outcomes)
             not_dispatched = sum(outcome["status"] == "not_dispatched"
                                  for outcome in outcomes)
-            cost_by_model, reserved_by_model = {}, {}
-            for outcome in outcomes:
-                model = outcome["requested_model"]
-                cost_by_model[model] = str(
-                    Decimal(cost_by_model.get(model, "0")) + outcome["cost"])
-                reserved_by_model[model] = str(
-                    Decimal(reserved_by_model.get(model, "0")) + outcome["reserved"])
-            stats = {
-                "configured_agents": len(agents), "decision_requests": len(agents),
-                "model_decision_agents": len(agents) - not_dispatched,
-                "dispatched_requests": len(agents) - not_dispatched,
-                "not_dispatched_requests": not_dispatched,
-                "local_state_update_agents": len(state_by_id),
-                "valid_decisions": valid,
-                "active_decisions": sum(
-                    outcome["decision"] is not None and
-                    outcome["decision"]["action"] != "observe" for outcome in outcomes),
-                "failed_decisions": failed, "messages": len(messages),
-                "reserved_cny": str(sum((o["reserved"] for o in outcomes), Decimal("0"))),
-                "reserved_by_model": reserved_by_model,
-                "cost_cny": str(round_cost), "cost_by_model": cost_by_model,
-            }
+            round_cost = sum((outcome["cost"] for outcome in outcomes), Decimal("0"))
+            stats = self._round_stats(
+                outcomes, config=config, round_number=round_number,
+                failure_policy=failure_policy, final_stop_reason=final_stop_reason,
+                configured_agents=len(agents), state_by_id=state_by_id,
+                message_count=len(messages), abandoned=False)
+            stats["stop_reason"] = final_stop_reason
+            if pool_damaged_at_round is not None:
+                # Recorded so a *later* advance() can see that this run already lost
+                # workers and refuse to build a pool on top of them.
+                stats["pool_damaged_at_round"] = pool_damaged_at_round
+            if pool_refused_this_round:
+                stats["pool_refused"] = True
+            if pool_capacity is not None:
+                stats["pool_capacity"] = dict(pool_capacity)
+            if capacity_rejected:
+                stats["capacity"] = {
+                    "rejected_this_round": len(capacity_rejected),
+                    "refusal_reason": capacity_error_text,
+                    "process": PROCESS_CAPACITY.snapshot(),
+                }
             if phases is not None:
                 phases["round_started_at"] = round_started_at
                 phases["phase_timing_note"] = (
@@ -1076,14 +1723,28 @@ class Day3Simulation:
                 db.executemany(
                     "UPDATE simulation_agents SET state=? WHERE run_id=? AND agent_id=?",
                     [(_json(state), run_id, aid) for aid, state in state_by_id.items()])
+                # A round that was previously abandoned left a ledger row behind. Resuming
+                # the run retries that same round, so the stale row must be replaced
+                # rather than colliding with the primary key.
+                db.execute("DELETE FROM simulation_rounds WHERE run_id=? AND round_number=?",
+                           (run_id, round_number))
                 db.execute("INSERT INTO simulation_rounds VALUES (?, ?, ?)",
                            (run_id, round_number, _json(stats)))
                 if over_budget:
                     status = "partial"
-                elif round_number == config["rounds"]:
+                elif round_number == config["rounds"] and final_stop_reason is None:
                     # Preserve the public status meaning: all rounds ran. The additive
                     # summary success flag distinguishes that from all-valid completion.
+                    #
+                    # A round that stopped on a call timeout, a stop signal or a backend
+                    # call limit did NOT run to the end, even when it happens to be the
+                    # last configured round. It is still recorded as a completed round
+                    # (its accounting is final), but the run must not claim that all
+                    # rounds ran: pairing "complete" with undecided requests is exactly
+                    # the kind of reading the status is supposed to prevent.
                     status = "complete"
+                elif round_number == config["rounds"]:
+                    status = "partial"
                 else:
                     status = "running"
                 db.execute(
@@ -1104,18 +1765,13 @@ class Day3Simulation:
                 final_stop_reason = "budget_exceeded"
                 break
 
-        if collect_performance:
-            call_ended = time.perf_counter()
-            call_ended_at = datetime.now().astimezone().isoformat()
-            with self.store.connect() as db:
-                db.execute(
-                    "INSERT INTO simulation_performance_calls "
-                    "(run_id, started_at, ended_at, wall_seconds, dispatched_requests, "
-                    "valid_decisions, stop_reason) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                    (run_id, call_started_at, call_ended_at,
-                     max(0.0, call_ended - call_started), call_dispatched, call_valid,
-                     final_stop_reason))
-        return self.summary(run_id)
+        # The round is settled and persisted before this is raised, so a caller that turns
+        # the refusal into a task outcome still has a complete ledger to read: requests that
+        # were never dispatched carry no cost, and dispatched ones keep their reservation.
+        if capacity_refusal is not None:
+            raise CapacityExhaustedError(
+                capacity_refusal, rejected_requests=capacity_rejected_total)
+        return finish()
 
     @staticmethod
     def _latency_percentiles(values):
@@ -1145,14 +1801,15 @@ class Day3Simulation:
             return None
         dispatched = [row for row in requests if row["status"] in {"valid", "failed"}]
         valid = [row for row in dispatched if row["status"] == "valid"]
+        timed_out = [row for row in requests if row["status"] == "deadline_exceeded"]
         unknown_usage = sum(row["usage_unknown"] for row in dispatched)
         elapsed = sum(row["wall_seconds"] for row in calls)
         by_model = {}
         for row in requests:
             model = row["requested_model"]
             bucket = by_model.setdefault(model, {"requests": 0, "valid": 0, "failed": 0,
-                "not_dispatched": 0, "unknown_usage": 0, "cost_cny": "0",
-                "failure_categories": {}, "backend_seconds": [],
+                "not_dispatched": 0, "deadline_exceeded": 0, "unknown_usage": 0,
+                "cost_cny": "0", "failure_categories": {}, "backend_seconds": [],
                 "queue_seconds": [], "request_elapsed_seconds": []})
             bucket["requests"] += 1
             bucket[row["status"]] += 1
@@ -1189,6 +1846,7 @@ class Day3Simulation:
             "completed_requests": len(dispatched),
             "valid_decisions": len(valid),
             "failed_dispatched_requests": sum(row["status"] == "failed" for row in dispatched),
+            "deadline_exceeded_requests": len(timed_out),
             "not_dispatched": sum(row["status"] == "not_dispatched" for row in requests),
             "unknown_usage_calls": unknown_usage,
             "completed_request_throughput_per_second": (
@@ -1230,14 +1888,47 @@ class Day3Simulation:
             action_counts.get("valid", 0) == expected_decisions and
             action_counts.get("failed", 0) == 0 and
             action_counts.get("not_dispatched", 0) == 0)
+        config = json.loads(run["config"])
         summary = {"run_id": run_id, "case_id": run["case_id"], "graph_id": run["graph_id"],
-                   "config": json.loads(run["config"]), "status": run["status"],
+                   "config": config, "status": run["status"],
                    "completed_rounds": run["completed_rounds"],
                    "actual_participants": participants,
                    "action_counts": action_counts,
                    "all_decisions_valid": all_decisions_valid,
                    "cost_cny": run["cost_cny"], "usage": json.loads(run["usage"]),
                    "rounds": rounds}
+        # Whole-task opportunity reconciliation and the billing ledger, both independent
+        # of how many action rows happened to be persisted.
+        summary["opportunities"] = self._opportunity_buckets(rounds, config)
+        per_round_pool = [row["pool_capacity"] for row in rounds if row.get("pool_capacity")]
+        summary["pool_capacity"] = {
+            "recorded_rounds": len(per_round_pool),
+            "peak_lost_workers": max((item["lost"] for item in per_round_pool), default=0),
+            "total_lost_worker_rounds": sum(item["lost"] for item in per_round_pool),
+            "rounds_refused_pool_exhausted": sum(
+                1 for row in rounds if row.get("pool_refused")),
+            "note": ("a lost worker never returned from its backend call and is still "
+                     "inside it; the thread is a daemon so it cannot hold the process "
+                     "open, and once a round loses workers the engine refuses to build "
+                     "another pool, so the loss stays bounded by one round's concurrency. "
+                     "A refused round builds no pool and therefore reports no capacity."),
+            "per_round": per_round_pool,
+        }
+        per_round_capacity = [row["capacity"] for row in rounds if row.get("capacity")]
+        summary["capacity"] = {
+            "limit": PROCESS_CAPACITY.limit,
+            "config_source": "RISKSHIELD_MAX_INFLIGHT_CALLS",
+            "used_now": PROCESS_CAPACITY.used(),
+            "rounds_with_refusals": len(per_round_capacity),
+            "rejected_requests": sum(item["rejected_this_round"]
+                                     for item in per_round_capacity),
+            "refusal_reason": next((item["refusal_reason"] for item in per_round_capacity
+                                    if item.get("refusal_reason")), None),
+            "note": ("the process ceiling is shared by every task and run, so a new task "
+                     "cannot reset it; a refused request is never sent, so it costs "
+                     "nothing, and nothing waits in a queue for capacity"),
+        }
+        summary["billing"] = self._billing_summary(run_id, Decimal(run["cost_cny"]))
         performance = self._performance_summary(run_id)
         if performance is not None:
             summary["performance"] = performance

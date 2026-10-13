@@ -141,7 +141,13 @@ def test_completed_round_with_failed_decision_is_not_a_successful_job(tmp_path, 
     assert job["action_counts"].get("failed", 0) == 1
     assert job["status"] == "failed"
     assert job["result_state"] == "partial"
-    assert job["report_id"] is None and job["alert_id"] is None
+    # The run is still reported as incomplete, but it now also carries a report: refusing
+    # to produce one hid the ledger a reviewer needs in order to judge the failed decision.
+    assert job["report_id"] is not None and job["alert_id"] is not None
+    assert job["error"] == "incomplete_run_reported"
+    report = tasks.reports.get(job["report_id"])
+    assert report["overview"]["run_integrity"]["complete"] is False
+    assert "不完整" in report["overview"]["run_integrity"]["integrity_label"]
 
 
 def test_stopped_simulation_is_distinct_from_execution_failure(tmp_path, monkeypatch):
@@ -252,3 +258,106 @@ def test_future_graph_claim_fails_before_any_agent_observes_it(tmp_path):
     assert job["status"] == "failed"
     assert job["failure_category"] == "data_integrity_error"
     assert tasks.simulation.trajectory(run_id) == []
+
+
+def _hangs_only_after_round_one(gate):
+    """A substitute that answers round 1 normally and blocks once an agent has memory.
+
+    Round 1 must complete, otherwise the run has no completed round and neither an alert
+    nor a report can exist at all; the interesting case is a *partial* run. An agent can
+    only hold memory by having already acted, so "this observation carries memories" is a
+    deterministic marker for "round 2 or later" that does not depend on worker ordering.
+    """
+    from riskshield.simulation import DecisionResult
+    from riskshield.schemas import AgentDecision
+
+    def decide(self, observation):
+        if observation.get("memories"):
+            gate.wait()
+        reference = observation["evidence"][0]["evidence_id"]
+        return DecisionResult(AgentDecision(
+            agent_id=observation["agent_id"], action="observe",
+            evidence_ids=[reference], reason="bounded substitute decision"),
+            usage={"prompt_tokens": 0, "completion_tokens": 0}, model=TASK_MODE)
+
+    return decide
+
+
+def test_the_task_entry_can_be_given_a_wait_budget(tmp_path, monkeypatch):
+    """A backend that never returns must not leave the task in ``running`` forever.
+
+    Without a budget the engine waits without bound, so the task never leaves ``running``
+    and its worker thread keeps the process alive. The budget is opt-in: the default stays
+    ``None``, so no existing caller changes behaviour.
+    """
+    gate = threading.Event()
+    monkeypatch.setattr(OfflineDynamicSubstitute, "decide", _hangs_only_after_round_one(gate))
+    tasks = Day4Tasks(Store(tmp_path / "bounded.db"),
+                      simulation_call_timeout_seconds=0.2)
+    run = tasks.prepare_demo_run(agent_count=2, rounds=2, concurrency=2)
+    try:
+        job = tasks.run_sync(run["run_id"])
+    finally:
+        gate.set()
+
+    # It returned on its own budget rather than waiting for the hung call.
+    assert job["status"] == "failed"
+    # Never a success, and never presented as one.
+    assert job["result_state"] in {"partial", "stopped"}
+    # The last configured round was reached but stopped on a timeout, so the run must not
+    # claim that every round ran.
+    assert job["completed_rounds"] == 2
+    assert job["simulation_status"] == "partial"
+    assert job["all_decisions_valid"] is False
+    # The undecided requests are not silently dropped, and they are not called failures.
+    assert job["action_counts"].get("deadline_exceeded", 0) >= 1
+    assert job["action_counts"].get("failed", 0) == 0
+
+
+def _hang_the_second_call(gate):
+    """Answer the first backend call, then block every later one.
+
+    Round 1 then holds one decided request and one request the engine stopped waiting for,
+    which is the shape the alert metrics have to classify.
+    """
+    from riskshield.simulation import DecisionResult
+    from riskshield.schemas import AgentDecision
+
+    calls = {"n": 0}
+
+    def decide(self, observation):
+        calls["n"] += 1
+        if calls["n"] > 1:
+            gate.wait()
+        reference = observation["evidence"][0]["evidence_id"]
+        return DecisionResult(AgentDecision(
+            agent_id=observation["agent_id"], action="observe",
+            evidence_ids=[reference], reason="bounded substitute decision"),
+            usage={"prompt_tokens": 0, "completion_tokens": 0}, model=TASK_MODE)
+
+    return decide
+
+
+def test_the_alert_counts_undecided_requests_apart_from_failed_ones(tmp_path, monkeypatch):
+    """``deadline_exceeded``/``not_dispatched`` are undecided, never failed decisions."""
+    gate = threading.Event()
+    monkeypatch.setattr(OfflineDynamicSubstitute, "decide", _hang_the_second_call(gate))
+    tasks = Day4Tasks(Store(tmp_path / "undecided.db"),
+                      simulation_call_timeout_seconds=0.2)
+    run = tasks.prepare_demo_run(agent_count=2, rounds=1, concurrency=1)
+    try:
+        job = tasks.run_sync(run["run_id"])
+    finally:
+        gate.set()
+
+    alert = tasks.alerts.assess(run["run_id"])
+    metrics = alert["metrics"]
+    assert metrics["latest_round_valid_decisions"] >= 1
+    assert metrics["latest_round_undecided_requests"] >= 1
+    assert metrics["latest_round_failed_decisions"] == 0
+    assert metrics["run_failed_decisions"] == 0
+    assert metrics["run_undecided_requests"] >= 1
+    # Undecided requests still mean the run cannot be read as clean or successful.
+    assert alert["decisions_all_valid"] is False
+    assert alert["alert_is_success_result"] is False
+    assert any("undecided" in item for item in alert["limitations"])

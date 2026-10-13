@@ -9,6 +9,7 @@ import uuid
 from datetime import datetime, timezone
 
 from riskshield.evidence import EvidencePipeline
+from riskshield.reporting import Day4Reports
 from riskshield.simulation import Day3Simulation
 from riskshield.store import Store
 
@@ -49,6 +50,8 @@ class Day4Alerts:
         self.store = store
         self.simulation = Day3Simulation(store)
         self.evidence = EvidencePipeline(store)
+        # Used to find a round whose ledger reconciles before a risk level is produced.
+        self.reports = Day4Reports(store)
         with store.connect() as db:
             db.executescript("""
                 CREATE TABLE IF NOT EXISTS day4_alerts (
@@ -87,18 +90,58 @@ class Day4Alerts:
                     for item in graph["claims"])):
             raise AlertError("graph has no eligible cutoff sources")
 
-        round_number = run["completed_rounds"]
+        # Which round may be assessed. The latest recorded round is the natural choice, but
+        # it can hold no decision at all: a round that stopped on a timeout, a pool that was
+        # spent, or a capacity refusal records requests without any usable decision. Reading
+        # an empty round would produce a risk level with nothing behind it, so the assessment
+        # falls back to the most recent round that actually decided something -- and only to
+        # a round the report builder can also reconcile, so the alert never rests on a round
+        # the report would reject.
+        latest_recorded_round = run["completed_rounds"]
+        valid_by_round = self.reports.valid_decisions_by_round(run_id)
+        assessed_round = latest_recorded_round
+        round_fallback = None
+        if valid_by_round.get(assessed_round, 0) < 1:
+            earlier = sorted((number for number, count in valid_by_round.items()
+                              if count >= 1 and number < latest_recorded_round),
+                             reverse=True)
+            if not earlier:
+                raise AlertError(
+                    f"run has no round with a valid decision to assess "
+                    f"({latest_recorded_round} recorded round(s)); no risk level is produced")
+            assessed_round = earlier[0]
+            round_fallback = {
+                "reason": ("latest recorded round has no valid decision; fell back to the "
+                           "most recent round with valid decisions and a reconciled ledger"),
+                "latest_recorded_round": latest_recorded_round,
+                "assessed_round": assessed_round,
+            }
+
+        round_number = assessed_round
         with self.store.connect() as db:
             rows = [dict(row) for row in db.execute(
                 "SELECT agent_id, status, decision, observation_refs FROM simulation_actions "
                 "WHERE run_id=? AND round_number=? ORDER BY agent_id", (run_id, round_number))]
-            total_failures = db.execute(
-                "SELECT COUNT(*) AS n FROM simulation_actions WHERE run_id=? AND status!='valid'",
-                (run_id,)).fetchone()["n"]
+            run_status_counts = {row["status"]: row["n"] for row in db.execute(
+                "SELECT status, COUNT(*) AS n FROM simulation_actions WHERE run_id=? "
+                "GROUP BY status", (run_id,))}
+            # Only ``failed`` is a failed decision. ``deadline_exceeded`` (dispatched, not
+            # waited for) and ``not_dispatched`` (never sent) are undecided, and reading
+            # "everything that is not valid" as failure misreports them as our errors.
+            total_failures = run_status_counts.get("failed", 0)
+            run_undecided = (run_status_counts.get("deadline_exceeded", 0) +
+                             run_status_counts.get("not_dispatched", 0))
             message_count = db.execute(
                 "SELECT COUNT(*) AS n FROM simulation_messages WHERE run_id=? AND round_number=?",
                 (run_id, round_number)).fetchone()["n"]
         valid = [row for row in rows if row["status"] == "valid" and row["decision"]]
+        # ``deadline_exceeded`` is a request the engine stopped waiting for and
+        # ``not_dispatched`` was never sent. Neither is a failed decision, so counting
+        # "everything that is not valid" as a failure would report undecided requests as
+        # our own errors and would also overstate ``decisions_all_valid`` failures.
+        failed = [row for row in rows if row["status"] == "failed"]
+        undecided = [row for row in rows
+                     if row["status"] in {"deadline_exceeded", "not_dispatched"}]
         if not valid:
             raise AlertError("latest round has no valid decisions")
         complaint = [row for row in valid if json.loads(row["decision"])["action"] ==
@@ -134,6 +177,13 @@ class Day4Alerts:
             limitations.append("Synthetic run must never trigger an external notification.")
         if run["status"] != "complete" or total_failures:
             limitations.append("Run is incomplete or contains failed decisions; classify valid latest-round actions only.")
+        if run_undecided:
+            limitations.append("Some requests were never decided (dispatched but not waited for, or never sent); they are undecided, not failed.")
+        if round_fallback is not None:
+            limitations.append(
+                f"Latest recorded round {latest_recorded_round} has no valid decision; this "
+                f"assessment is based on round {round_number} of an incomplete run and must "
+                f"not be read as the current complete result.")
         execution_mode = (config.get("backend") or {}).get(
             "type", config.get("backend_mode"))
         if snapshot["data_mode"] == "real_historical" and execution_mode == "offline_dynamic_substitute":
@@ -154,6 +204,23 @@ class Day4Alerts:
             "assessment_fingerprint_sha256": fingerprint,
             "data_mode": snapshot["data_mode"], "execution_mode": execution_mode,
             "status": "provisional_offline_assessment",
+            # An alert may still be produced for an incomplete run, but never silently:
+            # these flags make it impossible to read a stopped or partly failed run as a
+            # clean one. A consumer must not present this as a successful assessment.
+            "run_complete": run["status"] == "complete",
+            "decisions_all_valid": total_failures == 0 and run_undecided == 0,
+            "alert_is_success_result": (run["status"] == "complete" and
+                                        total_failures == 0 and run_undecided == 0),
+            # Which round this assessment actually rests on, and whether that is the latest
+            # one. A fallback is never presented as the current result.
+            "assessed_round": round_number,
+            "latest_recorded_round": latest_recorded_round,
+            "round_fallback": round_fallback,
+            "assessment_basis": ("latest_recorded_round" if round_fallback is None
+                                 else "earlier_round_with_valid_decisions"),
+            "assessment_basis_label": (
+                "基于最新已记录轮次" if round_fallback is None
+                else f"基于第 {round_number} 轮的不完整运行预警"),
             "assessed_at": assessed_at,
             # Local rule detection time; it is not the historical event's first-public time.
             "discovered_at": assessed_at,
@@ -161,9 +228,20 @@ class Day4Alerts:
             "sent_at": None,
             "metrics": {
                 "round": round_number, "run_status": run["status"],
+                # The metrics below describe the round this assessment rests on, which is not
+                # necessarily the latest one; ``latest_recorded_round`` above names the other.
+                "assessed_round": round_number,
+                "assessed_round_valid_decisions": len(valid),
+                "assessed_round_failed_decisions": len(failed),
+                "assessed_round_undecided_requests": len(undecided),
+                "assessed_round_simulated_messages": message_count,
+                # Kept because existing consumers read these names; after a fallback they
+                # describe the assessed round, which ``round_fallback`` states explicitly.
                 "latest_round_valid_decisions": len(valid),
-                "latest_round_failed_decisions": len(rows) - len(valid),
+                "latest_round_failed_decisions": len(failed),
+                "latest_round_undecided_requests": len(undecided),
                 "run_failed_decisions": total_failures,
+                "run_undecided_requests": run_undecided,
                 "simulated_complaint_intent_decisions": len(complaint),
                 "simulated_complaint_intent_share": round(share, 6),
                 "latest_round_simulated_messages": message_count,

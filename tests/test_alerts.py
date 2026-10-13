@@ -1,5 +1,6 @@
 import json
 import socket
+import threading
 
 import pytest
 
@@ -167,3 +168,111 @@ def test_assessment_rejects_cross_case_graph_and_empty_run(tmp_path):
         db.execute("UPDATE simulation_runs SET graph_id=? WHERE run_id=?", (GRAPH_ID, run_id))
     with pytest.raises(AlertError, match="do not match"):
         alerts.assess(run_id)
+
+
+class TimesOutAfterFirstRound(FixedActions):
+    """Complains in round 1, then blocks forever once an agent has memory (round 2+)."""
+
+    def __init__(self, gate):
+        super().__init__(complaint_count=4)
+        self.gate = gate
+
+    def decide(self, observation):
+        if observation.get("memories"):
+            self.gate.wait()
+        return super().decide(observation)
+
+
+def _run_with_timed_out_last_round(store):
+    """Round 1 decides; round 2 completes but every one of its requests times out.
+
+    ``concurrency`` equals the agent count on purpose: every agent of round 2 is dispatched
+    and then abandoned, so the round is *recorded* (not stranded) and holds zero valid
+    decisions. That is the shape that needs a fallback.
+    """
+    sim = Day3Simulation(store)
+    run_id = sim.create_run(CASE_ID, GRAPH_ID, agent_count=4, rounds=2, concurrency=4, seed=4)
+    gate = threading.Event()
+    try:
+        summary = sim.advance(run_id, TimesOutAfterFirstRound(gate),
+                              collect_performance=True, call_timeout_seconds=0.2)
+    finally:
+        gate.set()
+    return run_id, summary
+
+
+def test_the_alert_falls_back_to_the_last_round_that_actually_decided(tmp_path):
+    """An empty latest round must not be read as if it had decisions.
+
+    The latest recorded round holds only ``deadline_exceeded`` requests. Producing a risk
+    level from an empty round would be a level with nothing behind it, so the assessment
+    falls back to round 1 and says so, and it is never presented as the current result.
+    """
+    store = _prepared_store(tmp_path / "fallback.db")
+    run_id, summary = _run_with_timed_out_last_round(store)
+    assert summary["status"] == "partial"
+    assert summary["completed_rounds"] == 2
+    round_two = [row for row in summary["rounds"] if row["round"] == 2][0]
+    assert round_two["valid_decisions"] == 0
+    assert round_two["deadline_exceeded_requests"] == 4
+
+    alert = Day4Alerts(store).assess(run_id)
+    assert alert["assessed_round"] == 1
+    assert alert["latest_recorded_round"] == 2
+    assert alert["assessment_basis"] == "earlier_round_with_valid_decisions"
+    assert alert["round_fallback"]["latest_recorded_round"] == 2
+    assert "第 1 轮" in alert["assessment_basis_label"]
+    assert "不完整" in alert["assessment_basis_label"]
+    # A fallback can never read as a successful assessment.
+    assert alert["alert_is_success_result"] is False
+    assert alert["run_complete"] is False
+    assert alert["decisions_all_valid"] is False
+    # The level is still a four-level classification computed by the existing rule.
+    assert alert["level"] in {"red", "orange", "yellow", "blue"}
+    # The metrics state which round they describe, instead of silently shifting.
+    assert alert["metrics"]["assessed_round"] == 1
+    assert alert["metrics"]["assessed_round_valid_decisions"] > 0
+    assert any("must not be read as the current complete result" in item
+               for item in alert["limitations"])
+
+
+def test_a_run_with_no_valid_decision_anywhere_produces_no_risk_level(tmp_path):
+    """Nowhere to fall back to: no level is invented, and the reason is explicit."""
+    store = _prepared_store(tmp_path / "no-level.db")
+    sim = Day3Simulation(store)
+    run_id = sim.create_run(CASE_ID, GRAPH_ID, agent_count=2, rounds=1, concurrency=2, seed=5)
+    gate = threading.Event()
+
+    class AlwaysHangs:
+        mode = "test_substitute"
+
+        def decide(self, observation):
+            gate.wait()
+            raise AssertionError("unreachable")
+
+    try:
+        summary = sim.advance(run_id, AlwaysHangs(), collect_performance=True,
+                              call_timeout_seconds=0.2)
+    finally:
+        gate.set()
+    assert summary["action_counts"].get("valid", 0) == 0
+
+    with pytest.raises(AlertError, match="no round with a valid decision"):
+        Day4Alerts(store).assess(run_id)
+    # No alert row may exist, so nothing downstream can read a fabricated level.
+    with store.connect() as db:
+        assert db.execute("SELECT COUNT(*) AS n FROM day4_alerts WHERE run_id=?",
+                          (run_id,)).fetchone()["n"] == 0
+
+
+def test_a_report_can_be_built_from_a_fallback_alert(tmp_path):
+    """The fallback alert and the report agree: end to end, no refusal in between."""
+    from riskshield.reporting import Day4Reports
+
+    store = _prepared_store(tmp_path / "fallback-report.db")
+    run_id, _ = _run_with_timed_out_last_round(store)
+    alert = Day4Alerts(store).assess(run_id)
+    report = Day4Reports(store).build(run_id, risk_assessment=alert)
+    assert report["overview"]["risk_level"] == alert["level"]
+    assert report["overview"]["main_basis"]["assessed_round"] == 1
+    assert report["overview"]["run_integrity"]["complete"] is False
