@@ -22,6 +22,21 @@ LABEL_SCHEMA = "riskshield.day5.future-labels.v1"
 REPORT_SCHEMA = "riskshield.day5.evaluation-report.v1"
 SENTIMENTS = ("positive", "neutral", "negative")
 DIRECTIONS = ("escalation", "calming")
+# The direction track is scored two ways that must not be confused. The binary
+# metric above is the one the brief asks for and it keeps its own denominator.
+# The diagnostic below is an additional, separately versioned reading that can
+# express ``stable``; it never feeds the binary number and never replaces it.
+DIRECTION_DIAGNOSTIC_CLASSES = ("escalation", "calming", "stable")
+DIRECTION_DIAGNOSTIC_VERSION = "direction-three-class-diagnostic-v1"
+# Labels that mean "the evidence does not settle it". They are NOT ``stable``:
+# ``stable`` is a reading of the series, this is the absence of one, and folding
+# the second into the first would invent an observation nobody made.
+DIRECTION_UNSCORABLE_LABELS = ("insufficient_evidence", "unknown", "cannot_judge",
+                               "not_judgeable", "insufficient")
+# A prediction outside the three classes still occupies a cell rather than
+# vanishing, so the matrix always accounts for every scored event.
+DIAGNOSTIC_PREDICTION_BUCKETS = DIRECTION_DIAGNOSTIC_CLASSES + (
+    "outside_the_three_class_space",)
 _MISSING = object()
 
 
@@ -151,20 +166,66 @@ def _source_reasons(case: dict[str, Any], root: Path) -> list[str]:
     return sorted(set(reasons))
 
 
-def _labels_for_case(case: dict[str, Any], label_map: dict[str, dict[str, Any]], root: Path) -> tuple[str | None, list[str]]:
+def _adjudication_for_case(entry: dict[str, Any], root: Path) -> tuple[str | None, list[str], dict[str, Any]]:
+    """Resolve a recorded adjudication for a unit whose two labels disagree.
+
+    An adjudication is accepted only when it is a *recorded decision about a
+    disagreement*: a named adjudicator, a final label inside the formal classes,
+    a recorded basis, resolvable evidence, and an explicit statement that both
+    original answers were preserved. The last one is what stops this path from
+    becoming a way to quietly rewrite an inconvenient label -- the original
+    annotations have to still be present, and they are what the agreement audit
+    reads.
+
+    Nothing here invents a label. A missing, malformed or unverifiable
+    adjudication leaves the unit excluded exactly as before.
+    """
+    adjudication = entry.get("adjudication")
+    if adjudication is None:
+        return None, [], {}
+    if not isinstance(adjudication, dict):
+        return None, ["adjudication_not_an_object"], {}
+    reasons: list[str] = []
+    if not isinstance(adjudication.get("adjudicator_id"), str) or not adjudication["adjudicator_id"].strip():
+        reasons.append("adjudication_missing_named_adjudicator")
+    label = adjudication.get("final_label")
+    if label not in SENTIMENTS:
+        reasons.append("adjudication_final_label_not_in_formal_classes")
+    if adjudication.get("original_answers_preserved") is not True:
+        reasons.append("adjudication_original_answers_not_preserved")
+    if not isinstance(adjudication.get("rule_source"), str) or not adjudication["rule_source"].strip():
+        reasons.append("adjudication_missing_recorded_basis")
+    refs = adjudication.get("evidence_refs", [])
+    if label in SENTIMENTS and (not isinstance(refs, list)
+                                or not any(_ref_matches(ref, label, root) for ref in refs)):
+        reasons.append("adjudication_evidence_missing_or_mismatched")
+    if reasons:
+        return None, sorted(set(reasons)), {}
+    return label, [], adjudication
+
+
+def _labels_for_case(case: dict[str, Any], label_map: dict[str, dict[str, Any]],
+                     root: Path) -> tuple[str | None, list[str], dict[str, Any]]:
+    """Human gold for one case, plus how that gold was arrived at.
+
+    The third element records the *basis*: unanimous independent labels, or a
+    recorded adjudication of a disagreement. It exists so the report can state
+    raw agreement and post-adjudication coverage as two separate numbers instead
+    of one blended rate.
+    """
     reasons: list[str] = []
     entry = label_map.get(case.get("evaluation_id", ""))
     if entry is None:
-        return None, ["missing_separate_evaluation_label"]
+        return None, ["missing_separate_evaluation_label"], {}
     if entry.get("event_id") != case.get("event_id") or entry.get("unit_id") != case.get("unit_id"):
-        return None, ["label_input_identity_mismatch"]
+        return None, ["label_input_identity_mismatch"], {}
     if entry.get("source_record_id") != case.get("target_record_id"):
-        return None, ["label_source_record_mismatch"]
+        return None, ["label_source_record_mismatch"], {}
     if entry.get("text_sha256") != case.get("text_sha256"):
-        return None, ["label_original_text_hash_mismatch"]
+        return None, ["label_original_text_hash_mismatch"], {}
     annotations = entry.get("sentiment_annotations", [])
     if not isinstance(annotations, list):
-        return None, ["invalid_human_annotation_list"]
+        return None, ["invalid_human_annotation_list"], {}
     eligible: list[dict[str, Any]] = []
     seen_annotators: set[str] = set()
     for annotation in annotations:
@@ -192,10 +253,28 @@ def _labels_for_case(case: dict[str, Any], label_map: dict[str, dict[str, Any]],
             reasons.append("annotation_prediction_blinding_not_established")
     labels = {a["label"] for a in eligible}
     if len(eligible) >= 2 and len(labels) != 1:
+        # A disagreement is scoreable only through a recorded adjudication. The
+        # original annotations stay in the entry either way, so the agreement
+        # audit keeps reading what each annotator actually said.
+        adjudicated, adjudication_reasons, record = _adjudication_for_case(entry, root)
+        if adjudicated is not None:
+            return adjudicated, [], {
+                "label_basis": "adjudicated_disagreement",
+                "adjudicated_by": record.get("adjudicator_id"),
+                "adjudication_basis": record.get("rule_source"),
+                "adjudication_rule_arm": record.get("rule_arm"),
+                "original_annotation_labels": [a["label"] for a in eligible],
+                "original_annotator_ids": [a["annotator_id"] for a in eligible],
+            }
+        reasons.extend(adjudication_reasons)
         reasons.append("independent_labels_disagree_no_adjudication")
     if reasons:
-        return None, sorted(set(reasons))
-    return eligible[0]["label"], []
+        return None, sorted(set(reasons)), {}
+    return eligible[0]["label"], [], {
+        "label_basis": "unanimous_independent_labels",
+        "original_annotation_labels": [a["label"] for a in eligible],
+        "original_annotator_ids": [a["annotator_id"] for a in eligible],
+    }
 
 
 def _prediction_label(predictions: Any, metric: str, root: Path) -> tuple[str | None, list[str]]:
@@ -331,11 +410,224 @@ def _ai_reference_agreement(cases: list[dict[str, Any]], ai_reference: Any,
     }
 
 
+def _resolve_diagnostic_events(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Apply the binary path's event-uniqueness rule to the diagnostic's rows.
+
+    One event, one score. Several source rows or runs for an event cannot each
+    contribute, exactly as in the binary metric; a row that failed any validity
+    check takes its reason with it rather than being dropped silently.
+    """
+    valid: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    invalid: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        (invalid if row["validity_reasons"] else valid)[row["event_id"]].append(row)
+
+    events: list[dict[str, Any]] = []
+    exclusions: list[dict[str, Any]] = []
+    for event_id in sorted(set(valid) | set(invalid), key=lambda value: value or ""):
+        candidates = valid.get(event_id, [])
+        if len(candidates) > 1:
+            exclusions.append({
+                "event_id": event_id,
+                "evaluation_ids": [row["evaluation_id"] for row in candidates],
+                "reasons": ["multiple_direction_predictions_for_one_event"],
+            })
+            continue
+        if not candidates:
+            exclusions.append({
+                "event_id": event_id,
+                "evaluation_ids": [row["evaluation_id"] for row in invalid.get(event_id, [])],
+                "reasons": sorted({reason for row in invalid.get(event_id, [])
+                                   for reason in row["validity_reasons"]}),
+            })
+            continue
+        events.append(candidates[0])
+    return {"rows": events, "candidates_seen": len(set(valid) | set(invalid)),
+            "exclusions": exclusions}
+
+
+def _direction_three_class_diagnostic(resolved: dict[str, Any] | list[dict[str, Any]], *,
+                                      enabled: bool = True) -> dict[str, Any]:
+    """A three-class reading of the direction track, kept apart from the binary one.
+
+    The binary agreement metric can only express escalation and calming, so a
+    ``stable`` label is excluded from it. Excluding those events is honest but it
+    hides them, and it leaves no way to say what the model does on the events
+    where the honest answer is that nothing much changed.
+
+    This is a second reading, not a replacement:
+
+    * an event whose truth is ``stable`` counts, and a prediction of anything
+      other than ``stable`` counts as wrong -- the model's predictions are never
+      rewritten and no prediction is invented for an event that lacks one;
+    * an event labelled "cannot judge" is not ``stable`` and is not scored here;
+      it is recorded as its own reason, because a refusal to classify is not an
+      observation of stability;
+    * it reports its own version, so a later change to it cannot be mistaken for
+      a change in the binary number.
+
+    Coverage is reported next to the accuracy, because a three-class diagnostic
+    that quietly dropped the events it could not score would look better the
+    more it dropped.
+    """
+    block: dict[str, Any] = {
+        "diagnostic_version": DIRECTION_DIAGNOSTIC_VERSION,
+        "enabled": bool(enabled),
+        "replaces_the_binary_direction_metric": False,
+        "uses_only_recorded_predictions": True,
+        "classes": list(DIRECTION_DIAGNOSTIC_CLASSES),
+        "unscorable_labels": list(DIRECTION_UNSCORABLE_LABELS),
+        "note": ("an additional reading. The brief's direction agreement rate is reported "
+                 "separately and is unchanged by this block"),
+    }
+    if not enabled:
+        block["value"] = None
+        block["undefined_reason"] = "the three-class direction diagnostic is switched off"
+        return block
+
+    if isinstance(resolved, list):  # a bare row list is still accepted
+        resolved = _resolve_diagnostic_events(resolved)
+    rows = [dict(row) for row in resolved["rows"]]
+    candidates_seen = resolved["candidates_seen"]
+    gate_exclusions = resolved["exclusions"]
+    eligible = [row for row in rows if row["truth_is_a_class"]]
+    covered = [row for row in eligible if row["prediction_resolved"]]
+    unscorable = [row for row in rows if row["truth_is_declared_unscorable"]]
+    unlabelled = [row for row in rows
+                  if row["truth"] is None and not row["truth_is_declared_unscorable"]]
+
+    matrix = {truth: {prediction: 0 for prediction in DIAGNOSTIC_PREDICTION_BUCKETS}
+              for truth in DIRECTION_DIAGNOSTIC_CLASSES}
+    for row in covered:
+        prediction = row["prediction"] if row["prediction"] in DIRECTION_DIAGNOSTIC_CLASSES \
+            else "outside_the_three_class_space"
+        matrix[row["truth"]][prediction] += 1
+    correct = sum(matrix[klass][klass] for klass in DIRECTION_DIAGNOSTIC_CLASSES)
+    support = {klass: sum(matrix[klass].values()) for klass in DIRECTION_DIAGNOSTIC_CLASSES}
+
+    def split_view(selected: list[dict[str, Any]]) -> dict[str, Any]:
+        local = {truth: {prediction: 0 for prediction in DIAGNOSTIC_PREDICTION_BUCKETS}
+                 for truth in DIRECTION_DIAGNOSTIC_CLASSES}
+        for row in selected:
+            prediction = row["prediction"] if row["prediction"] in DIRECTION_DIAGNOSTIC_CLASSES \
+                else "outside_the_three_class_space"
+            local[row["truth"]][prediction] += 1
+        hits = sum(local[klass][klass] for klass in DIRECTION_DIAGNOSTIC_CLASSES)
+        return {"scored_events": len(selected), "numerator": hits,
+                "value": (hits / len(selected)) if selected else None,
+                "confusion_matrix_actual_by_predicted": local}
+
+    splits = sorted({row["split"] or "unassigned" for row in covered})
+    block.update({
+        "denominator": len(covered),
+        "numerator": correct,
+        "value": (correct / len(covered)) if covered else None,
+        "undefined_reason": (None if covered else
+                             "no direction event has both a three-class truth and a recorded "
+                             "prediction"),
+        "coverage": {
+            "candidates_seen": candidates_seen,
+            "valid_after_the_shared_checks": len(rows),
+            "eligible_events": len(eligible),
+            "scored_events": len(covered),
+            "share": (len(covered) / candidates_seen) if candidates_seen else None,
+            "share_of_valid": (len(covered) / len(rows)) if rows else None,
+        },
+        "gate_exclusions": {
+            "count": len(gate_exclusions),
+            "reasons": _reason_counts(gate_exclusions),
+            "events_or_rows": gate_exclusions,
+            "why": ("these failed the same source-validity, cutoff, outcome-evidence or "
+                    "event-uniqueness checks the binary metric applies. The diagnostic relaxes "
+                    "the label space and nothing else."),
+        },
+        "class_support": support,
+        "confusion_matrix_actual_by_predicted": matrix,
+        "predictions_outside_the_three_class_space": sum(
+            matrix[klass]["outside_the_three_class_space"]
+            for klass in DIRECTION_DIAGNOSTIC_CLASSES),
+        "not_scored": {
+            "declared_cannot_judge": {
+                "count": len(unscorable),
+                "event_ids": sorted(row["event_id"] for row in unscorable if row["event_id"]),
+                "why": ("a refusal to classify is not an observation of stability, so these are "
+                        "not counted as stable and not counted at all"),
+            },
+            "no_label_at_all": {
+                "count": len(unlabelled),
+                "event_ids": sorted(row["event_id"] for row in unlabelled if row["event_id"]),
+            },
+            "label_but_no_recorded_prediction": {
+                "count": len(eligible) - len(covered),
+                "event_ids": sorted(row["event_id"] for row in eligible
+                                    if not row["prediction_resolved"] and row["event_id"]),
+                "why": "no prediction is invented to fill the gap",
+            },
+        },
+        "by_split": {split: split_view([row for row in covered if (row["split"] or "unassigned")
+                                        == split]) for split in splits},
+        "scored_events": sorted(
+            ({"event_id": row["event_id"], "unit_id": row["unit_id"], "truth": row["truth"],
+              "prediction": row["prediction"],
+              "correct": row["truth"] == row["prediction"]} for row in covered),
+            key=lambda item: item["event_id"] or ""),
+    })
+    return block
+
+
 def _reason_counts(exclusions: list[dict[str, Any]]) -> dict[str, int]:
     counts: Counter[str] = Counter()
     for exclusion in exclusions:
         counts.update(exclusion["reasons"])
     return dict(sorted(counts.items()))
+
+
+def _label_basis_accounting(scored: list[dict[str, Any]],
+                            exclusions: list[dict[str, Any]]) -> dict[str, Any]:
+    """Report raw agreement and post-adjudication coverage as separate numbers.
+
+    Blending them into one rate is what would make an adjudicated round look
+    better than it is: the units that needed a decision are exactly the units
+    where two annotators did not agree, and that disagreement is part of the
+    record rather than something the decision erases.
+    """
+    basis_counts: Counter[str] = Counter()
+    for row in scored:
+        basis_counts[row.get("label_basis") or "unspecified"] += 1
+    unanimous = basis_counts.get("unanimous_independent_labels", 0)
+    adjudicated = basis_counts.get("adjudicated_disagreement", 0)
+    covered = unanimous + adjudicated
+    unresolved = sum(1 for row in exclusions
+                     if "independent_labels_disagree_no_adjudication" in row["reasons"])
+    return {
+        "raw_agreement": {
+            "basis": "unanimous_independent_labels",
+            "units": unanimous,
+            "note": "units whose independent human labels were identical before any adjudication",
+        },
+        "adjudicated": {
+            "basis": "adjudicated_disagreement",
+            "units": adjudicated,
+            "note": "units whose independent labels disagreed and a recorded adjudication resolved",
+        },
+        "coverage_after_adjudication": {
+            "units": covered,
+            "note": ("scored units that reached a gold label either unanimously or through a "
+                     "recorded adjudication; this is a coverage figure, not an agreement rate"),
+        },
+        "excluded_label_disagreement_unresolved": {
+            "units": unresolved,
+            "note": "units still excluded because their disagreement has no valid adjudication",
+        },
+        "scored_units_by_basis": dict(sorted(basis_counts.items())),
+        "raw_agreement_share_of_covered": ({
+            "numerator": unanimous, "denominator": covered,
+            "value": round(unanimous / covered, 6),
+        } if covered else {
+            "numerator": 0, "denominator": 0, "value": None,
+            "undefined_reason": "no scored unit carries a human gold label",
+        }),
+    }
 
 
 def evaluate_documents(
@@ -346,6 +638,7 @@ def evaluate_documents(
     labels_sha256: str | None = None,
     evidence_root: Path | str = ".",
     ai_reference: dict[str, Any] | None = None,
+    direction_three_class_diagnostic: bool = True,
 ) -> dict[str, Any]:
     """Compute metrics from separated inputs and labels; never touches simulation state."""
     if inputs.get("schema") != INPUT_SCHEMA:
@@ -400,6 +693,7 @@ def evaluate_documents(
     direction_candidates: dict[str, list[dict[str, Any]]] = defaultdict(list)
     direction_invalid_rows: dict[str, list[dict[str, Any]]] = defaultdict(list)
     direction_exclusions: list[dict[str, Any]] = []
+    direction_diagnostic_rows: list[dict[str, Any]] = []
     input_exclusions: list[dict[str, Any]] = []
     real_event_ids: set[str] = set()
     cutoff_qualified_event_ids: set[str] = set()
@@ -430,7 +724,7 @@ def evaluate_documents(
         if not isinstance(unit_id, str) or not unit_id:
             base_reasons.append("missing_unit_id")
 
-        gold, label_reasons = _labels_for_case(case, label_map, root)
+        gold, label_reasons, label_meta = _labels_for_case(case, label_map, root)
         if case.get("unit_kind") not in {"original_title", "original_post"}:
             label_reasons.append("not_an_original_title_or_post_unit")
         elif (not _is_sha256(case.get("text_sha256"))
@@ -442,6 +736,8 @@ def evaluate_documents(
             sentiment_rows.append({
                 "evaluation_id": case["evaluation_id"], "event_id": event_id,
                 "unit_id": unit_id, "truth": gold, "prediction": predicted,
+                "label_basis": label_meta.get("label_basis"),
+                "label_decision": label_meta,
             })
         else:
             sentiment_exclusions.append({"evaluation_id": case["evaluation_id"], "event_id": event_id,
@@ -451,13 +747,39 @@ def evaluate_documents(
             case.get("predictions"), "direction", root)
         outcome = outcome_map.get(event_id, {})
         observed = outcome.get("observed_direction") if isinstance(outcome, dict) else None
-        if observed not in DIRECTIONS:
+        if observed is None:
             direction_reasons.append("missing_or_unresolved_observed_direction_label")
-        else:
+        elif observed not in DIRECTIONS:
+            # The binary metric cannot express this label. The diagnostic can, and
+            # that is the *only* relaxation it gets.
+            direction_reasons.append("missing_or_unresolved_observed_direction_label")
+        # The outcome-evidence check runs for every label the diagnostic can
+        # express, not only the two the binary metric can. Leaving it inside the
+        # else-branch meant a stable label skipped evidence validation entirely,
+        # which is how a class gets asserted with nothing behind it.
+        if observed is not None:
             refs = outcome.get("evidence_refs", [])
             if not isinstance(refs, list) or not any(_ref_matches(ref, observed, root) for ref in refs):
                 direction_reasons.append("missing_future_outcome_evidence")
         d_reasons = sorted(set(base_reasons + direction_reasons))
+        # The diagnostic reuses every check the binary metric applies -- source
+        # validity, cutoff, event identity, event uniqueness -- and relaxes one:
+        # the space of labels it can express. Everything else is carried here so
+        # a row that fails anything is excluded here too, rather than only from
+        # the binary number.
+        validity_reasons = sorted({reason for reason in d_reasons
+                                   if reason != "missing_or_unresolved_observed_direction_label"})
+        if observed is not None or predicted_direction is not None:
+            direction_diagnostic_rows.append({
+                "evaluation_id": case["evaluation_id"], "event_id": event_id,
+                "unit_id": unit_id, "truth": observed, "prediction": predicted_direction,
+                "split": case.get("split"),
+                "truth_is_a_class": observed in DIRECTION_DIAGNOSTIC_CLASSES,
+                "truth_is_declared_unscorable": observed in DIRECTION_UNSCORABLE_LABELS,
+                "prediction_resolved": predicted_direction is not None,
+                "validity_reasons": validity_reasons,
+                "binary_reasons": d_reasons,
+            })
         if not d_reasons:
             direction_candidates[event_id].append({
                 "evaluation_id": case["evaluation_id"], "unit_id": unit_id,
@@ -520,6 +842,10 @@ def evaluate_documents(
     direction_correct = sum(direction_matrix[label][label] for label in DIRECTIONS)
     n_direction = len(direction_rows)
 
+    direction_three_class = _direction_three_class_diagnostic(
+        _resolve_diagnostic_events(direction_diagnostic_rows),
+        enabled=direction_three_class_diagnostic)
+
     return {
         "schema": REPORT_SCHEMA,
         "evaluation_version": inputs.get("dataset_version", "unspecified"),
@@ -556,6 +882,8 @@ def evaluate_documents(
             "reasons": _reason_counts(input_exclusions),
             "excluded_rows": input_exclusions,
         },
+        "label_basis_accounting": _label_basis_accounting(sentiment_rows,
+                                                          sentiment_exclusions),
         "sentiment_three_class": {
             **_ratio(sentiment_correct, n_sentiment, "no records have a valid prediction and unanimous independent labels"),
             "sample_size": n_sentiment,
@@ -601,6 +929,7 @@ def evaluate_documents(
             "exclusion_reasons": _reason_counts(direction_exclusions),
             "excluded_events_or_rows": direction_exclusions,
         },
+        "direction_three_class": direction_three_class,
         "ai_reference_agreement": _ai_reference_agreement(cases, ai_reference, root),
         "provenance": {
             "input_sha256": input_sha256,
