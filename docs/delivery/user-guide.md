@@ -49,7 +49,7 @@
 - 在“执行进度”点击“刷新任务进度”读取最新数据库状态。页面**不会自动轮询**。
 - 执行任务状态为 `queued`、`running`、`complete` 或 `failed`。`result_state` 细分成功、部分完成、停止和失败；只有全部决策有效的 `complete` 才自动生成报告和预警，并显示关联产物。部分完成或停止时页面显示受限类别、决策计数，不显示异常堆栈。
 - 常见失败类别包括 `data_integrity_error`、`simulation_error`、`alert_error`、`report_error`、`thread_start_error`、`unexpected_error` 和服务重启后的 `interrupted_on_restart`。后者不会自动续跑。核对案例/图谱 ID、数据模式、cutoff、来源版本和每条来源的可见时间，再按需要创建新运行。
-- “一轮已结束”不等于所有 Agent 决策有效；“任务完成”也不等于 G3/G4 通过。
+- “一轮已结束”不等于所有 Agent 决策有效；“任务完成”也不等于命题指标达标。
 
 ## 4. 查看证据图与报告
 

@@ -179,7 +179,7 @@ docker compose -p riskshield-demo down
 
 标准 `docker compose build` 本次因 Docker Hub `auth.docker.io` 基础镜像令牌请求超时而未完成。运行复验镜像由此前本机镜像 `sha256:83d8fa…` 派生，只复制了新网关模块，ID 为 `sha256:6fbc6a…`；旧镜像另保留为 `riskshield:day4-baseline-20261012`。因此，当前源码的干净基础镜像构建仍待网络可用时复核。
 
-容器配置的 capability 仍可由有 Docker daemon 管理权限的操作者用于启动额外进程；该权限属于可信控制面。上述 VM 探测是少量 TCP/DNS 连通性检查，不是全协议抓包或目标域出口审计；不能据此宣称整个主机或目标域已实现“数据不出域”。真实通知、模型调用、联网采集和外部部署均未执行，G3/G4/G5 状态不变。
+容器配置的 capability 仍可由有 Docker daemon 管理权限的操作者用于启动额外进程；该权限属于可信控制面。上述 VM 探测是少量 TCP/DNS 连通性检查，不是全协议抓包或目标域出口审计；不能据此宣称整个主机或目标域已实现“数据不出域”。真实通知、模型调用、联网采集和外部部署均未执行，命题各项的达标状态不变。
 
 ### 2026-10-12 Docker Desktop VM/Windows 出口抽样核查
 

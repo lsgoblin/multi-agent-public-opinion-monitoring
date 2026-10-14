@@ -11,7 +11,7 @@
 | 方法 | 路径 | 请求 | 成功响应 |
 | --- | --- | --- | --- |
 | `GET` | `/health` | 无 | `{"status":"ok","stage":"day4_v2","version":"0.5.0"}` |
-| `GET` | `/readiness` | 无 | 工程关口布尔值、功能能力和 blocker 列表。代码将 G3/G4 标记为未通过；该接口不是本次运行或正式签收证明。 |
+| `GET` | `/readiness` | 无 | 就绪状态布尔值、功能能力和 blocker 列表。字段名沿用旧五日计划的 `g1_passed`…`g4_v2_passed`，属**历史命名**，不代表主办方关口；该接口不是本次运行或正式签收证明。 |
 | `GET` | `/channels/status` | 无 | 读取仓库内 `data/research/channel_checks_v2.json`。渠道路线/核查状态不等于在线接入。 |
 | `GET` | `/contracts` | 无 | 返回案例导入、遗留日投诉、Agent 决策和仿真创建的 Pydantic JSON Schema。 |
 

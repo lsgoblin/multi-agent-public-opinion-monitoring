@@ -370,7 +370,7 @@ def end_to_end_flow() -> Canvas:
         "红警时效未验证：没有真实发送与送达回执，",
         "dry_run 预览耗时不是推送时效。",
         "",
-        "complete（任务状态）不等于 G3 / G4 通过；",
+        "complete（任务状态）不等于指标达标；",
         "仿真传播图不等于平台真实传播。",
     ]
     c.rect(1190, 460, 450, 300, kind="part", radius=12)
