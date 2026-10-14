@@ -1,0 +1,59 @@
+{
+  "schema": "riskshield.data_evaluation.production_evidence.v1",
+  "material_class": "real_frozen_material",
+  "run_id": "run_bailian_late_three_20261014T071050Z",
+  "execution_mode": "formal_model_run_v1",
+  "method_version": "bailian-qwen-flash-late-title-sentiment-v1",
+  "run_status": "complete",
+  "units": {
+    "ftc_pbm_insulin_complaint_20240920": {
+      "run_id": "run_bailian_late_three_20261014T071050Z",
+      "unit_id": "ftc_pbm_insulin_complaint_20240920",
+      "execution_mode": "formal_model_run_v1",
+      "method_version": "bailian-qwen-flash-late-title-sentiment-v1",
+      "run_status": "complete",
+      "requests_attempted": 1,
+      "requests_completed": 1,
+      "failed_decisions": 0,
+      "model_returned": "qwen-flash",
+      "token_usage": {
+        "prompt_tokens": 149,
+        "completion_tokens": 56,
+        "total_tokens": 205
+      }
+    },
+    "unh_change_cyberattack_20240222": {
+      "run_id": "run_bailian_late_three_20261014T071050Z",
+      "unit_id": "unh_change_cyberattack_20240222",
+      "execution_mode": "formal_model_run_v1",
+      "method_version": "bailian-qwen-flash-late-title-sentiment-v1",
+      "run_status": "complete",
+      "requests_attempted": 1,
+      "requests_completed": 1,
+      "failed_decisions": 0,
+      "model_returned": "qwen-flash",
+      "token_usage": {
+        "prompt_tokens": 147,
+        "completion_tokens": 46,
+        "total_tokens": 193
+      }
+    },
+    "unitedhealth_ceo_shooting_20241204": {
+      "run_id": "run_bailian_late_three_20261014T071050Z",
+      "unit_id": "unitedhealth_ceo_shooting_20241204",
+      "execution_mode": "formal_model_run_v1",
+      "method_version": "bailian-qwen-flash-late-title-sentiment-v1",
+      "run_status": "complete",
+      "requests_attempted": 1,
+      "requests_completed": 1,
+      "failed_decisions": 0,
+      "model_returned": "qwen-flash",
+      "token_usage": {
+        "prompt_tokens": 152,
+        "completion_tokens": 64,
+        "total_tokens": 216
+      }
+    }
+  },
+  "failures": []
+}

@@ -1,0 +1,10 @@
+{
+  "schema": "riskshield.data_evaluation.freeze_record.v1",
+  "material_class": "real_frozen_material",
+  "frozen_at": "2026-10-14T07:11:01.615305Z",
+  "frozen_by": "late sentiment run for three direction-only events",
+  "frozen_inputs_sha256": "0d9700766d1a5f8b2c2c960ea90f68ea42888ac0cd338f79c90b6de9cb8bc70a",
+  "labels_read_before_freeze": false,
+  "outcomes_read_before_freeze": false,
+  "late_collection_note": "the observation windows of these three events were fetched before this input freeze, so this is a late freeze and is recorded as one. Only the baseline window was used to choose the title."
+}

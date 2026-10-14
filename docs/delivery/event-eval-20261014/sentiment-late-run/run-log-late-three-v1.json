@@ -1,0 +1,9 @@
+{
+  "run_id": "run_bailian_late_three_20261014T071050Z",
+  "requested_model": "qwen-flash",
+  "units_requested": 3,
+  "predicted": 3,
+  "failures": [],
+  "estimated_cny": 0.0003162,
+  "budget_cny": 1.0
+}

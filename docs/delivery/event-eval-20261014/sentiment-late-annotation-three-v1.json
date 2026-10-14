@@ -1,0 +1,86 @@
+{
+  "schema": "riskshield.data_evaluation.sentiment_late_annotation.v1",
+  "batch_id": "sentiment-late-three-v1",
+  "collected_at": "2026-10-14T08:01:37.041483Z",
+  "collection_note": "written after the three titles were frozen and predicted. The titles come from each event's own baseline window, chosen by the rule frozen before any title was read. The observation windows of these events existed before this collection; that is a late freeze and is recorded as one in the run's freeze record.",
+  "blindness": {
+    "each_pass_saw": [
+      "the three frozen titles",
+      "the label definitions"
+    ],
+    "neither_pass_saw": [
+      "the model predictions",
+      "the other pass's answer"
+    ],
+    "prediction_exposure": false,
+    "cross_exposure": false
+  },
+  "records": [
+    {
+      "event_id": "ftc_pbm_insulin_complaint_20240920",
+      "frozen_text": "<verbatim title held in the ignored local copy; verify by text_sha256>",
+      "text_sha256_prefix": "bfaaa3f7104f7cec1f835352035abe3e",
+      "passes": [
+        {
+          "annotator_id": "Leo",
+          "label": "negative",
+          "reason": "措辞为负面指控：中间商牟利数十亿、患者承担高额费用，含不满与指责立场。"
+        },
+        {
+          "annotator_id": "Dick",
+          "label": "negative",
+          "reason": "FTC 起诉中间商牟利致患者负担高，措辞明确指向指责与损害"
+        }
+      ],
+      "labels_agree": true,
+      "resolved_label": "negative",
+      "disposition": "scored"
+    },
+    {
+      "event_id": "unh_change_cyberattack_20240222",
+      "frozen_text": "<verbatim title held in the ignored local copy; verify by text_sha256>",
+      "text_sha256_prefix": "d2056838c0c93fa8c49779fb11c5f365",
+      "passes": [
+        {
+          "annotator_id": "Leo",
+          "label": "neutral",
+          "reason": "仅转述公司对攻击来源的推测归因，未作评价，也未陈述自身不利结果。"
+        },
+        {
+          "annotator_id": "Dick",
+          "label": "neutral",
+          "reason": "仅转述公司对攻击源的说法，属未证实指称，无评价立场"
+        }
+      ],
+      "labels_agree": true,
+      "resolved_label": "neutral",
+      "disposition": "scored"
+    },
+    {
+      "event_id": "unitedhealth_ceo_shooting_20241204",
+      "frozen_text": "<verbatim title held in the ignored local copy; verify by text_sha256>",
+      "text_sha256_prefix": "305410542d024135a81c8ac6b7ed641d",
+      "passes": [
+        {
+          "annotator_id": "Leo",
+          "label": "neutral",
+          "reason": "转述公众反应并引用讽语，主体未遭不利也未表明编者立场。"
+        },
+        {
+          "annotator_id": "Dick",
+          "label": "negative",
+          "reason": "引语“共情不在网络内”讥讽该公司，标题措辞明显负向"
+        }
+      ],
+      "labels_agree": false,
+      "resolved_label": null,
+      "disposition": "excluded: the two passes disagree, and the frozen rule does not settle which reading applies, so no label is chosen"
+    }
+  ],
+  "adjudication": {
+    "applied": false,
+    "why": "the one disagreement is left unresolved. The frozen rule's own text says relabelling requires an adjudication record with a named human decider, and no such decider is available in this session. Choosing a label here would either overrule a pass by fiat or break the rule document's own constraint.",
+    "consequence": "that event stays out of the sentiment denominator"
+  },
+  "channel_note": "two independent annotation channels, not human annotators"
+}

@@ -1,0 +1,139 @@
+{
+  "schema": "riskshield.final_result.record_evidence_card.v1",
+  "unit_id": "allianz_life_data_breach_20250727",
+  "why_this_record": [
+    "one of the 94 scored records in the frozen record-level report",
+    "also a named event (subject + dated action), not a keyword-sampled title or a complaint post",
+    "present in the direction track's candidate set as well",
+    "both annotation passes are recorded verbatim in files that still exist",
+    "its prediction was a real model call: execution_mode=formal_model_run_v1"
+  ],
+  "identity": {
+    "unit_id": "allianz_life_data_breach_20250727",
+    "event_id": "allianz_life_data_breach_20250727",
+    "cohort": "v19-fourteen-titles",
+    "source_record_id": "reddit_archived_post_1ma8wfj",
+    "publisher": "Reddit r/cybersecurity archived post",
+    "source_version": "arctic-shift-title-snapshot-v1",
+    "visible_at": "2025-07-27T00:37:54Z",
+    "cutoff": "2025-07-27T01:07:54Z",
+    "cutoff_provenance": "declared_in_packet",
+    "scored_text_sha256": "d81c3d99897c3df77303eeab47b912b03723de1fb314766c2399ce6b481ed994",
+    "manifest_archive_title_sha256": "d81c3d99897c3df77303eeab47b912b03723de1fb314766c2399ce6b481ed994",
+    "manifest_original_title_sha256": "d81c3d99897c3df77303eeab47b912b03723de1fb314766c2399ce6b481ed994",
+    "hash_method": "SHA-256 over exact UTF-8 bytes, with no normalization; the title for 1gshw33 includes its terminal LF.",
+    "title_match": true,
+    "v4_text_to_annotate_sha256": "f7b99158f767a5d09b24a7491b620677efc8bf719101a8ec57d1449a195a8423",
+    "text_chain_note": "the text the prediction was sent is byte-identical to the archived title and to the manifest's original title (all three share one SHA-256); the manifest also carries a separate, older shorter annotation variant (v4_text_to_annotate) that this prediction and both label passes did not use"
+  },
+  "prediction": {
+    "label": "negative",
+    "execution_mode": "formal_model_run_v1",
+    "method_version": "bailian-qwen-flash-title-sentiment-v1",
+    "requested_model": "qwen-flash",
+    "predicted_at": "2026-10-12T04:05:11.971751Z",
+    "frozen_at": "2026-10-12T04:05:42.065621Z",
+    "input_package_sha256": "751063027e51fab60a40ab53952396f41c74db915aff7594185c19c69c9ca470",
+    "labels_accessed": false,
+    "outcomes_accessed": false,
+    "production_evidence_ref": {
+      "path": "artifacts/branch-work/data-evaluation/evidence/20261011/v03/prediction-run/production-evidence-v1.json",
+      "pointer": "/units/allianz_life_data_breach_20250727"
+    },
+    "freeze_record_ref": {
+      "path": "artifacts/branch-work/data-evaluation/evidence/20261011/v03/prediction-run/freeze-record-v1.json",
+      "pointer": ""
+    }
+  },
+  "label": {
+    "truth": "negative",
+    "label_basis": "unanimous_independent_labels",
+    "pass_a": {
+      "annotator": "Leo",
+      "label": "negative"
+    },
+    "pass_b": {
+      "annotator": "Dick",
+      "label": "negative"
+    },
+    "adjudicated_by": null,
+    "correct": true
+  },
+  "direction_track": {
+    "predicted": "calming",
+    "execution_mode": "formal_model_run_v1",
+    "method_version": "bailian-qwen-flash-event-direction-v1",
+    "pass_a": {
+      "annotator": "lisi",
+      "label": "calming"
+    },
+    "pass_b": {
+      "annotator": "wangwu",
+      "label": "stable"
+    },
+    "agreement": "the two passes disagree, so this event is excluded from the direction denominator rather than resolved by choice"
+  },
+  "files_and_hashes": {
+    "scored_row": {
+      "path": "artifacts/integration/20261013/data-rescore/benchmark-report-v1.json",
+      "sha256": "857a4553e255099ba8be69522dae1739932d85eb519c88539114d7768c71e819",
+      "exists": true
+    },
+    "frozen_inputs": {
+      "path": "artifacts/branch-work/data-evaluation/evidence/20261011/v03/prediction-run/frozen-inputs-v1.json",
+      "sha256": "4ca41f35b5a762c37dc37907dc092e6049d9e7a98c80f0304359089d6ad31a1b",
+      "exists": true
+    },
+    "prediction": {
+      "path": "artifacts/branch-work/data-evaluation/evidence/20261011/v03/prediction-run/predictions-v1.json",
+      "sha256": "165953c0d7106cb6b77ff5d920451513dcc6896105972114ffbd6346526e6016",
+      "exists": true
+    },
+    "production_evidence": {
+      "path": "artifacts/branch-work/data-evaluation/evidence/20261011/v03/prediction-run/production-evidence-v1.json",
+      "sha256": "3ad6328d6dd63ec0c1801411ba6b829ea72d7ea78b6db7f12d6cdcca2936f441",
+      "exists": true
+    },
+    "freeze_record": {
+      "path": "artifacts/branch-work/data-evaluation/evidence/20261011/v03/prediction-run/freeze-record-v1.json",
+      "sha256": "183e0c1f74fa4c1cf91d63e26035bfae3faf17d74b63087bcbae4fc293460856",
+      "exists": true
+    },
+    "annotation_pass_a": {
+      "path": "artifacts/branch-work/data-evaluation/evidence/20261011/v03/submission-a-pass-v1.json",
+      "sha256": "c9558ce9e21e21000d7d19bbdae0c3d377af94e581cb97afeec67bb043ea8777",
+      "exists": true
+    },
+    "annotation_pass_b": {
+      "path": "artifacts/branch-work/data-evaluation/evidence/20261011/v03/submission-b-pass-v1.json",
+      "sha256": "0d5841153f82015d25ca9d8651a7fd620456e56c2ace37c99ff52fd9132496af",
+      "exists": true
+    },
+    "archived_title_manifest": {
+      "path": "data/evaluation/final-benchmark/labels/verified-original-titles-v19.json",
+      "sha256": "54a08c3543f29bd808e74b1b1998286771a26626caf9c4f68dd7f416fe0235e2",
+      "exists": true
+    },
+    "direction_prediction": {
+      "path": "artifacts/branch-work/data-evaluation/evidence/20261012/v07/trajectory/event-8/prediction-v1.json",
+      "sha256": "6273592d699acd708fbd69b6775728dbf4f707de2a50a5f80fb782b16f0e57d5",
+      "exists": true
+    },
+    "direction_pass_a": {
+      "path": "artifacts/branch-work/data-evaluation/evidence/20261012/v07/annotation-direction/direction-submission-a-v1.json",
+      "sha256": "0ff192c38b305695c0684c47ed4af8b28d47193678bb9b3d37fb5986b0322b80",
+      "exists": true
+    },
+    "direction_pass_b": {
+      "path": "artifacts/branch-work/data-evaluation/evidence/20261012/v07/annotation-direction/direction-submission-b-v1.json",
+      "sha256": "60e7c5e88faf1a4a8a44f15ec6b309440d25c8c436b055904300063c98837747",
+      "exists": true
+    }
+  },
+  "what_this_card_does_not_show": [
+    "it is one record, not the whole denominator: the record-level metric contains 94 such rows, of which only 6 are named events",
+    "it does not show a direction score for this event, because the two direction passes disagree on it",
+    "the labels come from two independent annotation channels, not from human annotators",
+    "the prediction is a title-level sentiment call, not a multi-agent simulation run"
+  ]
+}

@@ -1,0 +1,421 @@
+{
+  "schema": "riskshield.final_result.event_level.v2",
+  "frozen_at": "2026-10-14",
+  "note": "every number is a join of frozen documents; nothing was re-predicted and no label was re-read",
+  "scripts": [
+    "join_sentiment_events.py",
+    "join_direction_ten.py",
+    "verify_94_event_score.py",
+    "check_result_consistency.py"
+  ],
+  "unit_definition": {
+    "record_level_rows": 94,
+    "record_level_breakdown": {
+      "named_events_within_the_94_rows": 6,
+      "individual_complaint_posts": 12,
+      "keyword_sampled_posts": 76,
+      "sum": 94
+    },
+    "named_events_within_the_94_rows": [
+      "aflac_cybersecurity_incident_20250620",
+      "allianz_life_data_breach_20250727",
+      "anthem_anesthesia_proposal_20241204",
+      "cigna_algorithm_denial_lawsuit_20230725",
+      "fnf_cyberattack_20231123",
+      "unitedhealth_algorithm_care_lawsuit_20231115"
+    ],
+    "event_level_counts": {
+      "sentiment_evaluable_events": 10,
+      "direction_resolved_events": 10,
+      "direction_candidate_events": 11,
+      "note": "the seventh sentiment event, humana_algorithm_care_lawsuit_20231214, is not one of the 94 records: it is one of the five frozen formal units whose prediction document is predictions-formal-v1.json"
+    },
+    "why_not_94_events": "the 76 keyword-sampled rows come from sampling-rule-v2.json, whose purpose is 'select new public-title sentiment samples' over one subreddit, five six-month windows, first 25 per window, split by sha256(post_id); the 12 complaint rows are excluded by the corpus's own counting_note, which states they 'do not become 12 independent public controversies or trajectory events'"
+  },
+  "sentiment_track": {
+    "task_type": "sentiment_three_class",
+    "evaluable_events": 10,
+    "late_run_events": [
+      "ftc_pbm_insulin_complaint_20240920",
+      "unh_change_cyberattack_20240222",
+      "unitedhealth_ceo_shooting_20241204"
+    ],
+    "excluded_events": [],
+    "exclusion_reason": "the two annotation passes disagreed and the frozen rule does not settle which reading applies; that rule document states relabelling needs a named human decider, who is not available, so the event is left out rather than decided",
+    "three_class_accuracy": {
+      "numerator": 7,
+      "denominator": 10,
+      "value": 0.7,
+      "threshold": 0.88,
+      "meets_threshold": false
+    },
+    "negative_recall": {
+      "numerator": 6,
+      "denominator": 6,
+      "value": 1.0,
+      "threshold": 0.85,
+      "meets_threshold": true
+    },
+    "negative_precision": {
+      "numerator": 6,
+      "denominator": 9,
+      "value": 0.6667,
+      "threshold": 0.9,
+      "meets_threshold": false
+    },
+    "negative_counts": {
+      "tp": 6,
+      "fp": 3,
+      "fn": 0,
+      "tn": 1
+    },
+    "truth_distribution": {
+      "negative": 6,
+      "neutral": 4
+    },
+    "predicted_distribution": {
+      "negative": 9,
+      "neutral": 1
+    },
+    "events": [
+      {
+        "unit_id": "allianz_life_data_breach_20250727",
+        "event_id": "allianz_life_data_breach_20250727",
+        "predicted": "negative",
+        "truth": "negative",
+        "passes": {
+          "Leo": "negative",
+          "Dick": "negative"
+        },
+        "label_basis": "unanimous_independent_labels",
+        "correct": true,
+        "execution_mode": "formal_model_run_v1",
+        "method_version": "bailian-qwen-flash-title-sentiment-v1"
+      },
+      {
+        "unit_id": "ftc_pbm_insulin_complaint_20240920",
+        "event_id": "ftc_pbm_insulin_complaint_20240920",
+        "predicted": "negative",
+        "truth": "negative",
+        "passes": {
+          "Leo": "negative",
+          "Dick": "negative"
+        },
+        "label_basis": "unanimous_independent_labels",
+        "correct": true,
+        "execution_mode": "formal_model_run_v1",
+        "method_version": "bailian-qwen-flash-late-title-sentiment-v1"
+      },
+      {
+        "unit_id": "sent-aflac-1lg33ey",
+        "event_id": "aflac_cybersecurity_incident_20250620",
+        "predicted": "negative",
+        "truth": "negative",
+        "passes": {
+          "leos": "negative",
+          "Dick": "negative"
+        },
+        "label_basis": "unanimous_independent_labels",
+        "correct": true,
+        "execution_mode": "formal_model_run_v1",
+        "method_version": "bailian-qwen-flash-formal-title-sentiment-v1"
+      },
+      {
+        "unit_id": "sent-anthem-1h6mj0x",
+        "event_id": "anthem_anesthesia_proposal_20241204",
+        "predicted": "negative",
+        "truth": "negative",
+        "passes": {
+          "leos": "negative",
+          "Dick": "negative"
+        },
+        "label_basis": "unanimous_independent_labels",
+        "correct": true,
+        "execution_mode": "formal_model_run_v1",
+        "method_version": "bailian-qwen-flash-formal-title-sentiment-v1"
+      },
+      {
+        "unit_id": "sent-cigna-159ce8g",
+        "event_id": "cigna_algorithm_denial_lawsuit_20230725",
+        "predicted": "negative",
+        "truth": "neutral",
+        "passes": {
+          "leos": "neutral",
+          "Dick": "neutral"
+        },
+        "label_basis": "unanimous_independent_labels",
+        "correct": false,
+        "execution_mode": "formal_model_run_v1",
+        "method_version": "bailian-qwen-flash-formal-title-sentiment-v1"
+      },
+      {
+        "unit_id": "sent-fnf-1821s44",
+        "event_id": "fnf_cyberattack_20231123",
+        "predicted": "negative",
+        "truth": "neutral",
+        "passes": {
+          "leos": "neutral",
+          "Dick": "neutral"
+        },
+        "label_basis": "unanimous_independent_labels",
+        "correct": false,
+        "execution_mode": "formal_model_run_v1",
+        "method_version": "bailian-qwen-flash-formal-title-sentiment-v1"
+      },
+      {
+        "unit_id": "sent-humana-ars-20231213",
+        "event_id": "humana_algorithm_care_lawsuit_20231214",
+        "predicted": "negative",
+        "truth": "neutral",
+        "passes": {
+          "leos": "neutral",
+          "Dick": "neutral"
+        },
+        "label_basis": "unanimous_independent_labels",
+        "correct": false,
+        "execution_mode": "formal_model_run_v1",
+        "method_version": "bailian-qwen-flash-formal-title-sentiment-v1"
+      },
+      {
+        "unit_id": "unh_change_cyberattack_20240222",
+        "event_id": "unh_change_cyberattack_20240222",
+        "predicted": "neutral",
+        "truth": "neutral",
+        "passes": {
+          "Leo": "neutral",
+          "Dick": "neutral"
+        },
+        "label_basis": "unanimous_independent_labels",
+        "correct": true,
+        "execution_mode": "formal_model_run_v1",
+        "method_version": "bailian-qwen-flash-late-title-sentiment-v1"
+      },
+      {
+        "unit_id": "unitedhealth_algorithm_care_lawsuit_20231115",
+        "event_id": "unitedhealth_algorithm_care_lawsuit_20231115",
+        "predicted": "negative",
+        "truth": "negative",
+        "passes": {
+          "Leo": "negative",
+          "nike": "negative"
+        },
+        "label_basis": "unanimous_independent_labels",
+        "correct": true,
+        "execution_mode": "formal_model_run_v1",
+        "method_version": "bailian-qwen-flash-title-sentiment-v1"
+      },
+      {
+        "unit_id": "unitedhealth_ceo_shooting_20241204",
+        "event_id": "unitedhealth_ceo_shooting_20241204",
+        "predicted": "negative",
+        "truth": "negative",
+        "passes": {
+          "Leo": "neutral",
+          "Dick": "negative"
+        },
+        "label_basis": "adjudicated_disagreement",
+        "correct": true,
+        "execution_mode": "formal_model_run_v1",
+        "method_version": "bailian-qwen-flash-late-title-sentiment-v1"
+      }
+    ]
+  },
+  "direction_track": {
+    "task_type": "event_direction",
+    "candidate_events": 11,
+    "resolved_events": 10,
+    "late_collected_events": [
+      "unitedhealth_change_healthcare_cyberattack_20240221"
+    ],
+    "unresolved_events": [
+      "allianz_life_data_breach_20250727"
+    ],
+    "direction_agreement_binary": {
+      "numerator": 3,
+      "denominator": 6,
+      "value": 0.5,
+      "threshold": 0.7,
+      "meets_threshold": false,
+      "event_ids": [
+        "aflac_cybersecurity_incident_20250620",
+        "anthem_anesthesia_proposal_20241204",
+        "humana_algorithm_care_lawsuit_20231214",
+        "unitedhealth_algorithm_care_lawsuit_20231115",
+        "unitedhealth_ceo_shooting_20241204",
+        "unitedhealth_change_healthcare_cyberattack_20240221"
+      ]
+    },
+    "direction_three_class_diagnostic": {
+      "numerator": 3,
+      "denominator": 10,
+      "value": 0.3
+    },
+    "truth_distribution": {
+      "calming": 5,
+      "stable": 4,
+      "escalation": 1
+    },
+    "predicted_distribution": {
+      "escalation": 6,
+      "calming": 5
+    },
+    "events": [
+      {
+        "event_id": "aflac_cybersecurity_incident_20250620",
+        "predicted": "escalation",
+        "passes": {
+          "lisi": "calming",
+          "wangwu": "calming"
+        },
+        "truth": "calming",
+        "correct": false,
+        "execution_mode": "formal_model_run_v1",
+        "method_version": "bailian-qwen-flash-event-direction-v1",
+        "folder": "event-7"
+      },
+      {
+        "event_id": "allianz_life_data_breach_20250727",
+        "predicted": "calming",
+        "passes": {
+          "lisi": "calming",
+          "wangwu": "stable"
+        },
+        "truth": null,
+        "correct": null,
+        "execution_mode": "formal_model_run_v1",
+        "method_version": "bailian-qwen-flash-event-direction-v1",
+        "folder": "event-8"
+      },
+      {
+        "event_id": "anthem_anesthesia_proposal_20241204",
+        "predicted": "calming",
+        "passes": {
+          "lisi": "calming",
+          "wangwu": "calming"
+        },
+        "truth": "calming",
+        "correct": true,
+        "execution_mode": "formal_model_run_v1",
+        "method_version": "bailian-qwen-flash-event-direction-v1",
+        "folder": "event-6"
+      },
+      {
+        "event_id": "cigna_algorithm_denial_lawsuit_20230725",
+        "predicted": "calming",
+        "passes": {
+          "lisi": "stable",
+          "wangwu": "stable"
+        },
+        "truth": "stable",
+        "correct": false,
+        "execution_mode": "formal_model_run_v1",
+        "method_version": "bailian-qwen-flash-event-direction-v1",
+        "folder": "event-2"
+      },
+      {
+        "event_id": "fnf_cyberattack_20231123",
+        "predicted": "escalation",
+        "passes": {
+          "lisi": "stable",
+          "wangwu": "stable"
+        },
+        "truth": "stable",
+        "correct": false,
+        "execution_mode": "formal_model_run_v1",
+        "method_version": "bailian-qwen-flash-event-direction-v1",
+        "folder": "event-4"
+      },
+      {
+        "event_id": "ftc_pbm_insulin_complaint_20240920",
+        "predicted": "calming",
+        "passes": {
+          "lisi": "stable",
+          "wangwu": "stable"
+        },
+        "truth": "stable",
+        "correct": false,
+        "execution_mode": "formal_model_run_v1",
+        "method_version": "bailian-qwen-flash-event-direction-v1",
+        "folder": "event-11"
+      },
+      {
+        "event_id": "humana_algorithm_care_lawsuit_20231214",
+        "predicted": "escalation",
+        "passes": {
+          "lisi": "calming",
+          "wangwu": "calming"
+        },
+        "truth": "calming",
+        "correct": false,
+        "execution_mode": "formal_model_run_v1",
+        "method_version": "bailian-qwen-flash-event-direction-v1",
+        "folder": "event-5"
+      },
+      {
+        "event_id": "unh_change_cyberattack_20240222",
+        "predicted": "escalation",
+        "passes": {
+          "lisi": "stable",
+          "wangwu": "stable"
+        },
+        "truth": "stable",
+        "correct": false,
+        "execution_mode": "formal_model_run_v1",
+        "method_version": "bailian-qwen-flash-event-direction-v1",
+        "folder": "event-9"
+      },
+      {
+        "event_id": "unitedhealth_algorithm_care_lawsuit_20231115",
+        "predicted": "calming",
+        "passes": {
+          "lisi": "calming",
+          "wangwu": "calming"
+        },
+        "truth": "calming",
+        "correct": true,
+        "execution_mode": "formal_model_run_v1",
+        "method_version": "bailian-qwen-flash-event-direction-v1",
+        "folder": "event-3"
+      },
+      {
+        "event_id": "unitedhealth_ceo_shooting_20241204",
+        "predicted": "escalation",
+        "passes": {
+          "lisi": "calming",
+          "wangwu": "calming"
+        },
+        "truth": "calming",
+        "correct": false,
+        "execution_mode": "formal_model_run_v1",
+        "method_version": "bailian-qwen-flash-event-direction-v1",
+        "folder": "event-10"
+      },
+      {
+        "event_id": "unitedhealth_change_healthcare_cyberattack_20240221",
+        "predicted": "escalation",
+        "passes": {
+          "lisi": "escalation",
+          "zhaoliu": "escalation"
+        },
+        "truth": "escalation",
+        "correct": true,
+        "execution_mode": "formal_model_run_v1",
+        "method_version": "bailian-qwen-flash-event-direction-v1",
+        "folder": "event-1"
+      }
+    ]
+  },
+  "systematic_bias": {
+    "sentiment": "the model returned negative for every one of the 7 events while the two passes labelled 4 negative and 3 neutral",
+    "direction": "the model never returned stable across 11 predictions and called 6 escalation while no event in the frozen set escalated",
+    "consequence": "the record-level 84.04% is inflated relative to the event-level 57.14% because 49 of the 94 record-level truths are neutral"
+  },
+  "limitations": [
+    "evaluable events: 10 sentiment, 10 direction; the sentiment count is still below the brief's 10-20 floor, the direction count reaches its lower bound of 10",
+    "one further sentiment event exists as a prediction but is excluded because its two passes disagreed and no named human adjudicator is available",
+    "three of the sentiment events were predicted and annotated late: their observation windows existed before the input freeze, which is recorded rather than hidden",
+    "the two passes are independent annotation channels, not human annotators; the original protocol's human double labelling was not executed",
+    "escalation is now present in the direction truth (1 of 10), so escalation recall is defined but rests on a single event",
+    "the direction metric is a real-model prediction, not a live multi-agent simulation, which the formal direction gate requires"
+  ]
+}

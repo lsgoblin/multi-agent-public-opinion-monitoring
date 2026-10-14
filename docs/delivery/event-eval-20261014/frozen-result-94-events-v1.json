@@ -1,0 +1,198 @@
+{
+  "schema": "riskshield.final_result.real_historical_events.v1",
+  "frozen_at": "2026-10-14",
+  "frozen_by": "main working copy, total-agent session",
+  "source_report": {
+    "path": "artifacts/integration/20261013/data-rescore/benchmark-report-v1.json",
+    "sha256": "857a4553e255099ba8be69522dae1739932d85eb519c88539114d7768c71e819",
+    "claim_level": "formal_offline_metric_on_a_frozen_gated_denominator",
+    "config_version": "main-integrated-recheck-of-v6",
+    "generated_at": "2026-10-14T05:07:00.046002Z",
+    "hash_lineage": {
+      "note": "the same path was regenerated twice to correct the direction scored_event_ids list; sentiment metrics and direction 2/5 are identical across all three generations",
+      "generation_1": "136ffe1da74f57ca8b2b9986f5076c1b782c10de3db6da1e17808ae8d22fce4f",
+      "generation_2": "66d402314f0632bb58551d60109388fbff63353e0f12a074753215fb5db3f892",
+      "generation_3_current": "857a4553e255099ba8be69522dae1739932d85eb519c88539114d7768c71e819",
+      "generation_2_record": "artifacts/branch-work/data-evaluation/handoff-20261014-v11.md"
+    }
+  },
+  "reproduction": {
+    "script": "docs/delivery/event-eval-20261014/verify_94_event_score.py",
+    "what_it_does": "recomputes every headline metric from the 94 per-unit rows and compares against the recorded summary; checks annotator distinctness and admitted prediction provenance",
+    "result": "all checks pass"
+  },
+  "track_sentiment": {
+    "task_type": "sentiment_three_class",
+    "distinct_real_events": 94,
+    "distinct_real_source_records": 94,
+    "holdout_split_events": 94,
+    "synthetic_data_in_denominator": false,
+    "metrics": {
+      "three_class_accuracy": {
+        "value": 0.840426,
+        "numerator": 79,
+        "denominator": 94,
+        "threshold": 0.88,
+        "meets_threshold": false
+      },
+      "negative_precision": {
+        "value": 0.804878,
+        "numerator": 33,
+        "denominator": 41,
+        "threshold": 0.9,
+        "meets_threshold": false,
+        "note": "the brief's formal formula for negative accuracy is unresolved; precision and binary accuracy are both reported"
+      },
+      "negative_recall": {
+        "value": 0.891892,
+        "numerator": 33,
+        "denominator": 37,
+        "threshold": 0.85,
+        "meets_threshold": true
+      },
+      "negative_binary_accuracy": {
+        "value": 0.87234,
+        "numerator": 82,
+        "denominator": 94
+      }
+    },
+    "confusion_matrix_actual_by_predicted": {
+      "negative": {
+        "negative": 33,
+        "neutral": 4,
+        "positive": 0
+      },
+      "neutral": {
+        "negative": 8,
+        "neutral": 44,
+        "positive": 3
+      },
+      "positive": {
+        "negative": 0,
+        "neutral": 0,
+        "positive": 2
+      }
+    },
+    "class_support": {
+      "negative": 37,
+      "neutral": 55,
+      "positive": 2
+    },
+    "negative_counts": {
+      "false_negative": 4,
+      "false_positive": 8,
+      "true_negative": 49,
+      "true_positive": 33
+    },
+    "label_side": {
+      "annotator_pairs": {
+        "['leos', 'Dick']": 4,
+        "['Leo', 'Dick']": 13,
+        "['Leo', 'nike']": 1,
+        "['Neo', 'zhangsan']": 52,
+        "['wangwu', 'zhaoliu']": 24
+      },
+      "raw_agreement_units": 90,
+      "adjudicated_units": 4,
+      "unresolved_disagreement_units": 0,
+      "adjudicators": {
+        "project owner": 4
+      }
+    }
+  },
+  "track_direction": {
+    "task_type": "event_direction",
+    "distinct_real_events": 9,
+    "metrics": {
+      "direction_agreement_binary": {
+        "value": 0.4,
+        "numerator": 2,
+        "denominator": 5,
+        "threshold": 0.7,
+        "meets_threshold": false,
+        "scored_event_ids": [
+          "aflac_cybersecurity_incident_20250620",
+          "anthem_anesthesia_proposal_20241204",
+          "humana_algorithm_care_lawsuit_20231214",
+          "unitedhealth_algorithm_care_lawsuit_20231115",
+          "unitedhealth_ceo_shooting_20241204"
+        ],
+        "excluded_events": [
+          {
+            "event_id": "cigna_algorithm_denial_lawsuit_20230725",
+            "reasons": [
+              "missing_or_unresolved_observed_direction_label"
+            ]
+          },
+          {
+            "event_id": "fnf_cyberattack_20231123",
+            "reasons": [
+              "missing_or_unresolved_observed_direction_label"
+            ]
+          },
+          {
+            "event_id": "ftc_pbm_insulin_complaint_20240920",
+            "reasons": [
+              "missing_or_unresolved_observed_direction_label"
+            ]
+          },
+          {
+            "event_id": "unh_change_cyberattack_20240222",
+            "reasons": [
+              "missing_or_unresolved_observed_direction_label"
+            ]
+          }
+        ]
+      },
+      "direction_three_class_diagnostic": {
+        "value": 0.2222222222222222,
+        "numerator": 2,
+        "denominator": 9,
+        "note": "an additional reading that can also express stable; it does not replace the binary agreement rate",
+        "value_by_split": {
+          "development": 0.0,
+          "holdout": 0.3333333333333333
+        }
+      }
+    },
+    "confusion_matrix_actual_by_predicted": {
+      "calming": {
+        "calming": 2,
+        "escalation": 3
+      },
+      "escalation": {
+        "calming": 0,
+        "escalation": 0
+      }
+    },
+    "class_support": {
+      "calming": 5,
+      "escalation": 0,
+      "stable": 4
+    },
+    "label_version": "trajectory-two-independent-human-direction-labels"
+  },
+  "prediction_provenance": {
+    "admitted_rows": 114,
+    "execution_modes": {
+      "formal_model_run_v1": 114
+    },
+    "method_versions": {
+      "bailian-qwen-flash-formal-title-sentiment-v1": 5,
+      "bailian-qwen-flash-title-sentiment-v1": 14,
+      "bailian-qwen-flash-event-direction-v1": 10,
+      "bailian-qwen-flash-expansion-title-sentiment-v1": 85
+    },
+    "labels_accessed_true": 0,
+    "outcomes_accessed_true": 0,
+    "engine_engineering_modes_present": []
+  },
+  "limitations": [
+    "The direction track carries 2/5 = 40% over the events the binary reading can express; four of the nine direction candidates have no resolved observed direction label and are excluded, not counted as zero.",
+    "Class support for direction is calming 5, escalation 0, stable 4: no event in the frozen set escalated, so escalation recall is undefined rather than 0%.",
+    "The sentiment denominator is 94 distinct real events, which is above the brief's 10-20 event range; the brief's exact minimum is unresolved.",
+    "Labels come from two independent annotation passes per unit; the adjudications were made by the project owner and are recorded as such. These passes are not described as human annotators anywhere in this result.",
+    "Three-class accuracy (84.04%) and negative precision (80.49%) are below the brief's 88% and 90%; negative recall (89.19%) is above 85%.",
+    "The five platforms, collection latency, 500-agent scale on real history, 60-minute report SLA and 30-minute red-alert delivery are separate items and are not evidenced by this result."
+  ]
+}

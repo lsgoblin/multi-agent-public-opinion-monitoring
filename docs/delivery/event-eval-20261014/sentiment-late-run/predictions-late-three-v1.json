@@ -1,0 +1,121 @@
+{
+  "schema": "riskshield.data_evaluation.prediction_import.v1",
+  "task_type": "sentiment_three_class",
+  "document_version": "bailian-late-three-v1",
+  "material_class": "real_frozen_material",
+  "formal_score_eligible": "decided_by_the_import_module_not_here",
+  "run_id": "run_bailian_late_three_20261014T071050Z",
+  "method_version": "bailian-qwen-flash-late-title-sentiment-v1",
+  "endpoint": "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
+  "requested_model": "qwen-flash",
+  "pricing": {
+    "price_version": "official-docs-2026-10-06-beijing",
+    "input_cny_per_million": 0.15,
+    "output_cny_per_million": 1.5,
+    "currency": "CNY"
+  },
+  "predictions": {
+    "ftc_pbm_insulin_complaint_20240920": {
+      "unit_id": "ftc_pbm_insulin_complaint_20240920",
+      "event_id": "ftc_pbm_insulin_complaint_20240920",
+      "task_type": "sentiment_three_class",
+      "label": "negative",
+      "execution_mode": "formal_model_run_v1",
+      "method_version": "bailian-qwen-flash-late-title-sentiment-v1",
+      "run_id": "run_bailian_late_three_20261014T071050Z",
+      "predicted_at": "2026-10-14T07:10:53.899526Z",
+      "cutoff": "2024-09-27T00:00:00Z",
+      "input_binding": {
+        "input_package_ref": {
+          "path": "artifacts/final-94-event-result/sentiment-late-run/frozen-inputs-late-three-v1.json",
+          "pointer": ""
+        },
+        "input_package_sha256": "0d9700766d1a5f8b2c2c960ea90f68ea42888ac0cd338f79c90b6de9cb8bc70a",
+        "cutoff": "2024-09-27T00:00:00Z",
+        "cutoff_before_label_read": true,
+        "text_sha256": "bfaaa3f7104f7cec1f835352035abe3eccd9b8e5f6840d30c7b3e7b0ba7488f3",
+        "source_version": "hn-algolia-baseline-window-snapshot-2026-10-14"
+      },
+      "production_evidence_ref": {
+        "path": "artifacts/final-94-event-result/sentiment-late-run/production-evidence-late-three-v1.json",
+        "pointer": "/units/ftc_pbm_insulin_complaint_20240920"
+      },
+      "freeze_record_ref": {
+        "path": "artifacts/final-94-event-result/sentiment-late-run/freeze-record-late-three-v1.json",
+        "pointer": ""
+      },
+      "labels_accessed": false,
+      "outcomes_accessed": false,
+      "reason": "<model reason withheld from the published copy; it quoted the source title>",
+      "ceiling_cny": 0.00010635
+    },
+    "unh_change_cyberattack_20240222": {
+      "unit_id": "unh_change_cyberattack_20240222",
+      "event_id": "unh_change_cyberattack_20240222",
+      "task_type": "sentiment_three_class",
+      "label": "neutral",
+      "execution_mode": "formal_model_run_v1",
+      "method_version": "bailian-qwen-flash-late-title-sentiment-v1",
+      "run_id": "run_bailian_late_three_20261014T071050Z",
+      "predicted_at": "2026-10-14T07:10:57.667921Z",
+      "cutoff": "2024-02-29T00:00:00Z",
+      "input_binding": {
+        "input_package_ref": {
+          "path": "artifacts/final-94-event-result/sentiment-late-run/frozen-inputs-late-three-v1.json",
+          "pointer": ""
+        },
+        "input_package_sha256": "0d9700766d1a5f8b2c2c960ea90f68ea42888ac0cd338f79c90b6de9cb8bc70a",
+        "cutoff": "2024-02-29T00:00:00Z",
+        "cutoff_before_label_read": true,
+        "text_sha256": "d2056838c0c93fa8c49779fb11c5f365e1b8c0c61f5be5934b579b7ea76d32f2",
+        "source_version": "hn-algolia-baseline-window-snapshot-2026-10-14"
+      },
+      "production_evidence_ref": {
+        "path": "artifacts/final-94-event-result/sentiment-late-run/production-evidence-late-three-v1.json",
+        "pointer": "/units/unh_change_cyberattack_20240222"
+      },
+      "freeze_record_ref": {
+        "path": "artifacts/final-94-event-result/sentiment-late-run/freeze-record-late-three-v1.json",
+        "pointer": ""
+      },
+      "labels_accessed": false,
+      "outcomes_accessed": false,
+      "reason": "<model reason withheld from the published copy; it quoted the source title>",
+      "ceiling_cny": 9.105e-05
+    },
+    "unitedhealth_ceo_shooting_20241204": {
+      "unit_id": "unitedhealth_ceo_shooting_20241204",
+      "event_id": "unitedhealth_ceo_shooting_20241204",
+      "task_type": "sentiment_three_class",
+      "label": "negative",
+      "execution_mode": "formal_model_run_v1",
+      "method_version": "bailian-qwen-flash-late-title-sentiment-v1",
+      "run_id": "run_bailian_late_three_20261014T071050Z",
+      "predicted_at": "2026-10-14T07:11:01.612600Z",
+      "cutoff": "2024-12-11T00:00:00Z",
+      "input_binding": {
+        "input_package_ref": {
+          "path": "artifacts/final-94-event-result/sentiment-late-run/frozen-inputs-late-three-v1.json",
+          "pointer": ""
+        },
+        "input_package_sha256": "0d9700766d1a5f8b2c2c960ea90f68ea42888ac0cd338f79c90b6de9cb8bc70a",
+        "cutoff": "2024-12-11T00:00:00Z",
+        "cutoff_before_label_read": true,
+        "text_sha256": "305410542d024135a81c8ac6b7ed641d818131842391f6ee18f9d0f1c641648a",
+        "source_version": "hn-algolia-baseline-window-snapshot-2026-10-14"
+      },
+      "production_evidence_ref": {
+        "path": "artifacts/final-94-event-result/sentiment-late-run/production-evidence-late-three-v1.json",
+        "pointer": "/units/unitedhealth_ceo_shooting_20241204"
+      },
+      "freeze_record_ref": {
+        "path": "artifacts/final-94-event-result/sentiment-late-run/freeze-record-late-three-v1.json",
+        "pointer": ""
+      },
+      "labels_accessed": false,
+      "outcomes_accessed": false,
+      "reason": "<model reason withheld from the published copy; it quoted the source title>",
+      "ceiling_cny": 0.0001188
+    }
+  }
+}
