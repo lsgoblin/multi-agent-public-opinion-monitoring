@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="1360" viewBox="0 0 1680 1360" font-family="Microsoft YaHei, Microsoft YaHei UI, SimHei, Segoe UI, sans-serif">
+<rect width="1680" height="1360" fill="#FFFFFF"/>
+<defs><marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#5B6B7C"/></marker></defs>
+<text x="840" y="87.25" font-size="12.5" fill="#4B5563" text-anchor="middle">实线蓝＝当前提交已实现并可在本机运行；橙＝仅离线替身或受限范围；红虚线＝命题要求但当前未实现或未验证</text>
+<text x="840" y="62.38" font-size="23" fill="#1F2937" font-weight="700" text-anchor="middle">风控盾 · 系统架构分层（main @ a4ac28b · 2026-10-14）</text>
+<rect x="40" y="102" width="16" height="16" rx="4" fill="#E8F1FB" stroke="#2E6FB7" stroke-width="1.4"/>
+<text x="64" y="116.72" font-size="12" fill="#4B5563">当前提交已实现</text>
+<rect x="178" y="102" width="16" height="16" rx="4" fill="#FFF6E5" stroke="#C97B0A" stroke-width="1.4"/>
+<text x="202" y="116.72" font-size="12" fill="#4B5563">仅离线替身 / 受限</text>
+<rect x="354" y="102" width="16" height="16" rx="4" fill="#FDECEC" stroke="#C0392B" stroke-width="1.4"/>
+<text x="378" y="116.72" font-size="12" fill="#4B5563">未实现或未验证</text>
+<rect x="492" y="102" width="16" height="16" rx="4" fill="#EEF2F5" stroke="#6B7A8A" stroke-width="1.4"/>
+<text x="516" y="116.72" font-size="12" fill="#4B5563">存储与基础设施</text>
+<rect x="40" y="140" width="1600" height="120" rx="12" fill="#F7F9FB" stroke="#DCE3EA" stroke-width="1.2"/>
+<text x="56" y="162.25" font-size="12.5" fill="#6B7280" font-weight="700">A · 使用与界面</text>
+<rect x="58" y="170" width="980" height="76" rx="10" fill="#E8F1FB" stroke="#2E6FB7" stroke-width="1.6"/>
+<text x="72" y="195.31" font-size="13.5" fill="#1F2937" font-weight="700">Streamlit Web《风控盾》（ui/app.py）</text>
+<text x="72" y="219.83" font-size="11.8" fill="#4B5563">六个页面：今日概览 · 事件证据 · 处置队列 · 五模块报告 · 预警中心 · 关口状态</text>
+<text x="72" y="238.12" font-size="11.8" fill="#4B5563">任务/图谱/报告/预警按 ID 互相跳转；进度手动刷新（不自动轮询）；显式显示 partial 与失败类别</text>
+<rect x="1054" y="170" width="568" height="76" rx="10" fill="#FFF6E5" stroke="#C97B0A" stroke-width="1.6"/>
+<text x="1068" y="195.31" font-size="13.5" fill="#1F2937" font-weight="700">运行边界提示</text>
+<text x="1068" y="219.83" font-size="11.8" fill="#4B5563">界面须标明 offline_dynamic_substitute、暂定判级与 dry_run</text>
+<text x="1068" y="238.12" font-size="11.8" fill="#4B5563">来源证据图与模拟传播图必须分别标识</text>
+<rect x="40" y="290" width="1600" height="196" rx="12" fill="#F7F9FB" stroke="#DCE3EA" stroke-width="1.2"/>
+<text x="56" y="312.25" font-size="12.5" fill="#6B7280" font-weight="700">B · 接口层</text>
+<rect x="58" y="322" width="1080" height="148" rx="10" fill="#E8F1FB" stroke="#2E6FB7" stroke-width="1.6"/>
+<text x="72" y="347.31" font-size="13.5" fill="#1F2937" font-weight="700">FastAPI（src/riskshield/api.py）· TrustedHost 限定 localhost / 127.0.0.1</text>
+<text x="72" y="371.62" font-size="11.6" fill="#4B5563">/health　/readiness　/contracts　/channels/status</text>
+<text x="72" y="390.41" font-size="11.6" fill="#4B5563">/cases　/cases/{id}/snapshot　/cases/{id}/observations　/cases/{id}/labels</text>
+<text x="72" y="409.20" font-size="11.6" fill="#4B5563">/graphs/{id}　/graphs/{id}/query　/simulations　/simulations/{id}/trajectory</text>
+<text x="72" y="428.00" font-size="11.6" fill="#4B5563">/demos/day4/run　/day4/historical/jobs　/jobs　/reports　/alerts/assess　/alerts/{id}/previews</text>
+<rect x="1156" y="322" width="466" height="148" rx="10" fill="#EEF2F5" stroke="#6B7A8A" stroke-width="1.6"/>
+<text x="1170" y="347.31" font-size="13.5" fill="#1F2937" font-weight="700">启动与受理门</text>
+<text x="1170" y="371.41" font-size="11.4" fill="#4B5563">启动时校验 RISKSHIELD_MAX_INFLIGHT_CALLS、</text>
+<text x="1170" y="388.51" font-size="11.4" fill="#4B5563">RISKSHIELD_SIMULATION_CALL_TIMEOUT_SECONDS、</text>
+<text x="1170" y="405.61" font-size="11.4" fill="#4B5563">RISKSHIELD_TASK_TIMEOUT_SECONDS：写错即拒绝启动</text>
+<text x="1170" y="422.71" font-size="11.4" fill="#4B5563">受理任务前经 PROCESS_CAPACITY.try_admit()，</text>
+<text x="1170" y="439.81" font-size="11.4" fill="#4B5563">容量不足返回结构化拒绝，不排队掩盖资源不足</text>
+<line x1="598" y1="262" x2="598" y2="288" stroke="#5B6B7C" stroke-width="1.8" marker-end="url(#head)"/>
+<text x="608" y="278.08" font-size="11.4" fill="#6B7280">HTTP（REST + JSON）</text>
+<rect x="40" y="506" width="1600" height="372" rx="12" fill="#F7F9FB" stroke="#DCE3EA" stroke-width="1.2"/>
+<text x="56" y="528.25" font-size="12.5" fill="#6B7280" font-weight="700">C · 业务链路（五段，按运行顺序）</text>
+<rect x="58" y="538" width="288" height="322" rx="10" fill="#E8F1FB" stroke="#2E6FB7" stroke-width="1.6"/>
+<text x="72" y="563.31" font-size="13.5" fill="#1F2937" font-weight="700">① 来源与案例</text>
+<text x="72" y="587.41" font-size="11.4" fill="#4B5563">evidence.py · schemas.py ·</text>
+<text x="72" y="605.88" font-size="11.4" fill="#4B5563">store.py · source_probe.py</text>
+<text x="72" y="624.35" font-size="11.4" fill="#4B5563">导入案例、来源版本、许可与可见</text>
+<text x="72" y="642.81" font-size="11.4" fill="#4B5563">时间、cutoff 快照、观察与标签</text>
+<text x="72" y="661.28" font-size="11.4" fill="#4B5563">受限来源采集：SEC / 同期帖子存档</text>
+<line x1="348" y1="698" x2="362" y2="698" stroke="#5B6B7C" stroke-width="1.8" marker-end="url(#head)"/>
+<rect x="366" y="538" width="288" height="322" rx="10" fill="#FFF6E5" stroke="#C97B0A" stroke-width="1.6"/>
+<text x="380" y="563.31" font-size="13.5" fill="#1F2937" font-weight="700">② 截止证据图与检索</text>
+<text x="380" y="587.41" font-size="11.4" fill="#4B5563">evidence.py</text>
+<text x="380" y="605.88" font-size="11.4" fill="#4B5563">build_mode = offline_archived_record_</text>
+<text x="380" y="624.35" font-size="11.4" fill="#4B5563">projection 或 day2_cutoff_evidence_graph</text>
+<text x="380" y="642.81" font-size="11.4" fill="#4B5563">/graphs/{id}/query：词项匹配＋来源引用</text>
+<text x="380" y="661.28" font-size="11.4" fill="#4B5563">× GraphRAG 自然语言问答未实现</text>
+<line x1="656" y1="698" x2="670" y2="698" stroke="#5B6B7C" stroke-width="1.8" marker-end="url(#head)"/>
+<rect x="674" y="538" width="288" height="322" rx="10" fill="#E8F1FB" stroke="#2E6FB7" stroke-width="1.6"/>
+<text x="688" y="563.31" font-size="13.5" fill="#1F2937" font-weight="700">③ 多智能体仿真</text>
+<text x="688" y="587.41" font-size="11.4" fill="#4B5563">simulation.py · tasks.py · capacity.py</text>
+<text x="688" y="605.88" font-size="11.4" fill="#4B5563">角色：netizen / customer / media /</text>
+<text x="688" y="624.35" font-size="11.4" fill="#4B5563">kol / regulator（独立人设与焦点）</text>
+<text x="688" y="642.81" font-size="11.4" fill="#4B5563">独立情绪与信任状态、长期记忆、</text>
+<text x="688" y="661.28" font-size="11.4" fill="#4B5563">运行时消息；逐轮落账</text>
+<text x="688" y="679.75" font-size="11.4" fill="#4B5563">执行模式 offline_dynamic_substitute</text>
+<line x1="964" y1="698" x2="978" y2="698" stroke="#5B6B7C" stroke-width="1.8" marker-end="url(#head)"/>
+<rect x="982" y="538" width="288" height="322" rx="10" fill="#FFF6E5" stroke="#C97B0A" stroke-width="1.6"/>
+<text x="996" y="563.31" font-size="13.5" fill="#1F2937" font-weight="700">④ 报告与预警</text>
+<text x="996" y="587.41" font-size="11.4" fill="#4B5563">reporting.py · alerts.py</text>
+<text x="996" y="605.88" font-size="11.4" fill="#4B5563">五模块：propagation · emotion_evolution ·</text>
+<text x="996" y="624.35" font-size="11.4" fill="#4B5563">key_nodes · risk · recommendations</text>
+<text x="996" y="642.81" font-size="11.4" fill="#4B5563">四级：red ≥40% / orange ≥20% /</text>
+<text x="996" y="661.28" font-size="11.4" fill="#4B5563">yellow ≥5% / blue；status 为暂定离线判级</text>
+<text x="996" y="679.75" font-size="11.4" fill="#4B5563">通知：仅 dry_run 预览（不发送）</text>
+<line x1="1272" y1="698" x2="1286" y2="698" stroke="#5B6B7C" stroke-width="1.8" marker-end="url(#head)"/>
+<rect x="1290" y="538" width="288" height="322" rx="10" fill="#FFF6E5" stroke="#C97B0A" stroke-width="1.6"/>
+<text x="1304" y="563.31" font-size="13.5" fill="#1F2937" font-weight="700">⑤ 评测与预测准入</text>
+<text x="1304" y="587.41" font-size="11.4" fill="#4B5563">evaluation.py · evaluation_alignment.py ·</text>
+<text x="1304" y="605.88" font-size="11.4" fill="#4B5563">evaluation_annotation.py ·</text>
+<text x="1304" y="624.35" font-size="11.4" fill="#4B5563">evaluation_benchmark.py ·</text>
+<text x="1304" y="642.81" font-size="11.4" fill="#4B5563">evaluation_prediction_import.py ·</text>
+<text x="1304" y="661.28" font-size="11.4" fill="#4B5563">direction_prediction.py</text>
+<text x="1304" y="679.75" font-size="11.4" fill="#4B5563">冻结输入＋双人盲标＋预测准入白名单＋方向评分</text>
+<text x="1304" y="698.22" font-size="11.4" fill="#4B5563">▲ 仿真输出正式准入未打通</text>
+<rect x="40" y="898" width="1600" height="152" rx="12" fill="#F7F9FB" stroke="#DCE3EA" stroke-width="1.2"/>
+<text x="56" y="920.25" font-size="12.5" fill="#6B7280" font-weight="700">D · 存储与运行时</text>
+<rect x="58" y="930" width="1564" height="96" rx="10" fill="#EEF2F5" stroke="#6B7A8A" stroke-width="1.6"/>
+<text x="72" y="955.31" font-size="13.5" fill="#1F2937" font-weight="700">SQLite（RISKSHIELD_DB，默认 runtime/riskshield.db）</text>
+<text x="72" y="979.62" font-size="11.6" fill="#4B5563">cases · snapshots · graphs · simulation_runs / agents / memories / messages / actions / rounds / request_metrics · jobs · reports · alerts · previews</text>
+<text x="72" y="998.41" font-size="11.6" fill="#4B5563">后台任务在 API 进程内以线程执行；每轮账本分别记录有效 / 失败 / 超时决策，以及消息条数与记忆引用</text>
+<text x="72" y="1017.21" font-size="11.6" fill="#4B5563">API 进程重启会把仍处于 queued / running 的任务标为 failed（interrupted_on_restart），不自动续跑</text>
+<rect x="40" y="1066" width="1600" height="148" rx="12" fill="#F7F9FB" stroke="#DCE3EA" stroke-width="1.2"/>
+<text x="56" y="1088.25" font-size="12.5" fill="#6B7280" font-weight="700">E · 部署与出口边界</text>
+<rect x="58" y="1098" width="512" height="100" rx="10" fill="#EEF2F5" stroke="#6B7A8A" stroke-width="1.6"/>
+<text x="72" y="1123.31" font-size="13.5" fill="#1F2937" font-weight="700">容器（Dockerfile + compose.yaml）</text>
+<text x="72" y="1147.30" font-size="11.3" fill="#4B5563">api / web / local_gateway 同一镜像 riskshield:day4-local</text>
+<text x="72" y="1165.38" font-size="11.3" fill="#4B5563">命名卷 riskshield_runtime 持久化 SQLite</text>
+<text x="72" y="1183.46" font-size="11.3" fill="#4B5563">default 网络 internal:true；仅 local_gateway 发布 127.0.0.1 端口</text>
+<rect x="586" y="1098" width="512" height="100" rx="10" fill="#FFF6E5" stroke="#C97B0A" stroke-width="1.6"/>
+<text x="600" y="1123.31" font-size="13.5" fill="#1F2937" font-weight="700">在线模型网关（model_gateway.py）</text>
+<text x="600" y="1147.30" font-size="11.3" fill="#4B5563">需显式设置 RISKSHIELD_ENABLE_MODEL_PROBE=1 与模型密钥</text>
+<text x="600" y="1165.38" font-size="11.3" fill="#4B5563">本机离线替身任务不调用：model_calls=0、network_requests=0</text>
+<text x="600" y="1183.46" font-size="11.3" fill="#4B5563">该计数是应用运行账本，不是操作系统抓包证据</text>
+<rect x="1114" y="1098" width="508" height="100" rx="10" fill="#FDECEC" stroke="#C0392B" stroke-width="1.6" stroke-dasharray="7 5"/>
+<text x="1128" y="1123.31" font-size="13.5" fill="#1F2937" font-weight="700">出口隔离 × 未通过</text>
+<text x="1128" y="1147.30" font-size="11.3" fill="#4B5563">API / Web 实测无默认路由</text>
+<text x="1128" y="1165.38" font-size="11.3" fill="#4B5563">local_gateway 仍有默认路由 → 不能承诺全容器无外发</text>
+<text x="1128" y="1183.46" font-size="11.3" fill="#4B5563">域内部署与全程流量审计尚无证据</text>
+<rect x="40" y="1230" width="1600" height="108" rx="12" fill="#FDECEC" stroke="#C0392B" stroke-width="1.6" stroke-dasharray="7 5"/>
+<text x="58" y="1255.78" font-size="13" fill="#9B2C1F" font-weight="700">F · 命题要求但当前未实现或未验证</text>
+<text x="58" y="1280.30" font-size="11.6" fill="#9B2C1F">五平台在线覆盖与 ≤15 分钟热点采集延迟　·　生产级多平台采集（当前仅 SEC 与同期帖子存档的受限采集）　·　情感三分类模型</text>
+<text x="58" y="1299.44" font-size="11.6" fill="#9B2C1F">GraphRAG 自然语言追问　·　500 Agent × 30 轮在真实历史事件上的完整贯通　·　真实企微/邮件送达与红警 ≤30 分钟时效　·　域内数据不出域</text>
+</svg>

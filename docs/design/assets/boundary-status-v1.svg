@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1680" height="850" viewBox="0 0 1680 850" font-family="Microsoft YaHei, Microsoft YaHei UI, SimHei, Segoe UI, sans-serif">
+<rect width="1680" height="850" fill="#FFFFFF"/>
+<defs><marker id="head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#5B6B7C"/></marker></defs>
+<text x="840" y="87.25" font-size="12.5" fill="#4B5563" text-anchor="middle">同一张图上区分：已验证的本机工程 / 只能离线替身的范围 / 命题指标仍未实现或未验证的部分</text>
+<text x="840" y="62.38" font-size="23" fill="#1F2937" font-weight="700" text-anchor="middle">风控盾 · 能力边界与状态（main @ a4ac28b · 2026-10-14）</text>
+<rect x="40" y="102" width="16" height="16" rx="4" fill="#E8F1FB" stroke="#2E6FB7" stroke-width="1.4"/>
+<text x="64" y="116.72" font-size="12" fill="#4B5563">已验证（有实际运行证据）</text>
+<rect x="240" y="102" width="16" height="16" rx="4" fill="#FFF6E5" stroke="#C97B0A" stroke-width="1.4"/>
+<text x="264" y="116.72" font-size="12" fill="#4B5563">仅离线替身或受限，不可外推</text>
+<rect x="453" y="102" width="16" height="16" rx="4" fill="#FDECEC" stroke="#C0392B" stroke-width="1.4"/>
+<text x="477" y="116.72" font-size="12" fill="#4B5563">未实现或未验证（命题指标缺口）</text>
+<rect x="40" y="140" width="522" height="340" rx="12" fill="#E8F1FB" stroke="#2E6FB7" stroke-width="1.6"/>
+<text x="58" y="168.84" font-size="14" fill="#1F2937" font-weight="700">● 已在当前提交验证</text>
+<text x="58" y="204.19" font-size="11.5" fill="#4B5563">•  案例导入与 cutoff 快照（真实历史材料）</text>
+<text x="58" y="234.19" font-size="11.5" fill="#4B5563">•  受限来源采集：SEC 与同期帖子存档</text>
+<text x="58" y="264.19" font-size="11.5" fill="#4B5563">•  截止证据图构建 + 词项检索与来源引用</text>
+<text x="58" y="294.19" font-size="11.5" fill="#4B5563">•  离线动态替身 10 Agent × 3 轮：30/30 有效决策</text>
+<text x="58" y="324.19" font-size="11.5" fill="#4B5563">•  五模块报告生成（绑定同一案例 / 图 / 运行）</text>
+<text x="58" y="354.19" font-size="11.5" fill="#4B5563">•  四级暂定判级与规则版本留痕</text>
+<text x="58" y="384.19" font-size="11.5" fill="#4B5563">•  企业微信 / 邮件 dry_run 预览载荷</text>
+<text x="58" y="414.19" font-size="11.5" fill="#4B5563">•  Docker 本机：构建、健康检查、重启持久化</text>
+<text x="58" y="444.19" font-size="11.5" fill="#4B5563">•  应用运行账本 model_calls=0、network_requests=0</text>
+<rect x="586" y="140" width="522" height="340" rx="12" fill="#FFF6E5" stroke="#C97B0A" stroke-width="1.6"/>
+<text x="604" y="168.84" font-size="14" fill="#1F2937" font-weight="700">▲ 只能说明这些，不能外推</text>
+<text x="604" y="204.19" font-size="11.5" fill="#4B5563">•  offline_dynamic_substitute：动态执行器，非真实模型推演</text>
+<text x="604" y="234.19" font-size="11.5" fill="#4B5563">•  10×3 替身 ≠ 500×30 真实模型能力</text>
+<text x="604" y="264.19" font-size="11.5" fill="#4B5563">•  500×30 的 15,000/15,000 有效决策来自合成事件，估算 ¥2.88427524</text>
+<text x="604" y="294.19" font-size="11.5" fill="#4B5563">•  方向预测适配器只通过离线合成标签路径</text>
+<text x="604" y="324.19" font-size="11.5" fill="#4B5563">•  四级阈值未经真实事件校准，判级为暂定</text>
+<text x="604" y="354.19" font-size="11.5" fill="#4B5563">•  dry_run 只证明载荷已生成，不证明送达</text>
+<text x="604" y="384.19" font-size="11.5" fill="#4B5563">•  应用账本零网络请求 ≠ 操作系统抓包结论</text>
+<rect x="1132" y="140" width="522" height="340" rx="12" fill="#FDECEC" stroke="#C0392B" stroke-width="1.6" stroke-dasharray="7 5"/>
+<text x="1150" y="168.84" font-size="14" fill="#9B2C1F" font-weight="700">× 未实现或未验证（命题指标）</text>
+<text x="1150" y="204.19" font-size="11.5" fill="#4B5563">•  五平台在线覆盖（realtime_collection=false）</text>
+<text x="1150" y="234.19" font-size="11.5" fill="#4B5563">•  热点采集延迟 ≤15 分钟（无发现/采集时间序列）</text>
+<text x="1150" y="264.19" font-size="11.5" fill="#4B5563">•  情感三分类 ≥88%：留出集 27/32 = 84.375%</text>
+<text x="1150" y="294.19" font-size="11.5" fill="#4B5563">•  负面识别：二分类 29/32、精度 6/8、召回 6/7，正式口径待裁定</text>
+<text x="1150" y="324.19" font-size="11.5" fill="#4B5563">•  走势方向一致率 ≥70%：二分类 2/5 = 40%</text>
+<text x="1150" y="354.19" font-size="11.5" fill="#4B5563">•  GraphRAG 自然语言追问（graph_rag=false）</text>
+<text x="1150" y="384.19" font-size="11.5" fill="#4B5563">•  500×30 真实历史事件链路与走势真值配对</text>
+<text x="1150" y="414.19" font-size="11.5" fill="#4B5563">•  真实通知送达与红警 ≤30 分钟时效</text>
+<text x="1150" y="444.19" font-size="11.5" fill="#4B5563">•  域内运行与数据不出域（无目标环境部署与审计）</text>
+<rect x="40" y="500" width="1600" height="156" rx="12" fill="#FFFFFF" stroke="#9AA7B4" stroke-width="1.6"/>
+<text x="58" y="528.31" font-size="13.5" fill="#1F2937" font-weight="700">数据与时间边界（横跨全部三列）</text>
+<text x="58" y="556.51" font-size="11.8" fill="#4B5563">只有可证明在 cutoff 时已公开可见的输入候选才进入图与 Agent 上下文；未知可见时间、未来材料与 evaluation_only 记录不得混入。</text>
+<text x="58" y="585.51" font-size="11.8" fill="#4B5563">后续走势只在评分侧读取：未来结果不得进入图检索、记忆或推演；本机 1 条后续 not_input 材料已按此排除。</text>
+<text x="58" y="614.51" font-size="11.8" fill="#4B5563">投诉样本不代表公司全渠道投诉量；模拟 Agent 的投诉意向占比不是现实投诉率。</text>
+<text x="58" y="643.51" font-size="11.8" fill="#4B5563">对外陈述始终区分：方案 / 代码 / 模拟测试 / 真实运行 / 正式达标——partial、dry_run、离线替身与合成案例都不得写成达标。</text>
+<rect x="40" y="676" width="1600" height="150" rx="12" fill="#FDECEC" stroke="#C0392B" stroke-width="1.6" stroke-dasharray="7 5"/>
+<text x="58" y="704.31" font-size="13.5" fill="#9B2C1F" font-weight="700">这份图纸没有覆盖、也不能替代的部分</text>
+<text x="58" y="732.51" font-size="11.8" fill="#9B2C1F">• 图纸描述的是当前提交的代码链路与已记录的运行状态，不是命题指标的验收结论：正式验收仍以新版命题的量化目标与逐项证据为准。</text>
+<text x="58" y="761.51" font-size="11.8" fill="#9B2C1F">• 本机过程证据（分支交接、运行账本、冻结材料）保存在 Git 忽略目录，随源码提交的版本不包含它们；此处引用的数字均来自已合并的实测记录。</text>
+<text x="58" y="790.51" font-size="11.8" fill="#9B2C1F">• 演示材料的其余部分（现场演示脚本、当前提交截图/录屏、效果验证材料、汇报 PPT）尚未产出；本图不能替代它们，也不能替代真实运行证据。</text>
+</svg>
