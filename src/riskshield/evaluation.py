@@ -941,11 +941,22 @@ def evaluate_documents(
     }
 
 
-def evaluate_files(inputs_path: Path, labels_path: Path) -> dict[str, Any]:
+def evaluate_files(inputs_path: Path, labels_path: Path, *,
+                   evidence_root: Path | str | None = None) -> dict[str, Any]:
+    """Evaluate a pair of files, resolving evidence against a chosen root.
+
+    ``evidence_root`` is optional and keyword-only. Omitting it keeps the previous
+    behaviour exactly, so every existing caller is unaffected; passing it lets a
+    caller score material that lives somewhere other than the process working
+    directory, which is what the simulation branch needs and what the benchmark
+    entry point already does internally.
+    """
     inputs, input_hash = _read_json(inputs_path)
     labels, labels_hash = _read_json(labels_path)
     return evaluate_documents(inputs, labels, input_sha256=input_hash,
-                              labels_sha256=labels_hash, evidence_root=Path.cwd())
+                              labels_sha256=labels_hash,
+                              evidence_root=(Path(evidence_root) if evidence_root is not None
+                                             else Path.cwd()))
 
 
 def main(argv: list[str] | None = None) -> int:

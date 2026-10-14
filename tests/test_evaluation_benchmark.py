@@ -1645,6 +1645,87 @@ def test_the_diagnostic_invariant_catches_a_dropped_event(tmp_path):
     assert checked["checked"] is True and checked["unaccounted_events"] == []
 
 
+def test_an_adjudicated_label_carries_its_own_evidence(tmp_path):
+    """A resolution matching neither pass still has to resolve its evidence."""
+    root = _fixture_root(tmp_path, [])
+    _trajectory_root(tmp_path, ["evt-1"])
+    _direction_submissions_disagreeing(root, "evt-1", label_a="escalation", label_b="calming")
+    _direction_adjudication(root, "evt-1", label="cannot_judge")
+    cohort = _trajectory_cohort([], expected_excluded_unit_ids=["evt-1"],
+                                direction_adjudication_record="direction/adjudication.json")
+    units = bench.trajectory_units(root, cohort)
+    bench.attach_direction_labels(units, cohort["annotation_sources"], root)
+    bench.attach_direction_adjudications(units, cohort["direction_adjudication_record"], root)
+
+    _, labels_doc, _ = bench.score_trajectory_set(units, dataset_version="v1",
+                                                  label_version="l1", evidence_root=root,
+                                                  package_relative="pkg.json")
+
+    refs = labels_doc["events"][0]["evidence_refs"]
+    assert any("adjudication" in ref["path"] for ref in refs)
+
+
+def test_a_declared_cannot_judge_is_not_reported_as_a_label_space_problem(tmp_path):
+    root = _fixture_root(tmp_path, [])
+    _trajectory_root(tmp_path, ["evt-1"])
+    _direction_submissions_disagreeing(root, "evt-1", label_a="escalation", label_b="calming")
+    _direction_adjudication(root, "evt-1", label="cannot_judge")
+    cohort = _trajectory_cohort([], expected_excluded_unit_ids=["evt-1"],
+                                direction_adjudication_record="direction/adjudication.json")
+
+    result = bench.evaluate_cohort(cohort, bench.trajectory_units(root, cohort),
+                                   root=root, cutoffs_document=None,
+                                   out_dir_relative="out/run")
+
+    gate = bench.trajectory_direction_gate(result["units"][0])
+    assert gate["reasons"] == ["declared_cannot_judge"]
+    diagnostic = result["metrics"]["direction_three_class"]
+    assert diagnostic["denominator"] == 0
+    assert diagnostic["not_scored"]["declared_cannot_judge"]["count"] == 1
+    assert diagnostic["class_support"]["stable"] == 0
+
+
+def test_the_direction_denominator_and_its_id_list_are_the_same_set(tmp_path):
+    """A denominator of five beside a list of nine ids is a reporting bug.
+
+    The id list names the events the brief's metric actually scored, so it has to
+    equal the denominator. The diagnostic's wider set is reported separately,
+    beside its own denominator, and must not be folded in here.
+    """
+    root = _fixture_root(tmp_path, [])
+    _trajectory_root(tmp_path, ["evt-1", "evt-2", "evt-3"])
+    _direction_submissions(root, ["evt-1", "evt-2", "evt-3"],
+                           {"evt-1": "calming", "evt-2": "escalation", "evt-3": "stable"})
+    payload = _config(["u1"])
+    payload["cohorts"] = [_trajectory_cohort(["evt-1", "evt-2"],
+                                              expected_excluded_unit_ids=["evt-3"])]
+
+    report = bench.run_benchmark(payload, root)
+
+    summary = report["track_denominators"]["direction"]
+    diagnostic = report["formal_combined_direction"]["metrics"]["direction_three_class"]
+    assert summary["denominator"] == 2
+    assert len(summary["scored_event_ids"]) == summary["denominator"]
+    assert sorted(summary["scored_event_ids"]) == ["evt-1", "evt-2"]
+    # The diagnostic covers the stable event too, and says so under its own key.
+    assert diagnostic["denominator"] == 3
+    assert len(diagnostic["scored_events"]) == diagnostic["denominator"]
+    assert "evt-3" not in summary["scored_event_ids"]
+    assert "evt-3" in [row["event_id"] for row in diagnostic["scored_events"]]
+    assert "diagnostic_event_ids" not in summary
+
+
+def test_the_sentiment_denominator_and_its_id_list_are_the_same_set(tmp_path, monkeypatch):
+    root, config, report = _scored_run(tmp_path, monkeypatch, ["u1", "u2"])
+
+    summary = report["track_denominators"]["sentiment"]
+    headline = report["headline"]["three_class"]
+    assert summary["denominator"] == headline["denominator"]
+    assert len(summary["scored_unit_ids"]) == summary["denominator"]
+    assert sorted(summary["scored_unit_ids"]) == sorted(
+        row["unit_id"] for row in report["headline"]["scored_units"])
+
+
 # --------------------------------------------------------------------------
 # group 7: the command line contract
 # --------------------------------------------------------------------------
