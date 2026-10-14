@@ -35,6 +35,22 @@
 
 `CollectRequest`、`LabelRequest` 和 `GraphQuery` 的字段以运行时 OpenAPI 为准。未知可见时间、未来结果或 `evaluation_only` 内容不得作为 cutoff Agent 输入。投诉样本不代表公司全渠道投诉量。
 
+## 报告自然语言追问
+
+| 方法 | 路径 | 请求/响应摘要 |
+| --- | --- | --- |
+| `GET` | `/questions/config` | 返回是否启用、固定模型/提供方、获准案例、价格版本及独立授权的费用/调用账本；不返回凭据，不触发调用。 |
+| `POST` | `/reports/{report_id}/questions` | 请求包含 `question`（2–500 字符）、可选 `conversation_id` 和 `expected_turn_count`（默认 0）。真实调用只在服务端授权启用后发生。 |
+| `GET` | `/reports/{report_id}/questions/{conversation_id}` | 读取持久化对话、完整轮次和预算；不触发模型调用。 |
+
+新对话省略 `conversation_id`；续问传入返回的 ID 与最新 `turn_count`。请求不接受模型、案例、cutoff、来源版本、URL 或预算覆盖字段。服务端从已保存报告派生范围，并重新核对来源、模拟账本和报告；证据变化或跨报告复用对话会被拒绝。
+
+POST 返回 `turn_state=complete` 或 `failed`，并含 `context_scope`、执行模式、费用/预留和预算。完整轮次另含 `answer_status=supported|insufficient_evidence`、回答和已核对的 `citations`；真实模型与用量存在时附 `model`、`usage` 和提供方请求 ID。每个引用的 `quote` 必须是对应证据卡的逐字片段。模型推理仍须人工复核，逐字引用校验不等于逐项语义正确性验证。
+
+默认不启用；适配器固定百炼北京 qwen-turbo 非思考模式，没有自动重试。服务端使用 `.env.example` 中的独立授权 ID、案例白名单、可选来源版本、费用上限和调用次数。每次调用原子预留输入 32768 / 输出 1200 Token 的保守成本；未知用量或中断保留预留。输入 ¥0.3、输出 ¥0.6／百万 Token 的价格记录于 `aliyun-qwen-turbo-beijing-nonthinking-20261014`，依据[官方模型说明](https://help.aliyun.com/zh/model-studio/qwen-turbo)。预算账本按授权 ID 持久化；重启服务或创建新对话不清零。价格或服务授权变化时需重新核对，不自动追溯调整。
+
+错误：404 未找到报告/对话，403 案例/来源版本未授权，409 预期轮次过期，422 输入/证据范围校验失败，429 授权调用数或费用耗尽，503 未启用。已派发的模型错误或引用错误返回 `turn_state=failed` 并保留账本；未落盘的预留在 GET 中显示 `interrupted`。上下文只包含限定来源摘要、模拟报告摘要、少量首尾动作/消息及最近四轮有效对话，不包含后续评测记录。
+
 ## 模型与仿真路由
 
 | 方法 | 路径 | 请求/响应摘要 |

@@ -13,6 +13,7 @@ from riskshield.simulation import Day3Simulation, DecisionResult
 from riskshield.schemas import AgentDecision, CaseImport
 from riskshield.store import Store
 from riskshield.tasks import Day4Tasks, OfflineDynamicSubstitute
+from riskshield.model_gateway import ReportQuestionModel
 from tests.fixtures.day3_synthetic_case import CASE_ID, GRAPH_ID, prepare_synthetic_case
 
 
@@ -149,7 +150,8 @@ def test_ui_reads_five_module_report_and_offline_preview(tmp_path, monkeypatch):
         assert "业务处置建议" in headings
         assert "来源证据图" in headings
         assert "主要依据" in headings
-        assert "完整自然语言追问尚未实现" in " ".join(item.value for item in app.caption)
+        assert "自然语言追问" in " ".join(item.value for item in app.markdown)
+        assert next(item for item in app.button if item.label == "提交追问").disabled
         query = next(item for item in app.text_input if item.label == "来源证据检索")
         query.set_value("Fictional test service").run(timeout=20)
         next(item for item in app.button if item.label == "检索带引用证据").click()
@@ -484,3 +486,52 @@ def test_ui_runs_local_real_historical_case_and_displays_timing(tmp_path, monkey
         assert str(job["elapsed_seconds"]) in visible
         assert job["report_id"] in visible
         assert job["alert_id"] in visible
+
+
+def test_ui_multiturn_questions_and_report_switch_use_separate_conversations(tmp_path, monkeypatch):
+    tasks = Day4Tasks(Store(tmp_path / "ui-questions.db"))
+    jobs = [tasks.run_sync(tasks.prepare_demo_run(agent_count=2, rounds=1, concurrency=2)["run_id"])
+            for _ in range(2)]
+    monkeypatch.setenv("RISKSHIELD_ENABLE_REPORT_QA", "1")
+    monkeypatch.setenv("RISKSHIELD_REPORT_QA_GRANT_ID", "offline-ui-question-test")
+    monkeypatch.setenv("RISKSHIELD_REPORT_QA_ALLOWED_CASE_IDS", jobs[0]["case_id"])
+    monkeypatch.setenv("DASHSCOPE_API_KEY", "offline-ui-fixture-key")
+    prompts = []
+
+    def model(self, messages):
+        prompts.append(messages)
+        card = json.loads(messages[0]["content"].split("冻结资料：", 1)[1])["evidence_cards"][0]
+        answer = ({"answer_status": "insufficient_evidence", "answer": "该未来信息不在截止前资料中，保留弃权。", "citations": []}
+                  if len(prompts) > 1 else
+                  {"answer_status": "supported", "answer": "问答组件受控测试回答，带原文引用。",
+                   "citations": [{"evidence_id": card["evidence_id"], "quote": card["text"][:30]}]})
+        return {"content": json.dumps(answer), "model": "qwen-turbo-offline-ui-fixture",
+                "usage": {"prompt_tokens": 20, "completion_tokens": 10}, "cost_cny": "0.000012"}
+
+    monkeypatch.setattr(ReportQuestionModel, "complete", model)
+    with TestClient(create_app(tasks.store.path)) as api:
+        def local_request(method, url, **kwargs):
+            kwargs.pop("timeout", None)
+            return api.request(method, url.removeprefix("http://127.0.0.1:8000"), **kwargs)
+
+        monkeypatch.setenv("RISKSHIELD_API_URL", "http://127.0.0.1:8000")
+        monkeypatch.setattr(httpx, "request", local_request)
+        app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / "ui/app.py")).run(timeout=20)
+        set_page(app, "五模块报告")
+        next(item for item in app.text_input if item.label == "查看报告 ID").set_value(jobs[0]["report_id"]).run(timeout=20)
+        next(item for item in app.text_input if item.label == "自然语言问题").set_value("截至截止时间有什么来源？").run(timeout=20)
+        next(item for item in app.button if item.label == "提交追问").click().run(timeout=20)
+        assert not app.exception
+        assert any("问答组件受控测试回答" in item.value for item in app.text)
+        assert any("核对追问引用来源" in item.value for item in app.markdown)
+        app.run(timeout=20)
+        assert len(prompts) == 1  # A rerender must not launch another charged call.
+        next(item for item in app.text_input if item.label == "自然语言问题").set_value("它们后来恢复了吗？").run(timeout=20)
+        next(item for item in app.button if item.label == "提交追问").click().run(timeout=20)
+        assert not app.exception and len(prompts[1]) == 4
+        assert any("保留弃权" in item.value for item in app.info)
+        next(item for item in app.text_input if item.label == "查看报告 ID").set_value(jobs[1]["report_id"]).run(timeout=20)
+        assert not app.exception
+        assert not any("问答组件受控测试回答" in item.value for item in app.text)
+        next(item for item in app.text_input if item.label == "查看报告 ID").set_value(jobs[0]["report_id"]).run(timeout=20)
+        assert any("问答组件受控测试回答" in item.value for item in app.text)

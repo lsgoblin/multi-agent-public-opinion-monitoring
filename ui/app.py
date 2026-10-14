@@ -1,5 +1,6 @@
 import json
 import os
+import textwrap
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -49,7 +50,7 @@ button[kind="primary"] { background:var(--blue); border-color:var(--blue); }
 </style>
 """, unsafe_allow_html=True)
 def request(method, path, **kwargs):
-    response = httpx.request(method, API + path, timeout=10, **kwargs)
+    response = httpx.request(method, API + path, timeout=kwargs.pop("timeout", 10), **kwargs)
     response.raise_for_status()
     return response.json()
 
@@ -80,10 +81,12 @@ def show_graph(graph):
     if not nodes:
         st.write("当前证据图没有可显示的节点。")
         return
-    lines = ["digraph evidence {", 'rankdir="LR";', 'node [shape="box"];']
+    lines = ["digraph evidence {", 'rankdir="TB";',
+             'node [shape="box", fontsize=14, margin="0.12,0.08"];']
     for node in nodes:
         node_id = json.dumps(str(node.get("id", "")), ensure_ascii=False)
-        label = json.dumps(str(node.get("label") or node.get("id", ""))[:80], ensure_ascii=False)
+        label = json.dumps(textwrap.fill(str(node.get("label") or node.get("id", "")), width=18),
+                           ensure_ascii=False)
         lines.append(f"{node_id} [label={label}];")
     for edge in edges:
         source = json.dumps(str(edge.get("from", "")), ensure_ascii=False)
@@ -104,11 +107,15 @@ def show_propagation_graph(edges, report_id):
         return
     nodes = sorted({edge.get("sender_id") for edge in edges} |
                    {edge.get("recipient_id") for edge in edges})
+    focus = st.selectbox("模拟传播图范围", nodes + ["全部智能体"], key="propagation_focus_" + report_id)
+    shown_edges = edges if focus == "全部智能体" else [e for e in edges if e.get("sender_id") == focus]
+    shown_nodes = sorted({e.get("sender_id") for e in shown_edges} |
+                         {e.get("recipient_id") for e in shown_edges})
     lines = ["digraph simulated_propagation {", 'rankdir="LR";', 'node [shape="box"];']
-    for node_id in nodes:
+    for node_id in shown_nodes:
         label = json.dumps(str(node_id), ensure_ascii=False)
         lines.append(f"{label} [label={label}];")
-    for edge in edges:
+    for edge in shown_edges:
         sender = json.dumps(str(edge.get("sender_id", "")), ensure_ascii=False)
         recipient = json.dumps(str(edge.get("recipient_id", "")), ensure_ascii=False)
         label = json.dumps(f"{edge.get('message_count', 0)} 条消息", ensure_ascii=False)
@@ -116,6 +123,8 @@ def show_propagation_graph(edges, report_id):
     lines.append("}")
     st.graphviz_chart("\n".join(lines), use_container_width=True)
     st.caption(f"模拟传播图：{len(nodes)} 个智能体、{len(edges)} 条发送关系。每条关系保留消息和发送动作引用；活动量不证明因果影响。")
+    st.caption(f"当前图范围：{focus} 的发送关系" if focus != "全部智能体" else "当前图范围：全部发送关系")
+    st.caption(f"显示 {len(shown_nodes)}/{len(nodes)} 个智能体、{len(shown_edges)}/{len(edges)} 条关系；全部关系保留在下方明细。")
 
 
 def queue_navigation(page, **values):
@@ -136,6 +145,7 @@ try:
     readiness = request("GET", "/readiness")
     cases = request("GET", "/cases")
     channels = request("GET", "/channels/status")
+    question_config = request("GET", "/questions/config")
 except (httpx.HTTPError, ValueError):
     st.error("后端尚未就绪。请先按 README 启动本地 API，再刷新页面。")
     st.code("uv run uvicorn riskshield.api:create_app --factory --host 127.0.0.1 --port 8000")
@@ -158,8 +168,12 @@ with st.sidebar:
     )
     st.divider()
     st.markdown("<div class='sidebar-section-label'>运行边界</div>", unsafe_allow_html=True)
-    st.markdown("<span class='status-pill'>LOCAL · OFFLINE</span>", unsafe_allow_html=True)
-    st.caption("仅限获准的本机工作流；不发送真实通知、不外发材料。")
+    if question_config.get("enabled"):
+        st.markdown("<span class='status-pill'>LOCAL SIM · AUTHORIZED QA</span>", unsafe_allow_html=True)
+        st.caption("仿真仍为本机离线；提交追问会向获准 qwen-turbo 发送限定来源、模拟报告与对话。通知仅预览。")
+    else:
+        st.markdown("<span class='status-pill'>LOCAL · OFFLINE</span>", unsafe_allow_html=True)
+        st.caption("自然语言追问默认关闭；本机仿真和通知预览不外发材料。")
     st.markdown("<div class='sidebar-section-label'>验收关口</div>", unsafe_allow_html=True)
     st.markdown("**G1 / G2**　内部受限通过")
     st.markdown("**G3**　尚未通过")
@@ -755,7 +769,7 @@ if active_page == "五模块报告":
             except (httpx.HTTPError, ValueError) as exc:
                 show_api_error(exc)
             st.markdown("#### 按词项查找引用来源")
-            st.caption("检索方式：词项匹配来源标题/摘要，再返回图邻域和来源引用；不生成自然语言答案。完整自然语言追问尚未实现。")
+            st.caption("检索方式：词项匹配来源标题/摘要，再返回图邻域和来源引用；模型生成的自然语言追问见下方独立入口。")
             query = st.text_input("来源证据检索", placeholder="例如：Change Healthcare 网络中断",
                                   key="evidence_query_input")
             if st.button("检索带引用证据"):
@@ -777,6 +791,52 @@ if active_page == "五模块报告":
                         st.caption(f"来源引用：{hit.get('record_id')} · 匹配分：{hit.get('score')}")
                         if hit.get("source_url"):
                             st.markdown(f"[打开引用来源]({hit['source_url']})")
+            st.markdown("### 自然语言追问")
+            st.caption(f"对话范围：{report['case_id']} · cutoff {report['cutoff']} · 来源版本 {report['source_version']}。"
+                       "服务器逐轮核查报告和引用，回答结合最近四轮有效对话；切换报告使用独立对话。")
+            conversation_key = "question_conversation_" + report["report_id"]
+            conversation_id = st.session_state.get(conversation_key)
+            history = {"turns": [], "turn_count": 0, "budget": question_config.get("budget", {})}
+            if conversation_id:
+                history = request("GET", f"/reports/{report['report_id']}/questions/{conversation_id}")
+            for turn in history["turns"]:
+                with st.chat_message("user"):
+                    st.text(turn["question"])
+                with st.chat_message("assistant"):
+                    if turn.get("turn_state") != "complete":
+                        st.error("追问未生成有效回答：" + turn.get("failure_category", "unknown_error"))
+                    else:
+                        st.text(turn["answer"])
+                        if turn.get("answer_status") == "insufficient_evidence":
+                            st.info("证据不足；本轮回答保留弃权。")
+                        for citation in turn.get("citations", []):
+                            st.caption(f"引用 {citation['evidence_id']} · {citation['kind']}")
+                            st.text(citation["quote"])
+                            if citation.get("source_url"):
+                                st.markdown(f"[核对追问引用来源]({citation['source_url']})")
+                    st.caption(f"模式：{turn.get('execution_mode', '未完成')} · 模型：{turn.get('model', '未返回')} · "
+                               f"费用账本：¥{turn.get('cost_cny', turn.get('reservation_cny', '未知'))} · "
+                               f"费用依据：{turn.get('cost_basis', 'reservation_retained')}")
+            budget = history.get("budget") or {}
+            st.caption(f"追问预算：已扣记/预留 ¥{budget.get('charged_or_reserved_cny', '0')} / "
+                       f"¥{budget.get('limit_cny', '0')} · 调用 {budget.get('calls_used', 0)}/{budget.get('calls_limit', 0)}。")
+            enabled = (question_config.get("enabled") and report["case_id"] in question_config.get("allowed_case_ids", [])
+                       and budget.get("calls_used", 0) < budget.get("calls_limit", 0))
+            if not enabled:
+                st.info("自然语言追问未启用、该案例未获模型授权或调用额度已用尽；请核对服务配置。")
+            with st.form("report_question_form_" + report["report_id"]):
+                question = st.text_input("自然语言问题", placeholder="例如：截至截止时间，哪些系统受影响？它们有恢复证据吗？")
+                submitted_question = st.form_submit_button("提交追问", disabled=not enabled)
+            if submitted_question:
+                try:
+                    answer = request("POST", f"/reports/{report['report_id']}/questions", timeout=40, json={
+                        "question": question, "conversation_id": conversation_id,
+                        "expected_turn_count": history["turn_count"],
+                    })
+                    st.session_state[conversation_key] = answer["conversation_id"]
+                    st.rerun()
+                except (httpx.HTTPError, ValueError) as exc:
+                    show_api_error(exc)
         except (httpx.HTTPError, ValueError) as exc:
             show_api_error(exc)
     elif st.session_state.get("report_graph_id"):
@@ -917,11 +977,11 @@ if active_page == "预警中心":
 
 if active_page == "关口状态":
     st.subheader("内部关口状态")
-    st.caption("项目已通过主办方初审、进入初赛；G1—G5 是项目自设的内部工程检查点。以下数字为历史基线，不是当前进程的运行结果。")
+    st.caption("项目已通过主办方初审、进入初赛；G1—G5 是项目自设的内部工程检查点。以下数字仅为 2026-10-11 源码接手基线；后续正式评测以总 Agent 主干测试报告为准。")
     st.success("G1-V2 与 G2-V2 已内部受限通过；可运行 API、持久化、截止快照、受限证据图检索。")
-    st.warning("G3 尚未通过：最新 500 Agent × 30 轮历史尝试为 partial，3,477/15,000 次有效决策，6 轮后因 timeout 停止；完整规模未达标。")
+    st.warning("基线 G3 未通过：当时的 500 Agent × 30 轮尝试为 partial，3,477/15,000 次有效决策，6 轮后因 timeout 停止。")
     st.caption("G4 尚未通过：历史案例的本机 10×3 离线替身闭环已有基线；真实通知、完整模型时效与内网出口隔离仍缺验证。")
-    st.warning("G5 尚未通过：正式情感、负面识别和走势方向分母均为 0，结果为 0/0、不可计算。")
+    st.warning("基线 G5 未通过：当时正式情感、负面识别和走势方向分母为 0，结果为 0/0、不可计算；此页不复写后续主干评分结论。")
     for blocker in readiness["blockers"]:
         st.warning(blocker)
     st.write("DailyComplaint 是遗留可选契约，不参与新版主链验收。")

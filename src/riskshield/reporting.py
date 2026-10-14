@@ -134,7 +134,7 @@ class Day4Reports:
                 report_id TEXT PRIMARY KEY, run_id TEXT NOT NULL, body TEXT NOT NULL
             )""")
 
-    def build(self, run_id: str, risk_assessment: dict | None = None) -> dict:
+    def build(self, run_id: str, risk_assessment: dict | None = None, *, persist: bool = True) -> dict:
         if risk_assessment is not None and not isinstance(risk_assessment, dict):
             raise ReportError("risk_assessment must be a JSON object")
         with self.store.connect() as db:
@@ -422,10 +422,20 @@ class Day4Reports:
                 "来源证据图由截止前的本机归档记录投影生成；本次没有新增来源采集或在线 GraphRAG 检索。")
         digest = hashlib.sha256(_json(report).encode()).hexdigest()[:24]
         report["report_id"] = "report_" + digest
-        with self.store.connect() as db:
-            db.execute("INSERT OR IGNORE INTO day4_reports VALUES (?, ?, ?)",
-                       (report["report_id"], run_id, _json(report)))
+        if persist:
+            with self.store.connect() as db:
+                db.execute("INSERT OR IGNORE INTO day4_reports VALUES (?, ?, ?)",
+                           (report["report_id"], run_id, _json(report)))
         return report
+
+    def validated(self, report_id: str) -> dict:
+        """Recheck the current source/action ledger without creating another report."""
+        saved = self.get(report_id)
+        risk = json.loads(_json(saved["modules"]["risk"]))
+        current = self.build(saved["run_id"], risk if risk.get("level") else None, persist=False)
+        if current != saved:
+            raise ReportError("Report or evidence changed since the report was frozen")
+        return saved
 
     def get(self, report_id: str) -> dict:
         with self.store.connect() as db:

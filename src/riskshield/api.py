@@ -12,6 +12,7 @@ from riskshield.evidence import (CollectRequest, CollectionError, EvidencePipeli
 from riskshield.simulation import Day3Simulation, SimulationCreate, SimulationError
 from riskshield.alerts import Day4Alerts
 from riskshield.reporting import Day4Reports
+from riskshield.questions import QuestionError, ReportQuestionRequest, ReportQuestions
 from riskshield.tasks import Day4Tasks, TaskError
 from riskshield.model_gateway import ModelUnavailable, model_status, probe_model
 from riskshield.schemas import AgentDecision, CaseImport, DailyComplaint
@@ -55,10 +56,15 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
     reports = Day4Reports(store)
     alerts = Day4Alerts(store)
     tasks = Day4Tasks(store)
+    questions = ReportQuestions(store)
 
     @app.get("/health")
     def health():
         return {"status": "ok", "stage": "day4_v2", "version": "0.5.0"}
+
+    @app.get("/questions/config")
+    def question_config():
+        return questions.describe()
 
     @app.get("/readiness")
     def readiness():
@@ -303,6 +309,24 @@ def create_app(db_path: str | Path | None = None) -> FastAPI:
             return reports.get(report_id)
         except KeyError:
             raise HTTPException(status_code=404, detail="报告不存在") from None
+
+    @app.post("/reports/{report_id}/questions")
+    def ask_report(report_id: str, request: ReportQuestionRequest):
+        try:
+            return questions.ask(report_id, request)
+        except KeyError:
+            raise HTTPException(status_code=404, detail="报告或对话不存在") from None
+        except QuestionError as exc:
+            raise HTTPException(status_code=exc.status_code, detail=str(exc)) from None
+
+    @app.get("/reports/{report_id}/questions/{conversation_id}")
+    def report_conversation(report_id: str, conversation_id: str):
+        try:
+            return questions.history(report_id, conversation_id)
+        except KeyError:
+            raise HTTPException(status_code=404, detail="报告或对话不存在") from None
+        except QuestionError as exc:
+            raise HTTPException(status_code=exc.status_code, detail=str(exc)) from None
 
     @app.post("/alerts/assess", status_code=201)
     def assess_alert(request: RunReference):
