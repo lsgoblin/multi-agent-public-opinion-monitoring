@@ -119,6 +119,12 @@ def resolve_db_path(raw: str) -> Path:
     ledger as permanently lost. It survived only by luck. The ledger is the only
     artifact carrying the per-request audit trail, so the runner now refuses to start
     unless the database lands in a persistent directory outside every temp root.
+
+    One exemption: a path inside this checkout. A checkout is a real directory on disk
+    whether or not it happens to sit under a temp root -- someone can clone into
+    ``D:\\temp`` or run CI in a temp workspace -- and its files are not swept by temp
+    cleanup, which is the failure this guard exists to prevent. Without the exemption a
+    cloned checkout could not run its own CLI tests.
     """
     target = Path(raw).expanduser()
     if not target.is_absolute():
@@ -132,8 +138,10 @@ def resolve_db_path(raw: str) -> Path:
     local = os.environ.get("LOCALAPPDATA")
     if local:
         temp_roots.append((Path(local) / "Temp").resolve())
+    checkout = PROJECT_ROOT.resolve()
+    inside_checkout = target == checkout or checkout in target.parents
     for root in temp_roots:
-        if target == root or root in target.parents:
+        if (target == root or root in target.parents) and not inside_checkout:
             raise SystemExit(
                 f"--db {target} is inside the temp root {root}; the ledger would be "
                 "cleared with the temp area. Put it under the evidence tree, e.g. "
