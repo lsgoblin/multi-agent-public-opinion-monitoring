@@ -62,6 +62,9 @@ def test_provisional_four_levels_and_traceability(tmp_path, complaints, expected
     assert {ref["run_id"] for ref in alert["evidence_refs"]["action_refs"]} == {run_id}
     assert alert["discovered_at"] == alert["assessed_at"]
     assert alert["sent_at"] is None
+    assert alert["run_complete"] is True
+    assert alert["decisions_all_valid"] is True
+    assert alert["alert_is_success_result"] is True
     assert alerts.get(alert["alert_id"]) == alert
     assert alerts.assess(run_id) == alert
 
@@ -70,6 +73,9 @@ def test_provisional_four_levels_and_traceability(tmp_path, complaints, expected
         assert preview["delivery_status"] == "dry_run"
         assert preview["network_requests"] == 0
         assert preview["sent_at"] is None and preview["recipient"] is None
+        assert preview["alert_is_success_result"] is True
+        assert preview["receipt_status"] == "not_requested"
+        assert preview["receipt_at"] is None and preview["delivered_at"] is None
         assert preview["discovered_at"] == alert["discovered_at"]
         assert preview["discovery_to_preview_ms"] >= 0
         assert preview["latency_basis"] == "local_rule_assessment_to_preview_generation"
@@ -276,3 +282,182 @@ def test_a_report_can_be_built_from_a_fallback_alert(tmp_path):
     assert report["overview"]["risk_level"] == alert["level"]
     assert report["overview"]["main_basis"]["assessed_round"] == 1
     assert report["overview"]["run_integrity"]["complete"] is False
+
+
+def _amend_ledger_action(store, run_id, agent_id, status, *, round_number=1):
+    """Move one action to ``status`` and keep the round ledger self-consistent.
+
+    The reporting walk reconciles every round's statistics against its action rows
+    (``decision_requests``, ``failed_decisions``, ``deadline_exceeded_requests``,
+    ``not_dispatched_current_round``). A test that rewrites an action without
+    updating those numbers leaves a ledger that is *inconsistent* rather than
+    *incomplete*, and that is a different defect from the one under test -- the
+    walk rejects it before any alert is produced. This helper moves the row and
+    the statistics together, so the ledger stays internally consistent while the
+    run is genuinely not a full success.
+    """
+    with store.connect() as db:
+        db.execute("UPDATE simulation_actions SET status=?, decision=NULL "
+                   "WHERE run_id=? AND agent_id=?", (status, run_id, agent_id))
+        row = db.execute("SELECT stats FROM simulation_rounds WHERE run_id=? AND round_number=?",
+                         (run_id, round_number)).fetchone()
+        stats = json.loads(row["stats"])
+        if status == "failed":
+            stats["failed_decisions"] = stats.get("failed_decisions", 0) + 1
+        elif status == "deadline_exceeded":
+            stats["deadline_exceeded_requests"] = stats.get("deadline_exceeded_requests", 0) + 1
+        elif status == "not_dispatched":
+            # The walk reconciles ``not_dispatched`` rows against this field.
+            stats["not_dispatched_current_round"] = (
+                stats.get("not_dispatched_current_round", 0) + 1)
+        db.execute("UPDATE simulation_rounds SET stats=? WHERE run_id=? AND round_number=?",
+                   (json.dumps(stats), run_id, round_number))
+
+
+def _mark_every_round_action(store, run_id, status, *, round_number=1):
+    """Move every action of a round to ``status`` with the statistics following."""
+    with store.connect() as db:
+        agents = [row["agent_id"] for row in db.execute(
+            "SELECT agent_id FROM simulation_actions WHERE run_id=? AND round_number=?",
+            (run_id, round_number))]
+    for agent_id in agents:
+        _amend_ledger_action(store, run_id, agent_id, status, round_number=round_number)
+
+
+@pytest.mark.parametrize("run_status,action_status,failed,undecided", [
+    ("partial", "valid", 0, 0),
+    ("complete", "failed", 1, 0),
+    ("partial", "deadline_exceeded", 0, 1),
+    ("partial", "not_dispatched", 0, 1),
+    ("complete", "deadline_exceeded", 0, 1),
+])
+def test_incomplete_alert_and_preview_never_claim_full_success(
+        tmp_path, run_status, action_status, failed, undecided):
+    store = _prepared_store(tmp_path / "alerts.db")
+    run_id = _run(store, complaint_count=8)
+    with store.connect() as db:
+        db.execute("UPDATE simulation_runs SET status=? WHERE run_id=?", (run_status, run_id))
+    if action_status != "valid":
+        # Persist the additive simulation-scale action contract without a live call, and
+        # move the round statistics with it so the ledger stays reconcilable.
+        _amend_ledger_action(store, run_id, "agent_0019", action_status)
+    alerts = Day4Alerts(store)
+    alert = alerts.assess(run_id)
+    assert alert["status"] == "provisional_offline_assessment"
+    assert alert["level"] == "red"
+    assert alert["alert_is_success_result"] is False
+    assert alert["metrics"]["run_status"] == run_status
+    assert alert["metrics"]["run_failed_decisions"] == failed
+    assert alert["metrics"]["latest_round_failed_decisions"] == failed
+    assert alert["metrics"]["run_undecided_requests"] == undecided
+    assert alert["metrics"]["latest_round_undecided_requests"] == undecided
+    assert alert["run_action_counts"][action_status] >= 1
+    for channel in ("wecom", "email"):
+        preview = alerts.preview_delivery(alert["alert_id"], channel)
+        assert preview["delivery_status"] == "dry_run"
+        assert preview["alert_is_success_result"] is False
+        assert preview["run_status"] == run_status
+        assert preview["receipt_status"] == "not_requested"
+        assert preview["receipt_at"] is None and preview["delivered_at"] is None
+        message = (preview["payload"]["text"]["content"] if channel == "wecom"
+                   else preview["payload"]["body_text"])
+        assert "INCOMPLETE OR UNVERIFIED RUN" in message
+        assert run_status in message
+
+
+def test_a_run_holding_an_unrecorded_action_status_is_refused_before_assessment(
+        tmp_path):
+    """An action status the ledger accounting does not know is refused, not scored.
+
+    The merged ledger walk reconciles each action's status against the round
+    statistics the engine recorded, so a status that was never accounted for
+    cannot be silently read as either a failure or a valid decision. The refusal
+    happens before any risk level is produced, which is stricter than the earlier
+    behaviour of assessing such a run as merely incomplete.
+    """
+    from riskshield.reporting import ReportError
+
+    store = _prepared_store(tmp_path / "alerts.db")
+    run_id = _run(store, complaint_count=8)
+    with store.connect() as db:
+        db.execute("UPDATE simulation_actions SET status='unknown_contract_state', "
+                   "decision=NULL WHERE run_id=? AND agent_id='agent_0019'", (run_id,))
+    with pytest.raises(ReportError, match="disagree with action ledger"):
+        Day4Alerts(store).assess(run_id)
+
+
+@pytest.mark.parametrize("incomplete_ledger", ["missing_action", "missing_round"])
+def test_complete_status_requires_configured_rounds_and_full_action_count(
+        tmp_path, incomplete_ledger):
+    """A ``complete`` run whose ledger is short is refused, never scored as success.
+
+    Two shapes are covered, and they fail in different places by design:
+
+    * ``missing_action`` -- the round is recorded with one action fewer than its
+      statistics claim. The reconciliation refuses it as an inconsistent ledger.
+    * ``missing_round`` -- the round itself is gone. Nothing is inconsistent; the
+      run simply has no completed round to rest an assessment on, so the alert
+      layer refuses it for that reason.
+
+    Both must end without a successful assessment. Neither may produce a risk
+    level that reads as a finished result.
+    """
+    from riskshield.reporting import ReportError
+
+    store = _prepared_store(tmp_path / "alerts.db")
+    run_id = _run(store)
+    if incomplete_ledger == "missing_action":
+        with store.connect() as db:
+            db.execute("DELETE FROM simulation_actions WHERE run_id=? AND "
+                       "agent_id='agent_0019'", (run_id,))
+        with pytest.raises(ReportError, match="disagree with action ledger"):
+            Day4Alerts(store).assess(run_id)
+    else:
+        with store.connect() as db:
+            db.execute("DELETE FROM simulation_actions WHERE run_id=? AND round_number=1",
+                       (run_id,))
+            db.execute("DELETE FROM simulation_rounds WHERE run_id=? AND round_number=1",
+                       (run_id,))
+            db.execute("UPDATE simulation_runs SET status='partial', completed_rounds=0 "
+                       "WHERE run_id=?", (run_id,))
+        with pytest.raises(AlertError, match="no completed round"):
+            Day4Alerts(store).assess(run_id)
+
+
+@pytest.mark.parametrize("run_status", ["running", "failed"])
+def test_active_or_failed_run_cannot_be_assessed_as_a_finished_result(tmp_path, run_status):
+    store = _prepared_store(tmp_path / "alerts.db")
+    run_id = _run(store)
+    with store.connect() as db:
+        db.execute("UPDATE simulation_runs SET status=? WHERE run_id=?", (run_status, run_id))
+    with pytest.raises(AlertError, match="complete or explicitly partial"):
+        Day4Alerts(store).assess(run_id)
+
+
+def test_legacy_assessment_without_integrity_flags_is_unverified_in_preview(tmp_path):
+    store = _prepared_store(tmp_path / "alerts.db")
+    alerts = Day4Alerts(store)
+    alert = alerts.assess(_run(store))
+    for key in ("run_complete", "decisions_all_valid", "alert_is_success_result"):
+        alert.pop(key, None)
+    with store.connect() as db:
+        db.execute("UPDATE day4_alerts SET body=? WHERE alert_id=?",
+                   (json.dumps(alert), alert["alert_id"]))
+    preview = alerts.preview_delivery(alert["alert_id"], "wecom")
+    assert preview["alert_is_success_result"] is False
+    assert preview["run_complete"] is None and preview["decisions_all_valid"] is None
+    assert "INCOMPLETE OR UNVERIFIED RUN" in preview["payload"]["text"]["content"]
+
+
+def test_round_without_any_valid_decision_cannot_produce_a_blue_alert(tmp_path):
+    store = _prepared_store(tmp_path / "alerts.db")
+    run_id = _run(store)
+    with store.connect() as db:
+        db.execute("UPDATE simulation_runs SET status='partial' WHERE run_id=?", (run_id,))
+    _mark_every_round_action(store, run_id, "deadline_exceeded")
+    # The message is the merged code's: with the round-fallback rule a round that holds no
+    # valid decision is refused as "no round with a valid decision to assess" rather than
+    # "latest round has no valid decisions". The behaviour under test is unchanged -- no
+    # risk level is produced -- so the assertion follows the code rather than the old text.
+    with pytest.raises(AlertError, match="no round with a valid decision"):
+        Day4Alerts(store).assess(run_id)
