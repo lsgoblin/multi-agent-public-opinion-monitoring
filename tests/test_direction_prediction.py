@@ -159,7 +159,7 @@ def test_classification_follows_the_stated_conditions():
 def test_a_produced_document_meets_the_evaluators_input_schema(tmp_path):
     store = _fictional_store(tmp_path)
     run_id = _run(store)
-    built = build_documents(store, run_id, outdir=tmp_path / "build", base=tmp_path)
+    built = build_documents(store, run_id, outdir=tmp_path / "build", material_root=tmp_path)
     inputs = built["inputs"]
 
     assert inputs["schema"] == evaluation.INPUT_SCHEMA
@@ -188,7 +188,7 @@ def test_every_evidence_reference_resolves_for_the_evaluator(tmp_path, monkeypat
     store = _fictional_store(tmp_path)
     run_id = _run(store)
     outdir = tmp_path / "out"
-    written = write_documents(store, run_id, outdir)
+    written = write_documents(store, run_id, outdir, material_root=tmp_path)
     inputs = json.loads(written["inputs"].read_text(encoding="utf-8"))
     # The evaluator resolves references against the process working directory, so run the
     # resolution from the directory the document describes.
@@ -214,7 +214,7 @@ def test_the_freeze_record_states_the_binding_and_the_blinding(tmp_path, monkeyp
     monkeypatch.chdir(tmp_path)
     store = _fictional_store(tmp_path)
     run_id = _run(store)
-    built = build_documents(store, run_id, outdir=tmp_path / "build", base=tmp_path)
+    built = build_documents(store, run_id, outdir=tmp_path / "build", material_root=tmp_path)
     freeze = built["freeze_record"]
     assert freeze["schema"] == "riskshield.simulation_scale.direction-freeze.v1"
     assert freeze["outcomes_accessed"] is False
@@ -225,7 +225,7 @@ def test_the_freeze_record_states_the_binding_and_the_blinding(tmp_path, monkeyp
     assert freeze["method_document_sha256"] == load_method()[1]
     assert freeze["run_id"] == run_id
     # The recorded hash covers the document that was actually written.
-    written = write_documents(store, run_id, tmp_path / "out2", base=tmp_path)
+    written = write_documents(store, run_id, tmp_path / "out2", material_root=tmp_path)
     raw = written["inputs"].read_bytes()
     written_freeze = json.loads(
         (tmp_path / "out2" / "simulation-prediction-freeze-v1.json").read_text("utf-8"))
@@ -238,9 +238,9 @@ def test_a_frozen_document_is_never_overwritten(tmp_path):
     store = _fictional_store(tmp_path)
     run_id = _run(store)
     outdir = tmp_path / "out3"
-    write_documents(store, run_id, outdir)
+    write_documents(store, run_id, outdir, material_root=tmp_path)
     with pytest.raises(DirectionPredictionError, match="refusing to overwrite"):
-        write_documents(store, run_id, outdir)
+        write_documents(store, run_id, outdir, material_root=tmp_path)
 
 
 def test_the_adapter_makes_no_network_call(tmp_path, monkeypatch):
@@ -250,7 +250,7 @@ def test_the_adapter_makes_no_network_call(tmp_path, monkeypatch):
     monkeypatch.setattr(socket, "socket", forbidden)
     store = _fictional_store(tmp_path)
     run_id = _run(store)
-    built = build_documents(store, run_id, outdir=tmp_path / "build", base=tmp_path)
+    built = build_documents(store, run_id, outdir=tmp_path / "build", material_root=tmp_path)
     assert built["summary"]["prediction_source"] == PREDICTION_SOURCE
 
 
@@ -267,7 +267,7 @@ def test_a_run_whose_selected_round_decided_nothing_yields_no_prediction(tmp_pat
     finally:
         gate.set()
     with pytest.raises(DirectionPredictionError, match="no classifiable valid decision"):
-        build_documents(store, run_id, outdir=tmp_path / "build", base=tmp_path)
+        build_documents(store, run_id, outdir=tmp_path / "build", material_root=tmp_path)
 
 
 # --------------------------------------------------------- the evaluator, end to end
@@ -359,7 +359,7 @@ def test_the_existing_evaluator_admits_the_document_and_keeps_a_wrong_prediction
 
     outdir = tmp_path / "direction"
     written = write_documents(store, run_id, outdir, unit_kind="original_post",
-                             text_source="summary", base=tmp_path)
+                             text_source="summary", material_root=tmp_path)
     inputs = json.loads(written["inputs"].read_text(encoding="utf-8"))
     assert inputs["cases"][0]["data_mode"] == "real_historical"
     predicted = inputs["cases"][0]["predictions"]["direction"]["label"]
@@ -406,7 +406,7 @@ def test_two_direction_predictions_for_one_event_are_excluded_not_counted(tmp_pa
     engine.advance(run_id, Substitute())
     outdir = tmp_path / "two-out"
     written = write_documents(store, run_id, outdir, unit_kind="original_post",
-                             text_source="summary", base=tmp_path)
+                             text_source="summary", material_root=tmp_path)
     inputs = json.loads(written["inputs"].read_text(encoding="utf-8"))
     # A second case for the same event, as an independent baseline would produce. It must be
     # a *different unit*: the evaluator rejects the same source record appearing twice for
