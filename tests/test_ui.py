@@ -12,6 +12,7 @@ from riskshield.evidence import Day2Pipeline
 from riskshield.simulation import Day3Simulation, DecisionResult
 from riskshield.schemas import AgentDecision, CaseImport
 from riskshield.store import Store
+from riskshield.tasks import Day4Tasks, OfflineDynamicSubstitute
 from tests.fixtures.day3_synthetic_case import CASE_ID, GRAPH_ID, prepare_synthetic_case
 
 
@@ -43,6 +44,11 @@ def test_ui_import_snapshot_and_evaluation_toggle(tmp_path, monkeypatch):
         next(button for button in app.button if button.label == "导入多来源历史事件").click()
         app.run(timeout=20)
         assert not app.exception
+        imported_case = api.get("/cases").json()[0]
+        assert imported_case["case_id"] == "unh_change_20240222_day2_multisource"
+        snapshot = api.get(f"/cases/{imported_case['case_id']}/snapshot").json()
+        assert len(snapshot["records"]) == 2
+        assert snapshot["excluded_counts"]["not_input"] == 1
         assert app.checkbox[0].value is False
         before = " ".join(item.value for item in app.markdown)
         assert "Form 8-K: Change Healthcare cybersecurity incident" in before
@@ -79,6 +85,7 @@ def test_ui_creates_local_configuration_without_running_or_reporting(tmp_path, m
         assert len(runs) == 1
         assert runs[0]["status"] == "created"
         assert runs[0]["completed_rounds"] == 0
+        assert next(item for item in app.metric if item.label == "参与智能体").value == "0"
         assert api.get(f"/simulations/{runs[0]['run_id']}/trajectory").json()["actions"] == []
         app.session_state["report_id"] = "report_from_another_task"
         set_page(app, "处置队列")
@@ -239,6 +246,109 @@ def test_ui_prepares_and_runs_offline_demo_with_job_evidence(tmp_path, monkeypat
         assert "合成数据" in " ".join(item.value for item in app.caption)
 
 
+def test_ui_switches_tasks_and_keeps_report_graph_and_alert_run_bound(tmp_path, monkeypatch):
+    store = Store(tmp_path / "bindings.db")
+    tasks = Day4Tasks(store)
+    demo = tasks.prepare_demo_run(agent_count=2, rounds=1, concurrency=2)
+    demo_job = tasks.run_sync(demo["run_id"])
+    package = json.loads((Path(__file__).resolve().parents[1] / "data/public/"
+                          "unh_change_20240222_day2_multisource_event.json").read_text(encoding="utf-8"))
+    case = CaseImport.model_validate(package["case_import_projection"])
+    store.import_case(case)
+    historical = tasks.start_historical_case(case.case_id, agent_count=2, rounds=1, concurrency=2)
+    historical_job = tasks.wait(historical["job_id"], timeout=10)
+    assert demo_job["status"] == historical_job["status"] == "complete"
+
+    with TestClient(create_app(store.path)) as api:
+        calls = []
+
+        def local_request(method, url, **kwargs):
+            kwargs.pop("timeout", None)
+            path = url.removeprefix("http://127.0.0.1:8000")
+            calls.append((method, path))
+            return api.request(method, path, **kwargs)
+
+        monkeypatch.setenv("RISKSHIELD_API_URL", "http://127.0.0.1:8000")
+        monkeypatch.setattr(httpx, "request", local_request)
+        app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / "ui/app.py"))
+        app.run(timeout=20)
+        next(item for item in app.radio if item.key == "queue_selected_run_widget").set_value(
+            demo["run_id"]).run(timeout=20)
+        assert app.session_state["selected_run_id"] == demo["run_id"]
+        next(item for item in app.button if item.label == "打开关联报告").click().run(timeout=20)
+        assert not app.exception
+        assert next(item for item in app.selectbox if item.key == "report_run").value == demo["run_id"]
+        assert app.session_state["report_graph_id"] == demo["graph_id"]
+
+        calls.clear()
+        next(item for item in app.text_input if item.label == "查看报告 ID").set_value(
+            historical_job["report_id"]).run(timeout=20)
+        assert not app.exception
+        assert ("GET", f"/graphs/{historical_job['graph_id']}") in calls
+        assert ("GET", f"/graphs/{demo['graph_id']}") not in calls
+        next(item for item in app.text_input if item.label == "来源证据检索").set_value(
+            "Change Healthcare").run(timeout=20)
+        next(item for item in app.button if item.label == "检索带引用证据").click().run(timeout=20)
+        assert app.session_state["evidence_query_result"]["graph_id"] == historical_job["graph_id"]
+
+        set_page(app, "处置队列")
+        next(item for item in app.button if item.label == "打开关联预警").click().run(timeout=20)
+        assert next(item for item in app.selectbox if item.key == "alert_run_widget").value == demo["run_id"]
+        next(item for item in app.selectbox if item.key == "alert_run_widget").set_value(
+            historical_job["run_id"]).run(timeout=20)
+        assert app.session_state["alert_run_id"] == historical_job["run_id"]
+        next(item for item in app.button if item.label == "按当前规则判级").click().run(timeout=20)
+        assert not app.exception
+        alert = api.get(f"/alerts/{app.session_state['alert_id']}").json()
+        assert alert["run_id"] == historical_job["run_id"]
+
+
+def test_ui_completed_rounds_with_failed_decisions_are_partial(tmp_path, monkeypatch):
+    """A controlled offline failure must stay visible even when all rounds end."""
+    tasks = Day4Tasks(Store(tmp_path / "partial.db"))
+    run = tasks.prepare_demo_run(agent_count=2, rounds=1, concurrency=2)
+
+    def fail_decision(self, observation):
+        raise RuntimeError("controlled offline UI test failure")
+
+    monkeypatch.setattr(OfflineDynamicSubstitute, "decide", fail_decision)
+    job = tasks.run_sync(run["run_id"])
+    assert job["result_state"] == "partial"
+    assert job["simulation_status"] == "complete"
+    with TestClient(create_app(tasks.store.path)) as api:
+        def local_request(method, url, **kwargs):
+            kwargs.pop("timeout", None)
+            return api.request(method, url.removeprefix("http://127.0.0.1:8000"), **kwargs)
+
+        monkeypatch.setenv("RISKSHIELD_API_URL", "http://127.0.0.1:8000")
+        monkeypatch.setattr(httpx, "request", local_request)
+        app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / "ui/app.py"))
+        app.run(timeout=20)
+        next(item for item in app.radio if item.key == "queue_filter").set_value(
+            "部分完成").run(timeout=20)
+        assert not app.exception
+        metrics = {item.label: str(item.value) for item in app.metric}
+        assert metrics["有效决策"] == metrics["参与智能体"] == "0"
+        assert metrics["失败决策"] == "2"
+        assert any("任务部分完成" in item.value for item in app.error)
+        assert next(item for item in app.button if item.label == "打开关联报告").disabled
+        assert next(item for item in app.button if item.label == "打开关联预警").disabled
+
+        # A synthetic reservation larger than the budget stops before any decision dispatch.
+        monkeypatch.setattr(OfflineDynamicSubstitute, "reservation_cny", Decimal("100"))
+        stopped_run = tasks.prepare_demo_run(agent_count=2, rounds=2, concurrency=2)
+        stopped_job = tasks.run_sync(stopped_run["run_id"])
+        assert stopped_job["result_state"] == "stopped"
+        assert stopped_job["action_counts"]["not_dispatched"] == 2
+        app.run(timeout=20)
+        next(item for item in app.radio if item.key == "queue_selected_run_widget").set_value(
+            stopped_run["run_id"]).run(timeout=20)
+        assert not app.exception
+        assert any("任务已停止" in item.value for item in app.error)
+        assert next(item for item in app.metric if item.label == "参与智能体").value == "0"
+        assert next(item for item in app.button if item.label == "打开关联报告").disabled
+
+
 def test_ui_shows_offline_job_failure(tmp_path, monkeypatch):
     db_path = tmp_path / "ui.db"
     with TestClient(create_app(db_path)) as api:
@@ -266,6 +376,9 @@ def test_ui_shows_offline_job_failure(tmp_path, monkeypatch):
         app.run(timeout=20)
         assert not app.exception
         assert any("data_integrity_error" in item.value for item in app.error)
+        next(item for item in app.radio if item.key == "queue_filter").set_value("失败").run(timeout=20)
+        assert not app.exception
+        assert next(item for item in app.radio if item.key == "queue_selected_run_widget").value == run["run_id"]
 
 
 def test_ui_shows_empty_propagation_and_no_match_path(tmp_path, monkeypatch):
