@@ -1,5 +1,6 @@
 import json
 import os
+import textwrap
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -49,7 +50,7 @@ button[kind="primary"] { background:var(--blue); border-color:var(--blue); }
 </style>
 """, unsafe_allow_html=True)
 def request(method, path, **kwargs):
-    response = httpx.request(method, API + path, timeout=10, **kwargs)
+    response = httpx.request(method, API + path, timeout=kwargs.pop("timeout", 10), **kwargs)
     response.raise_for_status()
     return response.json()
 
@@ -80,10 +81,12 @@ def show_graph(graph):
     if not nodes:
         st.write("当前证据图没有可显示的节点。")
         return
-    lines = ["digraph evidence {", 'rankdir="LR";', 'node [shape="box"];']
+    lines = ["digraph evidence {", 'rankdir="TB";',
+             'node [shape="box", fontsize=14, margin="0.12,0.08"];']
     for node in nodes:
         node_id = json.dumps(str(node.get("id", "")), ensure_ascii=False)
-        label = json.dumps(str(node.get("label") or node.get("id", ""))[:80], ensure_ascii=False)
+        label = json.dumps(textwrap.fill(str(node.get("label") or node.get("id", "")), width=18),
+                           ensure_ascii=False)
         lines.append(f"{node_id} [label={label}];")
     for edge in edges:
         source = json.dumps(str(edge.get("from", "")), ensure_ascii=False)
@@ -93,6 +96,8 @@ def show_graph(graph):
     lines.append("}")
     st.graphviz_chart("\n".join(lines), use_container_width=True)
     st.caption(f"来源证据图：{len(nodes)} 个证据节点、{len(edges)} 条关系；这是截止快照的来源结构，不是实际社交传播图。")
+    st.caption(f"来源范围：案例 {graph.get('case_id', '未记录')} · cutoff {graph.get('cutoff', '未记录')} · "
+               f"版本 {graph.get('source_version', '未记录')}")
 
 
 def show_propagation_graph(edges, report_id):
@@ -102,11 +107,15 @@ def show_propagation_graph(edges, report_id):
         return
     nodes = sorted({edge.get("sender_id") for edge in edges} |
                    {edge.get("recipient_id") for edge in edges})
+    focus = st.selectbox("模拟传播图范围", nodes + ["全部智能体"], key="propagation_focus_" + report_id)
+    shown_edges = edges if focus == "全部智能体" else [e for e in edges if e.get("sender_id") == focus]
+    shown_nodes = sorted({e.get("sender_id") for e in shown_edges} |
+                         {e.get("recipient_id") for e in shown_edges})
     lines = ["digraph simulated_propagation {", 'rankdir="LR";', 'node [shape="box"];']
-    for node_id in nodes:
+    for node_id in shown_nodes:
         label = json.dumps(str(node_id), ensure_ascii=False)
         lines.append(f"{label} [label={label}];")
-    for edge in edges:
+    for edge in shown_edges:
         sender = json.dumps(str(edge.get("sender_id", "")), ensure_ascii=False)
         recipient = json.dumps(str(edge.get("recipient_id", "")), ensure_ascii=False)
         label = json.dumps(f"{edge.get('message_count', 0)} 条消息", ensure_ascii=False)
@@ -114,6 +123,8 @@ def show_propagation_graph(edges, report_id):
     lines.append("}")
     st.graphviz_chart("\n".join(lines), use_container_width=True)
     st.caption(f"模拟传播图：{len(nodes)} 个智能体、{len(edges)} 条发送关系。每条关系保留消息和发送动作引用；活动量不证明因果影响。")
+    st.caption(f"当前图范围：{focus} 的发送关系" if focus != "全部智能体" else "当前图范围：全部发送关系")
+    st.caption(f"显示 {len(shown_nodes)}/{len(nodes)} 个智能体、{len(shown_edges)}/{len(edges)} 条关系；全部关系保留在下方明细。")
 
 
 def queue_navigation(page, **values):
@@ -123,6 +134,8 @@ def queue_navigation(page, **values):
             st.session_state["report_id_input"] = value or ""
         if key == "alert_id":
             st.session_state["alert_id_input"] = value or ""
+        if key == "alert_run_id":
+            st.session_state["alert_run_widget"] = value
     st.session_state["pending_navigation"] = page
     st.rerun()
 
@@ -132,6 +145,7 @@ try:
     readiness = request("GET", "/readiness")
     cases = request("GET", "/cases")
     channels = request("GET", "/channels/status")
+    question_config = request("GET", "/questions/config")
 except (httpx.HTTPError, ValueError):
     st.error("后端尚未就绪。请先按 README 启动本地 API，再刷新页面。")
     st.code("uv run uvicorn riskshield.api:create_app --factory --host 127.0.0.1 --port 8000")
@@ -154,8 +168,12 @@ with st.sidebar:
     )
     st.divider()
     st.markdown("<div class='sidebar-section-label'>运行边界</div>", unsafe_allow_html=True)
-    st.markdown("<span class='status-pill'>LOCAL · OFFLINE</span>", unsafe_allow_html=True)
-    st.caption("仅限获准的本机工作流；不发送真实通知、不外发材料。")
+    if question_config.get("enabled"):
+        st.markdown("<span class='status-pill'>LOCAL SIM · AUTHORIZED QA</span>", unsafe_allow_html=True)
+        st.caption("仿真仍为本机离线；提交追问会向获准 qwen-turbo 发送限定来源、模拟报告与对话。通知仅预览。")
+    else:
+        st.markdown("<span class='status-pill'>LOCAL · OFFLINE</span>", unsafe_allow_html=True)
+        st.caption("自然语言追问默认关闭；本机仿真和通知预览不外发材料。")
     st.markdown("<div class='sidebar-section-label'>验收关口</div>", unsafe_allow_html=True)
     st.markdown("**G1 / G2**　内部受限通过")
     st.markdown("**G3**　尚未通过")
@@ -199,7 +217,7 @@ if active_page == "事件证据":
          "导入失败，请查看 API 状态和案例版本；不同内容不会覆盖原版本。"),
         ("导入首个黑猫事件包", "blackcat_17374386012_event_v2.json", "blackcat_import_result",
          "case_import_projection", "黑猫事件包导入失败，请查看 API 状态和事件包字段映射。"),
-        ("导入多来源历史事件", "unh_change_20240222_event_v2.json", "g1_import_result",
+        ("导入多来源历史事件", "unh_change_20240222_day2_multisource_event.json", "g1_import_result",
          "case_import_projection", "多来源历史事件导入失败，请查看 API 状态和事件包字段映射。"),
     )
     for label, filename, result_key, projection, error in imports:
@@ -269,7 +287,17 @@ if active_page == "处置队列":
     selected_run_id = None
     run_status_labels = {
         "created": "待启动", "running": "运行中", "complete": "已完成", "failed": "失败",
+        "partial": "部分完成", "queued": "排队中", "stopped": "已停止",
     }
+
+    def queue_status(row):
+        job = next((item for item in job_rows if item.get("run_id") == row.get("run_id")), {})
+        if job.get("status") == "failed":
+            return "partial" if job.get("result_state") in {"partial", "stopped"} else "failed"
+        if row.get("status") == "complete" and row.get("all_decisions_valid") is False:
+            return "partial"
+        return row.get("status")
+
     case_titles = {item["case_id"]: item.get("title", item["case_id"]) for item in cases}
     case_titles["day4_demo_fictional_synthetic_v1"] = "虚构 Harborlight 保险服务演练"
 
@@ -280,29 +308,31 @@ if active_page == "处置队列":
         if run_rows:
             if st.session_state.pop("reset_queue_filter", False):
                 st.session_state["queue_filter"] = "全部"
-            filter_labels = ["全部", "运行中", "待启动", "已完成", "失败"]
+                st.session_state["queue_selected_run_widget"] = st.session_state.get("selected_run_id")
+            filter_labels = ["全部", "运行中", "待启动", "已完成", "部分完成", "失败"]
             status_for_filter = {"运行中": "running", "待启动": "created",
-                                 "已完成": "complete", "失败": "failed"}
+                                 "已完成": "complete", "部分完成": "partial", "失败": "failed"}
             queue_filter = st.radio(
                 "任务状态", filter_labels, horizontal=True, key="queue_filter",
                 label_visibility="collapsed",
             )
             filtered_runs = [
                 row for row in run_rows
-                if queue_filter == "全部" or row.get("status") == status_for_filter[queue_filter]
+                if queue_filter == "全部" or queue_status(row) == status_for_filter[queue_filter]
             ]
             visible_run_ids = [row["run_id"] for row in filtered_runs if row.get("run_id")]
             if visible_run_ids:
                 if st.session_state.get("selected_run_id") not in visible_run_ids:
                     st.session_state["selected_run_id"] = visible_run_ids[0]
-                st.session_state["queue_selected_run_widget"] = st.session_state["selected_run_id"]
+                if st.session_state.get("queue_selected_run_widget") not in visible_run_ids:
+                    st.session_state["queue_selected_run_widget"] = st.session_state["selected_run_id"]
 
                 def run_label(run_id):
                     row = next(item for item in filtered_runs if item["run_id"] == run_id)
                     config = row.get("config") or {}
                     completed = row.get("completed_rounds") or 0
                     planned = config.get("rounds") or 0
-                    status = run_status_labels.get(row.get("status"), row.get("status", "未知"))
+                    status = run_status_labels.get(queue_status(row), row.get("status", "未知"))
                     title = case_titles.get(row.get("case_id"), row.get("case_id", "未命名案例"))
                     return f"{title}　·　{status}　·　{completed}/{planned} 轮"
 
@@ -411,13 +441,13 @@ if active_page == "处置队列":
             completed = selected_run.get("completed_rounds") or 0
             planned = config.get("rounds") or 0
             status = selected_run.get("status", "未知")
-            status_label = run_status_labels.get(status, status)
+            status_label = run_status_labels.get(queue_status(selected_run), status)
             case_id = selected_run.get("case_id", "未知案例")
             case_title = case_titles.get(case_id, case_id)
             round_stats = selected_run.get("rounds") or []
-            requested_decisions = sum(row.get("decision_requests", 0) for row in round_stats)
-            failed_decisions = sum(row.get("failed_decisions", 0) for row in round_stats)
-            valid_decisions = max(0, requested_decisions - failed_decisions)
+            action_counts = selected_run.get("action_counts") or {}
+            failed_decisions = action_counts.get("failed", 0)
+            valid_decisions = action_counts.get("valid", 0)
             with st.container(border=True):
                 st.markdown(f"##### {case_title}")
                 st.markdown(f'<span class="status-pill">{status_label}</span>', unsafe_allow_html=True)
@@ -430,7 +460,7 @@ if active_page == "处置队列":
                 metric_cols[1].metric("有效决策", valid_decisions)
                 metric_row_two = st.columns(2)
                 metric_row_two[0].metric("失败决策", failed_decisions)
-                metric_row_two[1].metric("参与智能体", selected_run.get("actual_participants") or config.get("agent_count") or 0)
+                metric_row_two[1].metric("参与智能体", selected_run.get("actual_participants", 0))
                 st.caption(
                     f"数据模式：{'合成数据' if config.get('data_mode') == 'synthetic' else '真实历史材料' if config.get('data_mode') == 'real_historical' else '未记录'}　·　"
                     f"执行方式：{'本机动态离线替身' if (config.get('backend') or {}).get('type', config.get('backend_mode')) == 'offline_dynamic_substitute' else (config.get('backend') or {}).get('type', config.get('backend_mode', '未记录'))}　·　"
@@ -446,7 +476,7 @@ if active_page == "处置队列":
                     with st.expander("查看逐轮账本"):
                         st.dataframe([{"轮次": row.get("round"),
                                        "请求决策": row.get("decision_requests", 0),
-                                       "有效决策": row.get("decision_requests", 0) - row.get("failed_decisions", 0),
+                                       "有效决策": row.get("valid_decisions", 0),
                                        "失败决策": row.get("failed_decisions", 0),
                                        "模拟消息": row.get("messages", 0)}
                                       for row in round_stats], hide_index=True, use_container_width=True)
@@ -473,6 +503,7 @@ if active_page == "处置队列":
                 st.rerun()
             if job_list_error:
                 show_api_error(job_list_error)
+            selected_job = {}
             if run_jobs:
                 job_ids = [row["job_id"] for row in run_jobs if row.get("job_id")]
                 preferred_job = st.session_state.get("selected_job_id")
@@ -495,7 +526,7 @@ if active_page == "处置队列":
                     st.progress(
                         max(0.0, min(float(progress), 1.0)),
                         text=(f"已完成 {completed_rounds}/{target_rounds} 轮 · "
-                              f"状态：{run_status_labels.get(selected_job.get('status'), selected_job.get('status', '未知'))}"),
+                              f"状态：{run_status_labels.get(selected_job.get('result_state'), run_status_labels.get(selected_job.get('status'), '未知'))}"),
                     )
                     job_cols = st.columns(2)
                     job_cols[0].metric("云模型调用", selected_job.get("model_calls", 0))
@@ -539,15 +570,15 @@ if active_page == "处置队列":
 
             link_cols = st.columns(3)
             graph_id = selected_run.get("graph_id")
-            linked_job = run_jobs[0] if run_jobs else {}
+            linked_job = selected_job
             linked_report_id = linked_job.get("report_id")
             linked_alert_id = linked_job.get("alert_id")
             if link_cols[0].button("打开关联图谱", use_container_width=True):
-                queue_navigation("五模块报告", report_graph_id=graph_id,
+                queue_navigation("五模块报告", report_run=selected_run_id, report_graph_id=graph_id,
                                  report_id=linked_report_id or "")
             if link_cols[1].button("打开关联报告", use_container_width=True,
                                    disabled=not linked_report_id):
-                queue_navigation("五模块报告", report_graph_id=graph_id,
+                queue_navigation("五模块报告", report_run=selected_run_id, report_graph_id=graph_id,
                                  report_id=linked_report_id)
             if link_cols[2].button("打开关联预警", use_container_width=True,
                                    disabled=not linked_alert_id):
@@ -728,7 +759,7 @@ if active_page == "五模块报告":
                           "预警状态字段": risk.get("status")})
             st.markdown("### 来源证据图")
             st.caption("该图按截止时间前的来源构建，与模拟智能体消息传播图不同。")
-            graph_id = st.session_state.get("report_graph_id") or report.get("graph_id")
+            graph_id = report.get("graph_id")
             try:
                 source_graph = request("GET", f"/graphs/{graph_id}")
                 show_graph(source_graph)
@@ -738,7 +769,7 @@ if active_page == "五模块报告":
             except (httpx.HTTPError, ValueError) as exc:
                 show_api_error(exc)
             st.markdown("#### 按词项查找引用来源")
-            st.caption("检索方式：词项匹配来源标题/摘要，再返回图邻域和来源引用；不生成自然语言答案。完整自然语言追问尚未实现。")
+            st.caption("检索方式：词项匹配来源标题/摘要，再返回图邻域和来源引用；模型生成的自然语言追问见下方独立入口。")
             query = st.text_input("来源证据检索", placeholder="例如：Change Healthcare 网络中断",
                                   key="evidence_query_input")
             if st.button("检索带引用证据"):
@@ -760,6 +791,52 @@ if active_page == "五模块报告":
                         st.caption(f"来源引用：{hit.get('record_id')} · 匹配分：{hit.get('score')}")
                         if hit.get("source_url"):
                             st.markdown(f"[打开引用来源]({hit['source_url']})")
+            st.markdown("### 自然语言追问")
+            st.caption(f"对话范围：{report['case_id']} · cutoff {report['cutoff']} · 来源版本 {report['source_version']}。"
+                       "服务器逐轮核查报告和引用，回答结合最近四轮有效对话；切换报告使用独立对话。")
+            conversation_key = "question_conversation_" + report["report_id"]
+            conversation_id = st.session_state.get(conversation_key)
+            history = {"turns": [], "turn_count": 0, "budget": question_config.get("budget", {})}
+            if conversation_id:
+                history = request("GET", f"/reports/{report['report_id']}/questions/{conversation_id}")
+            for turn in history["turns"]:
+                with st.chat_message("user"):
+                    st.text(turn["question"])
+                with st.chat_message("assistant"):
+                    if turn.get("turn_state") != "complete":
+                        st.error("追问未生成有效回答：" + turn.get("failure_category", "unknown_error"))
+                    else:
+                        st.text(turn["answer"])
+                        if turn.get("answer_status") == "insufficient_evidence":
+                            st.info("证据不足；本轮回答保留弃权。")
+                        for citation in turn.get("citations", []):
+                            st.caption(f"引用 {citation['evidence_id']} · {citation['kind']}")
+                            st.text(citation["quote"])
+                            if citation.get("source_url"):
+                                st.markdown(f"[核对追问引用来源]({citation['source_url']})")
+                    st.caption(f"模式：{turn.get('execution_mode', '未完成')} · 模型：{turn.get('model', '未返回')} · "
+                               f"费用账本：¥{turn.get('cost_cny', turn.get('reservation_cny', '未知'))} · "
+                               f"费用依据：{turn.get('cost_basis', 'reservation_retained')}")
+            budget = history.get("budget") or {}
+            st.caption(f"追问预算：已扣记/预留 ¥{budget.get('charged_or_reserved_cny', '0')} / "
+                       f"¥{budget.get('limit_cny', '0')} · 调用 {budget.get('calls_used', 0)}/{budget.get('calls_limit', 0)}。")
+            enabled = (question_config.get("enabled") and report["case_id"] in question_config.get("allowed_case_ids", [])
+                       and budget.get("calls_used", 0) < budget.get("calls_limit", 0))
+            if not enabled:
+                st.info("自然语言追问未启用、该案例未获模型授权或调用额度已用尽；请核对服务配置。")
+            with st.form("report_question_form_" + report["report_id"]):
+                question = st.text_input("自然语言问题", placeholder="例如：截至截止时间，哪些系统受影响？它们有恢复证据吗？")
+                submitted_question = st.form_submit_button("提交追问", disabled=not enabled)
+            if submitted_question:
+                try:
+                    answer = request("POST", f"/reports/{report['report_id']}/questions", timeout=40, json={
+                        "question": question, "conversation_id": conversation_id,
+                        "expected_turn_count": history["turn_count"],
+                    })
+                    st.session_state[conversation_key] = answer["conversation_id"]
+                    st.rerun()
+                except (httpx.HTTPError, ValueError) as exc:
+                    show_api_error(exc)
         except (httpx.HTTPError, ValueError) as exc:
             show_api_error(exc)
     elif st.session_state.get("report_graph_id"):
@@ -794,7 +871,8 @@ if active_page == "预警中心":
             title = alert_run_labels.get(row.get("case_id"), row.get("case_id", "未命名案例"))
             return f"{title}　·　{row.get('completed_rounds', 0)}/{config.get('rounds', 0)} 轮"
 
-        st.session_state["alert_run_widget"] = st.session_state["alert_run_id"]
+        if st.session_state.get("alert_run_widget") not in alert_run_ids:
+            st.session_state["alert_run_widget"] = st.session_state["alert_run_id"]
         alert_run_id = st.selectbox(
             "选择预警运行", alert_run_ids,
             index=alert_run_ids.index(st.session_state["alert_run_id"]),
@@ -899,9 +977,11 @@ if active_page == "预警中心":
 
 if active_page == "关口状态":
     st.subheader("内部关口状态")
+    st.caption("项目已通过主办方初审、进入初赛；G1—G5 是项目自设的内部工程检查点。以下数字仅为 2026-10-11 源码接手基线；后续正式评测以总 Agent 主干测试报告为准。")
     st.success("G1-V2 与 G2-V2 已内部受限通过；可运行 API、持久化、截止快照、受限证据图检索。")
-    st.warning("G3 尚未通过：纯合成百炼 500 Agent × 30 轮已实测，14,994 次有效决策、6 次无效决策；消息改变动作的受控因果证据仍缺。")
-    st.caption("G4 正在工程实现，尚未以真实任务演示、通知送达、计时或域内运行证据签收。")
+    st.warning("基线 G3 未通过：当时的 500 Agent × 30 轮尝试为 partial，3,477/15,000 次有效决策，6 轮后因 timeout 停止。")
+    st.caption("G4 尚未通过：历史案例的本机 10×3 离线替身闭环已有基线；真实通知、完整模型时效与内网出口隔离仍缺验证。")
+    st.warning("基线 G5 未通过：当时正式情感、负面识别和走势方向分母为 0，结果为 0/0、不可计算；此页不复写后续主干评分结论。")
     for blocker in readiness["blockers"]:
         st.warning(blocker)
     st.write("DailyComplaint 是遗留可选契约，不参与新版主链验收。")

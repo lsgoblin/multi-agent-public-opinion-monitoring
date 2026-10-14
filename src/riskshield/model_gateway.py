@@ -3,6 +3,7 @@
 import json
 import os
 import time
+from decimal import Decimal
 from urllib.parse import urlparse
 
 import httpx
@@ -12,6 +13,98 @@ from riskshield.schemas import AgentDecision
 
 class ModelUnavailable(RuntimeError):
     pass
+
+
+class ReportQuestionModel:
+    """Opt-in Beijing qwen-turbo answers; never activated by UI input or a probe."""
+
+    max_input_tokens = 32768
+    max_output_tokens = 1200
+    input_price = Decimal("0.3")
+    output_price = Decimal("0.6")
+    price_version = "aliyun-qwen-turbo-beijing-nonthinking-20261014"
+    safe_error_codes = {"Throttling", "Throttling.RateQuota", "Throttling.AllocationQuota",
+                        "insufficient_quota", "rate_limit_exceeded", "AllocationQuota.FreeTierOnly",
+                        "Arrearage", "AccessDenied.Unpurchased"}
+
+    def __init__(self):
+        self.enabled = os.getenv("RISKSHIELD_ENABLE_REPORT_QA") == "1"
+        self.authorization_id = os.getenv("RISKSHIELD_REPORT_QA_GRANT_ID", "").strip()
+        self.allowed_cases = set(filter(None, (s.strip() for s in os.getenv(
+            "RISKSHIELD_REPORT_QA_ALLOWED_CASE_IDS", "").split(","))))
+        self.source_version = os.getenv("RISKSHIELD_REPORT_QA_ALLOWED_SOURCE_VERSION", "").strip()
+        self._key = os.getenv("DASHSCOPE_API_KEY", "").strip()
+        self.base_url = os.getenv("RISKSHIELD_BAILIAN_BASE_URL",
+                                  "https://dashscope.aliyuncs.com/compatible-mode/v1").rstrip("/")
+        self.invalid = False
+        try:
+            self.budget_cny = Decimal(os.getenv("RISKSHIELD_REPORT_QA_BUDGET_CNY", "1.00"))
+            self.max_calls = int(os.getenv("RISKSHIELD_REPORT_QA_MAX_CALLS", "8"))
+            self.invalid = (not self.budget_cny.is_finite() or not 0 < self.budget_cny <= 30
+                            or not 1 <= self.max_calls <= 100
+                            or self.base_url != "https://dashscope.aliyuncs.com/compatible-mode/v1")
+        except (ValueError, ArithmeticError):
+            self.invalid = True
+            self.budget_cny, self.max_calls = Decimal("0"), 0
+
+    def describe(self):
+        ready = bool(self.enabled and not self.invalid and self._key
+                     and self.authorization_id and self.allowed_cases)
+        return {"enabled": ready, "requested_model": "qwen-turbo", "provider": "aliyun_beijing",
+                "allowed_case_ids": sorted(self.allowed_cases), "budget_cny": str(self.budget_cny),
+                "max_calls": self.max_calls, "price_version": self.price_version,
+                "execution_mode": "llm_grounded_report_qa", "default_disabled": True}
+
+    def reservation(self, messages):
+        # UTF-8 payload bytes plus chat framing is conservative; no cache discount is assumed.
+        upper = len(json.dumps(messages, ensure_ascii=False).encode("utf-8")) + 2048
+        if upper > self.max_input_tokens:
+            raise ModelUnavailable("question_context_too_large")
+        return (Decimal(self.max_input_tokens) * self.input_price +
+                Decimal(self.max_output_tokens) * self.output_price) / Decimal(1_000_000)
+
+    def complete(self, messages):
+        if not self.describe()["enabled"]:
+            raise ModelUnavailable("question_model_not_enabled")
+        self.reservation(messages)
+        payload = {"model": "qwen-turbo", "messages": messages, "enable_thinking": False,
+                   "response_format": {"type": "json_object"}, "max_tokens": self.max_output_tokens,
+                   "temperature": 0.2, "stream": False}
+        try:
+            response = httpx.post(self.base_url + "/chat/completions", json=payload,
+                                  headers={"Authorization": "Bearer " + self._key},
+                                  timeout=30, follow_redirects=False)
+            if response.status_code != 200:
+                category = f"question_provider_http_{response.status_code}"
+                try:
+                    code = response.json().get("error", {}).get("code")
+                    if isinstance(code, str) and code in self.safe_error_codes:
+                        category += "_" + code
+                except (ValueError, TypeError, AttributeError):
+                    pass
+                raise ModelUnavailable(category)
+            body = response.json()
+            choice = body["choices"][0]
+            usage = body["usage"]
+            actual_model = body["model"]
+            if (choice.get("finish_reason") != "stop"
+                    or not isinstance(actual_model, str) or not actual_model.startswith("qwen-turbo")
+                    or choice["message"].get("reasoning_content")
+                    or not isinstance(choice["message"]["content"], str)
+                    or any(type(usage.get(k)) is not int or usage[k] < 0
+                           for k in ("prompt_tokens", "completion_tokens"))
+                    or usage["completion_tokens"] > self.max_output_tokens
+                    or usage["prompt_tokens"] > self.max_input_tokens):
+                raise ModelUnavailable("question_provider_invalid_response")
+            cost = (Decimal(usage["prompt_tokens"]) * self.input_price +
+                    Decimal(usage["completion_tokens"]) * self.output_price) / Decimal(1_000_000)
+            return {"content": choice["message"]["content"], "model": actual_model,
+                    "usage": {k: usage[k] for k in ("prompt_tokens", "completion_tokens")},
+                    "cost_cny": str(cost), "provider_request_id": body.get("id")}
+        except httpx.HTTPError:
+            raise ModelUnavailable("question_provider_network_error") from None
+        except (ValueError, KeyError, IndexError, TypeError, AttributeError):
+            raise ModelUnavailable("question_provider_invalid_response") from None
 
 
 def model_status():
